@@ -1,0 +1,51 @@
+import { create } from 'zustand'
+import { supabase } from '../lib/supabase'
+
+export const useAuthStore = create((set) => ({
+  user: null,
+  session: null,
+  isAuthenticated: false,
+  loading: true,
+
+  setSession: (session) => {
+    set({ session, isAuthenticated: !!session, loading: false })
+  },
+
+  setUser: (user) => {
+    set({ user })
+  },
+
+  login: async (email, password) => {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    })
+    if (error) throw error
+    set({ session: data.session, user: data.user, isAuthenticated: true })
+    return data
+  },
+
+  register: async (email, password, metadata) => {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: metadata }
+    })
+    if (error) throw error
+    return data
+  },
+
+  logout: async () => {
+    await supabase.auth.signOut()
+    set({ user: null, session: null, isAuthenticated: false })
+  },
+
+  init: async () => {
+    const { data: { session } } = await supabase.auth.getSession()
+    set({ session, user: session?.user || null, isAuthenticated: !!session, loading: false })
+
+    supabase.auth.onAuthStateChange((_event, session) => {
+      set({ session, user: session?.user || null, isAuthenticated: !!session })
+    })
+  }
+}))

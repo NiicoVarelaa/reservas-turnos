@@ -1,11 +1,13 @@
 import { create } from 'zustand'
-import { supabase } from '../lib/supabase'
+import { supabase } from '@/lib/supabase'
 
 export const useAuthStore = create((set) => ({
   user: null,
   session: null,
   profile: null,
+  guestInfo: null,
   isAuthenticated: false,
+  isGuest: false,
   loading: true,
 
   setSession: (session) => {
@@ -26,7 +28,7 @@ export const useAuthStore = create((set) => ({
       password,
     })
     if (error) throw error
-    set({ session: data.session, user: data.user, isAuthenticated: true })
+    set({ session: data.session, user: data.user, isAuthenticated: true, isGuest: false, guestInfo: null })
     return data
   },
 
@@ -40,9 +42,17 @@ export const useAuthStore = create((set) => ({
     return data
   },
 
+  loginAsGuest: (info) => {
+    set({
+      isGuest: true,
+      isAuthenticated: false,
+      guestInfo: info
+    })
+  },
+
   logout: async () => {
     await supabase.auth.signOut()
-    set({ user: null, session: null, profile: null, isAuthenticated: false })
+    set({ user: null, session: null, profile: null, isAuthenticated: false, isGuest: false, guestInfo: null })
   },
 
   init: async () => {

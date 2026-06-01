@@ -16,6 +16,7 @@ const colors = {
 class Logger {
   constructor(level = levels.INFO) {
     this.level = level
+    this.http = this.http.bind(this)
   }
 
   _log(level, message, data = null) {

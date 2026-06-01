@@ -1,26 +1,27 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { useEffect } from 'react'
-import { useAuthStore } from './store/authStore'
+import { useAuthStore } from '@/store/authStore'
 
 // Public Pages
-import LandingPage from './pages/Public/LandingPage'
-import BookingPage from './pages/Public/BookingPage'
-import ConfirmPage from './pages/Public/ConfirmPage'
+import LandingPage from '@/pages/Public/LandingPage'
+import ServicesList from '@/pages/Public/ServicesList'
+import BookingPage from '@/pages/Public/BookingPage'
+import ConfirmPage from '@/pages/Public/ConfirmPage'
 
 // Auth Pages
-import LoginPage from './pages/Auth/LoginPage'
-import RegisterPage from './pages/Auth/RegisterPage'
+import LoginPage from '@/pages/Auth/LoginPage'
+import RegisterPage from '@/pages/Auth/RegisterPage'
 
 // Onboarding Pages
-import SetupBusiness from './pages/Onboarding/SetupBusiness'
-import SetupServices from './pages/Onboarding/SetupServices'
-import SetupSchedule from './pages/Onboarding/SetupSchedule'
+import SetupBusiness from '@/pages/Onboarding/SetupBusiness'
+import SetupServices from '@/pages/Onboarding/SetupServices'
+import SetupSchedule from '@/pages/Onboarding/SetupSchedule'
 
 // Dashboard Pages
-import DashboardLayout from './components/layout/DashboardLayout'
-import DashboardHome from './pages/Dashboard/DashboardHome'
-import SchedulePage from './pages/Dashboard/SchedulePage'
-import BookingsPage from './pages/Dashboard/BookingsPage'
+import DashboardLayout from '@/components/layout/DashboardLayout'
+import DashboardHome from '@/pages/Dashboard/DashboardHome'
+import SchedulePage from '@/pages/Dashboard/SchedulePage'
+import BookingsPage from '@/pages/Dashboard/BookingsPage'
 
 function App() {
   const initAuth = useAuthStore((state) => state.init)
@@ -34,6 +35,7 @@ function App() {
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<LandingPage />} />
+        <Route path="/book" element={<ServicesList />} />
         <Route path="/book/:serviceId" element={<BookingPage />} />
         <Route path="/confirm/:sessionId" element={<ConfirmPage />} />
 

@@ -3,12 +3,14 @@ import { useParams, useSearchParams, Link } from 'react-router-dom'
 import Calendar from '@/components/booking/Calendar'
 import TimeSlots from '@/components/booking/TimeSlots'
 import BookingForm from '@/components/booking/BookingForm'
+import AuthModal from '@/components/auth/AuthModal'
 import { useBookingStore } from '@/store/bookingStore'
+import { useAuthStore } from '@/store/authStore'
 import { useAvailableSlots } from '@/hooks/useAvailableSlots'
 import { servicesApi, bookingsApi, paymentsApi } from '@/services/api'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { ArrowLeft, Calendar as CalendarIcon, Clock, CheckCircle } from 'lucide-react'
+import { ArrowLeft, Calendar as CalendarIcon, Clock, CheckCircle, User } from 'lucide-react'
 
 export default function BookingPage() {
   const { serviceId } = useParams()
@@ -17,8 +19,11 @@ export default function BookingPage() {
   const [step, setStep] = useState(1)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+  const [showAuthModal, setShowAuthModal] = useState(false)
+  const [currentAppointment, setCurrentAppointment] = useState(null)
 
   const { selectedDate, selectedSlot, setSelectedDate, setSelectedSlot, setSelectedService, reset } = useBookingStore()
+  const { isAuthenticated, isGuest } = useAuthStore()
   const { slots, loading: slotsLoading, refetch: refetchSlots } = useAvailableSlots(
     serviceId,
     selectedDate ? selectedDate.toISOString().split('T')[0] : null
@@ -31,7 +36,7 @@ export default function BookingPage() {
         setService(data.service)
         setSelectedService(data.service)
       } catch (err) {
-        setError('Service not found')
+        setError('Servicio no encontrado')
       }
     }
     fetchService()
@@ -60,16 +65,39 @@ export default function BookingPage() {
         clientPhone: clientInfo.phone
       })
 
+      setCurrentAppointment(data.appointment)
+      setShowAuthModal(true)
+    } catch (err) {
+      setError(err.response?.data?.error || 'Error al crear la reserva')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handlePayment = async (appointmentId) => {
+    try {
       const paymentResponse = await paymentsApi.createSession({
-        appointmentId: data.appointment.id,
+        appointmentId,
         amount: service.price_cents,
         currency: service.currency?.toLowerCase() || 'usd'
       })
-
       window.location.href = paymentResponse.checkoutUrl
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to create booking')
-      setLoading(false)
+      setError(err.response?.data?.error || 'Error al procesar el pago')
+    }
+  }
+
+  const handleAuthContinue = () => {
+    setShowAuthModal(false)
+    if (currentAppointment) {
+      handlePayment(currentAppointment.id)
+    }
+  }
+
+  const handleAuthLogin = () => {
+    setShowAuthModal(false)
+    if (currentAppointment) {
+      handlePayment(currentAppointment.id)
     }
   }
 
@@ -121,12 +149,14 @@ export default function BookingPage() {
 
         {/* Progress Steps */}
         <div className="flex items-center justify-center mb-8">
-          {[1, 2, 3].map((s) => (
+          {[1, 2, 3, 4].map((s) => (
             <div key={s} className="flex items-center">
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${step >= s ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
-                {step > s ? <CheckCircle className="w-4 h-4" /> : s}
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                step >= s ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
+              }`}>
+                {step > s ? <CheckCircle className="w-4 h-4" /> : s === 4 ? <User className="w-4 h-4" /> : s}
               </div>
-              {s < 3 && <div className={`w-16 h-1 mx-2 ${step > s ? 'bg-primary' : 'bg-muted'}`} />}
+              {s < 4 && <div className={`w-12 h-1 mx-2 ${step > s ? 'bg-primary' : 'bg-muted'}`} />}
             </div>
           ))}
         </div>
@@ -175,6 +205,14 @@ export default function BookingPage() {
             <Button variant="outline" className="w-full" onClick={() => setStep(2)}>Atrás</Button>
           </div>
         )}
+
+        {/* Auth Modal */}
+        <AuthModal
+          open={showAuthModal}
+          onOpenChange={setShowAuthModal}
+          onContinue={handleAuthContinue}
+          onLogin={handleAuthLogin}
+        />
       </main>
     </div>
   )

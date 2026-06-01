@@ -1,13 +1,225 @@
+import { useState, useEffect } from 'react'
+import { useParams, useSearchParams } from 'react-router-dom'
+import Calendar from '../../components/booking/Calendar'
+import TimeSlots from '../../components/booking/TimeSlots'
+import BookingForm from '../../components/booking/BookingForm'
+import { useBookingStore } from '../../store/bookingStore'
+import { useAvailableSlots } from '../../hooks/useAvailableSlots'
+import { servicesApi, bookingsApi, paymentsApi } from '../../services/api'
+import { ArrowLeft, Calendar as CalendarIcon, Clock, CheckCircle } from 'lucide-react'
+import { Link } from 'react-router-dom'
+
 export default function BookingPage() {
+  const { serviceId } = useParams()
+  const [searchParams] = useSearchParams()
+  const [service, setService] = useState(null)
+  const [step, setStep] = useState(1)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
+
+  const {
+    selectedDate,
+    selectedSlot,
+    setSelectedDate,
+    setSelectedSlot,
+    setSelectedService,
+    reset
+  } = useBookingStore()
+
+  const { slots, loading: slotsLoading, refetch: refetchSlots } = useAvailableSlots(
+    serviceId,
+    selectedDate ? selectedDate.toISOString().split('T')[0] : null
+  )
+
+  useEffect(() => {
+    const fetchService = async () => {
+      try {
+        const { data } = await servicesApi.getById(serviceId)
+        setService(data.service)
+        setSelectedService(data.service)
+      } catch (err) {
+        setError('Service not found')
+      }
+    }
+
+    fetchService()
+  }, [serviceId, setSelectedService])
+
+  useEffect(() => {
+    if (selectedDate) {
+      refetchSlots()
+      setSelectedSlot(null)
+    }
+  }, [selectedDate, refetchSlots, setSelectedSlot])
+
+  const handleDateSelect = (date) => {
+    setSelectedDate(date)
+  }
+
+  const handleSlotSelect = (slot) => {
+    setSelectedSlot(slot)
+  }
+
+  const handleBookingSubmit = async (clientInfo) => {
+    setLoading(true)
+    setError(null)
+
+    try {
+      const { data } = await bookingsApi.create({
+        serviceId,
+        professionalId: service.professional_id,
+        date: selectedDate.toISOString().split('T')[0],
+        startTime: new Date(selectedSlot.start).toTimeString().slice(0, 5),
+        endTime: new Date(selectedSlot.end).toTimeString().slice(0, 5),
+        clientName: clientInfo.name,
+        clientEmail: clientInfo.email,
+        clientPhone: clientInfo.phone
+      })
+
+      const paymentResponse = await paymentsApi.createSession({
+        appointmentId: data.appointment.id,
+        amount: service.price_cents,
+        currency: service.currency?.toLowerCase() || 'usd'
+      })
+
+      window.location.href = paymentResponse.checkoutUrl
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to create booking')
+      setLoading(false)
+    }
+  }
+
+  if (error && !service) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Servicio no encontrado</h1>
+          <Link to="/" className="text-primary hover:underline">
+            Volver al inicio
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
+  if (!service) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-pulse text-muted-foreground">Cargando...</div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b">
-        <div className="container mx-auto px-4 py-4">
-          <h1 className="text-2xl font-bold">Book Appointment</h1>
+        <div className="container mx-auto px-4 py-4 flex items-center gap-4">
+          <Link to="/" className="p-2 rounded-md hover:bg-accent">
+            <ArrowLeft className="w-5 h-5" />
+          </Link>
+          <div>
+            <h1 className="text-xl font-bold">{service.name}</h1>
+            <p className="text-sm text-muted-foreground">{service.duration_min} min</p>
+          </div>
         </div>
       </header>
-      <main className="container mx-auto px-4 py-8">
-        <p className="text-muted-foreground">Select date, time, and confirm your booking.</p>
+
+      <main className="container mx-auto px-4 py-8 max-w-2xl">
+        {searchParams.get('cancelled') && (
+          <div className="mb-6 p-4 rounded-md bg-destructive/10 text-destructive" role="alert">
+            <p>Pago cancelado. Podés intentar nuevamente.</p>
+          </div>
+        )}
+
+        {error && (
+          <div className="mb-6 p-4 rounded-md bg-destructive/10 text-destructive" role="alert">
+            <p>{error}</p>
+          </div>
+        )}
+
+        {/* Progress Steps */}
+        <div className="flex items-center justify-center mb-8">
+          {[1, 2, 3].map((s) => (
+            <div key={s} className="flex items-center">
+              <div
+                className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                  step >= s ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
+                }`}
+              >
+                {step > s ? <CheckCircle className="w-4 h-4" /> : s}
+              </div>
+              {s < 3 && (
+                <div className={`w-16 h-1 mx-2 ${step > s ? 'bg-primary' : 'bg-muted'}`} />
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Step 1: Select Date */}
+        {step === 1 && (
+          <div className="space-y-6">
+            <h2 className="text-lg font-semibold flex items-center gap-2">
+              <CalendarIcon className="w-5 h-5" />
+              Seleccioná una fecha
+            </h2>
+            <Calendar
+              selectedDate={selectedDate}
+              onSelect={handleDateSelect}
+            />
+            <button
+              onClick={() => setStep(2)}
+              disabled={!selectedDate}
+              className="w-full px-4 py-2 rounded-md bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Continuar
+            </button>
+          </div>
+        )}
+
+        {/* Step 2: Select Time */}
+        {step === 2 && (
+          <div className="space-y-6">
+            <h2 className="text-lg font-semibold flex items-center gap-2">
+              <Clock className="w-5 h-5" />
+              Seleccioná un horario
+            </h2>
+            <TimeSlots
+              slots={slots}
+              selectedSlot={selectedSlot}
+              onSelect={handleSlotSelect}
+              loading={slotsLoading}
+            />
+            <div className="flex gap-2">
+              <button
+                onClick={() => setStep(1)}
+                className="flex-1 px-4 py-2 rounded-md border border-border hover:bg-accent transition-colors"
+              >
+                Atrás
+              </button>
+              <button
+                onClick={() => setStep(3)}
+                disabled={!selectedSlot}
+                className="flex-1 px-4 py-2 rounded-md bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Continuar
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Step 3: Client Info */}
+        {step === 3 && (
+          <div className="space-y-6">
+            <h2 className="text-lg font-semibold">Tus datos</h2>
+            <BookingForm onSubmit={handleBookingSubmit} loading={loading} />
+            <button
+              onClick={() => setStep(2)}
+              className="w-full px-4 py-2 rounded-md border border-border hover:bg-accent transition-colors"
+            >
+              Atrás
+            </button>
+          </div>
+        )}
       </main>
     </div>
   )

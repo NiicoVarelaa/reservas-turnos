@@ -1,8 +1,11 @@
 const express = require('express')
 const router = express.Router()
+const paymentsController = require('../controllers/payments.controller')
 
-router.post('/stripe', (req, res) => {
-  res.json({ message: 'Stripe webhook endpoint' })
-})
+// Stripe webhook needs raw body for signature verification
+router.post('/stripe',
+  express.raw({ type: 'application/json' }),
+  paymentsController.handleStripeWebhook
+)
 
 module.exports = router

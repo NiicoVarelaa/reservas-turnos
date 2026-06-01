@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase'
 export const useAuthStore = create((set) => ({
   user: null,
   session: null,
+  profile: null,
   isAuthenticated: false,
   loading: true,
 
@@ -13,6 +14,10 @@ export const useAuthStore = create((set) => ({
 
   setUser: (user) => {
     set({ user })
+  },
+
+  setProfile: (profile) => {
+    set({ profile })
   },
 
   login: async (email, password) => {
@@ -37,7 +42,7 @@ export const useAuthStore = create((set) => ({
 
   logout: async () => {
     await supabase.auth.signOut()
-    set({ user: null, session: null, isAuthenticated: false })
+    set({ user: null, session: null, profile: null, isAuthenticated: false })
   },
 
   init: async () => {

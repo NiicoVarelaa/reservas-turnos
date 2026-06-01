@@ -11,6 +11,11 @@ import ConfirmPage from './pages/Public/ConfirmPage'
 import LoginPage from './pages/Auth/LoginPage'
 import RegisterPage from './pages/Auth/RegisterPage'
 
+// Onboarding Pages
+import SetupBusiness from './pages/Onboarding/SetupBusiness'
+import SetupServices from './pages/Onboarding/SetupServices'
+import SetupSchedule from './pages/Onboarding/SetupSchedule'
+
 // Dashboard Pages
 import DashboardLayout from './components/layout/DashboardLayout'
 import DashboardHome from './pages/Dashboard/DashboardHome'
@@ -35,6 +40,11 @@ function App() {
         {/* Auth Routes */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+
+        {/* Onboarding Routes */}
+        <Route path="/onboarding/business" element={<SetupBusiness />} />
+        <Route path="/onboarding/services" element={<SetupServices />} />
+        <Route path="/onboarding/schedule" element={<SetupSchedule />} />
 
         {/* Protected Dashboard Routes */}
         <Route path="/dashboard" element={<DashboardLayout />}>

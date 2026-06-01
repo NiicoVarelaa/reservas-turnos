@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { cn } from '../../lib/utils'
+import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 
 export default function Calendar({ selectedDate, onSelect, minDate }) {
   const [currentMonth, setCurrentMonth] = useState(() => {
@@ -9,24 +10,13 @@ export default function Calendar({ selectedDate, onSelect, minDate }) {
 
   const today = new Date()
   today.setHours(0, 0, 0, 0)
-
   const minimumDate = minDate ? new Date(minDate) : today
 
-  const getDaysInMonth = (date) => {
-    return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate()
-  }
+  const getDaysInMonth = (date) => new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate()
+  const getFirstDayOfMonth = (date) => new Date(date.getFullYear(), date.getMonth(), 1).getDay()
 
-  const getFirstDayOfMonth = (date) => {
-    return new Date(date.getFullYear(), date.getMonth(), 1).getDay()
-  }
-
-  const prevMonth = () => {
-    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1))
-  }
-
-  const nextMonth = () => {
-    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1))
-  }
+  const prevMonth = () => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1))
+  const nextMonth = () => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1))
 
   const isDateDisabled = (date) => {
     const d = new Date(date)
@@ -38,11 +28,7 @@ export default function Calendar({ selectedDate, onSelect, minDate }) {
     if (!selectedDate) return false
     const d = new Date(date)
     const s = new Date(selectedDate)
-    return (
-      d.getFullYear() === s.getFullYear() &&
-      d.getMonth() === s.getMonth() &&
-      d.getDate() === s.getDate()
-    )
+    return d.getFullYear() === s.getFullYear() && d.getMonth() === s.getMonth() && d.getDate() === s.getDate()
   }
 
   const isToday = (date) => {
@@ -51,53 +37,34 @@ export default function Calendar({ selectedDate, onSelect, minDate }) {
     return d.getTime() === today.getTime()
   }
 
-  const handleSelect = (date) => {
-    if (isDateDisabled(date)) return
-    onSelect(date)
-  }
-
   const daysInMonth = getDaysInMonth(currentMonth)
   const firstDay = getFirstDayOfMonth(currentMonth)
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1)
   const blanks = Array.from({ length: firstDay }, (_, i) => i)
-
   const monthName = currentMonth.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })
 
   return (
     <div className="w-full">
       <div className="flex items-center justify-between mb-4">
-        <button
-          onClick={prevMonth}
-          className="p-2 rounded-md hover:bg-accent transition-colors"
-          aria-label="Previous month"
-        >
-          <ChevronLeft className="w-5 h-5" />
-        </button>
+        <Button variant="outline" size="icon" onClick={prevMonth} aria-label="Mes anterior">
+          <ChevronLeft className="w-4 h-4" />
+        </Button>
         <h3 className="text-lg font-semibold capitalize">{monthName}</h3>
-        <button
-          onClick={nextMonth}
-          className="p-2 rounded-md hover:bg-accent transition-colors"
-          aria-label="Next month"
-        >
-          <ChevronRight className="w-5 h-5" />
-        </button>
+        <Button variant="outline" size="icon" onClick={nextMonth} aria-label="Mes siguiente">
+          <ChevronRight className="w-4 h-4" />
+        </Button>
       </div>
 
       <div className="grid grid-cols-7 gap-1 mb-2">
         {['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'].map((day) => (
-          <div
-            key={day}
-            className="text-center text-sm font-medium text-muted-foreground py-2"
-          >
+          <div key={day} className="text-center text-sm font-medium text-muted-foreground py-2">
             {day}
           </div>
         ))}
       </div>
 
       <div className="grid grid-cols-7 gap-1">
-        {blanks.map((i) => (
-          <div key={`blank-${i}`} className="aspect-square" />
-        ))}
+        {blanks.map((i) => <div key={`blank-${i}`} className="aspect-square" />)}
 
         {days.map((day) => {
           const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day)
@@ -108,7 +75,7 @@ export default function Calendar({ selectedDate, onSelect, minDate }) {
           return (
             <button
               key={day}
-              onClick={() => handleSelect(date)}
+              onClick={() => !disabled && onSelect(date)}
               disabled={disabled}
               className={cn(
                 'aspect-square rounded-md text-sm font-medium transition-colors',
@@ -118,12 +85,7 @@ export default function Calendar({ selectedDate, onSelect, minDate }) {
                 today && !selected && 'border border-primary',
                 disabled && 'text-muted-foreground/50 cursor-not-allowed'
               )}
-              aria-label={date.toLocaleDateString('es-ES', {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-              })}
+              aria-label={date.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
               aria-selected={selected}
             >
               {day}

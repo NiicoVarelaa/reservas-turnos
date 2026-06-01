@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react'
-import { useParams, useSearchParams } from 'react-router-dom'
-import Calendar from '../../components/booking/Calendar'
-import TimeSlots from '../../components/booking/TimeSlots'
-import BookingForm from '../../components/booking/BookingForm'
-import { useBookingStore } from '../../store/bookingStore'
-import { useAvailableSlots } from '../../hooks/useAvailableSlots'
-import { servicesApi, bookingsApi, paymentsApi } from '../../services/api'
+import { useParams, useSearchParams, Link } from 'react-router-dom'
+import Calendar from '@/components/booking/Calendar'
+import TimeSlots from '@/components/booking/TimeSlots'
+import BookingForm from '@/components/booking/BookingForm'
+import { useBookingStore } from '@/store/bookingStore'
+import { useAvailableSlots } from '@/hooks/useAvailableSlots'
+import { servicesApi, bookingsApi, paymentsApi } from '@/services/api'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ArrowLeft, Calendar as CalendarIcon, Clock, CheckCircle } from 'lucide-react'
-import { Link } from 'react-router-dom'
 
 export default function BookingPage() {
   const { serviceId } = useParams()
@@ -17,15 +18,7 @@ export default function BookingPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
-  const {
-    selectedDate,
-    selectedSlot,
-    setSelectedDate,
-    setSelectedSlot,
-    setSelectedService,
-    reset
-  } = useBookingStore()
-
+  const { selectedDate, selectedSlot, setSelectedDate, setSelectedSlot, setSelectedService, reset } = useBookingStore()
   const { slots, loading: slotsLoading, refetch: refetchSlots } = useAvailableSlots(
     serviceId,
     selectedDate ? selectedDate.toISOString().split('T')[0] : null
@@ -41,7 +34,6 @@ export default function BookingPage() {
         setError('Service not found')
       }
     }
-
     fetchService()
   }, [serviceId, setSelectedService])
 
@@ -51,14 +43,6 @@ export default function BookingPage() {
       setSelectedSlot(null)
     }
   }, [selectedDate, refetchSlots, setSelectedSlot])
-
-  const handleDateSelect = (date) => {
-    setSelectedDate(date)
-  }
-
-  const handleSlotSelect = (slot) => {
-    setSelectedSlot(slot)
-  }
 
   const handleBookingSubmit = async (clientInfo) => {
     setLoading(true)
@@ -94,9 +78,7 @@ export default function BookingPage() {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4">Servicio no encontrado</h1>
-          <Link to="/" className="text-primary hover:underline">
-            Volver al inicio
-          </Link>
+          <Link to="/" className="text-primary hover:underline">Volver al inicio</Link>
         </div>
       </div>
     )
@@ -141,83 +123,56 @@ export default function BookingPage() {
         <div className="flex items-center justify-center mb-8">
           {[1, 2, 3].map((s) => (
             <div key={s} className="flex items-center">
-              <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                  step >= s ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
-                }`}
-              >
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${step >= s ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
                 {step > s ? <CheckCircle className="w-4 h-4" /> : s}
               </div>
-              {s < 3 && (
-                <div className={`w-16 h-1 mx-2 ${step > s ? 'bg-primary' : 'bg-muted'}`} />
-              )}
+              {s < 3 && <div className={`w-16 h-1 mx-2 ${step > s ? 'bg-primary' : 'bg-muted'}`} />}
             </div>
           ))}
         </div>
 
         {/* Step 1: Select Date */}
         {step === 1 && (
-          <div className="space-y-6">
-            <h2 className="text-lg font-semibold flex items-center gap-2">
-              <CalendarIcon className="w-5 h-5" />
-              Seleccioná una fecha
-            </h2>
-            <Calendar
-              selectedDate={selectedDate}
-              onSelect={handleDateSelect}
-            />
-            <button
-              onClick={() => setStep(2)}
-              disabled={!selectedDate}
-              className="w-full px-4 py-2 rounded-md bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Continuar
-            </button>
-          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CalendarIcon className="w-5 h-5" />
+                Seleccioná una fecha
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Calendar selectedDate={selectedDate} onSelect={setSelectedDate} />
+              <Button className="w-full" onClick={() => setStep(2)} disabled={!selectedDate}>
+                Continuar
+              </Button>
+            </CardContent>
+          </Card>
         )}
 
         {/* Step 2: Select Time */}
         {step === 2 && (
-          <div className="space-y-6">
-            <h2 className="text-lg font-semibold flex items-center gap-2">
-              <Clock className="w-5 h-5" />
-              Seleccioná un horario
-            </h2>
-            <TimeSlots
-              slots={slots}
-              selectedSlot={selectedSlot}
-              onSelect={handleSlotSelect}
-              loading={slotsLoading}
-            />
-            <div className="flex gap-2">
-              <button
-                onClick={() => setStep(1)}
-                className="flex-1 px-4 py-2 rounded-md border border-border hover:bg-accent transition-colors"
-              >
-                Atrás
-              </button>
-              <button
-                onClick={() => setStep(3)}
-                disabled={!selectedSlot}
-                className="flex-1 px-4 py-2 rounded-md bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Continuar
-              </button>
-            </div>
-          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Clock className="w-5 h-5" />
+                Seleccioná un horario
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <TimeSlots slots={slots} selectedSlot={selectedSlot} onSelect={setSelectedSlot} loading={slotsLoading} />
+              <div className="flex gap-2">
+                <Button variant="outline" className="flex-1" onClick={() => setStep(1)}>Atrás</Button>
+                <Button className="flex-1" onClick={() => setStep(3)} disabled={!selectedSlot}>Continuar</Button>
+              </div>
+            </CardContent>
+          </Card>
         )}
 
         {/* Step 3: Client Info */}
         {step === 3 && (
-          <div className="space-y-6">
-            <h2 className="text-lg font-semibold">Tus datos</h2>
+          <div className="space-y-4">
             <BookingForm onSubmit={handleBookingSubmit} loading={loading} />
-            <button
-              onClick={() => setStep(2)}
-              className="w-full px-4 py-2 rounded-md border border-border hover:bg-accent transition-colors"
-            >
-              Atrás
-            </button>
+            <Button variant="outline" className="w-full" onClick={() => setStep(2)}>Atrás</Button>
           </div>
         )}
       </main>

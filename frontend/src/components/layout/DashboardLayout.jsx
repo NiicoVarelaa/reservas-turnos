@@ -1,5 +1,6 @@
 import { Outlet, useNavigate, Link } from 'react-router-dom'
-import { useAuthStore } from '../../store/authStore'
+import { useAuthStore } from '@/store/authStore'
+import { Button } from '@/components/ui/button'
 import { Calendar, Clock, LayoutDashboard, LogOut, Menu, X } from 'lucide-react'
 import { useState } from 'react'
 
@@ -34,21 +35,15 @@ export default function DashboardLayout() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Mobile Header */}
       <header className="lg:hidden border-b bg-card">
         <div className="flex items-center justify-between px-4 py-3">
           <Link to="/dashboard" className="font-semibold">Dashboard</Link>
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-2 rounded-md hover:bg-accent"
-            aria-label="Toggle menu"
-          >
+          <Button variant="ghost" size="icon" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
             {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
+          </Button>
         </div>
       </header>
 
-      {/* Mobile Menu */}
       {mobileMenuOpen && (
         <div className="lg:hidden border-b bg-card">
           <nav className="p-4 space-y-1">
@@ -63,19 +58,15 @@ export default function DashboardLayout() {
                 <span>{item.label}</span>
               </Link>
             ))}
-            <button
-              onClick={handleLogout}
-              className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-accent transition-colors w-full text-left"
-            >
-              <LogOut className="w-5 h-5" />
-              <span>Cerrar sesión</span>
-            </button>
+            <Button variant="ghost" className="w-full justify-start" onClick={handleLogout}>
+              <LogOut className="w-5 h-5 mr-3" />
+              Cerrar sesión
+            </Button>
           </nav>
         </div>
       )}
 
       <div className="flex">
-        {/* Desktop Sidebar */}
         <aside className="hidden lg:block w-64 border-r bg-card min-h-screen p-4">
           <nav className="space-y-1">
             {navItems.map((item) => (
@@ -89,22 +80,17 @@ export default function DashboardLayout() {
               </Link>
             ))}
           </nav>
-
           <div className="absolute bottom-4 left-4 right-4">
             <div className="mb-4 px-3">
               <p className="text-sm font-medium truncate">{user?.email}</p>
             </div>
-            <button
-              onClick={handleLogout}
-              className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-accent transition-colors w-full text-left text-sm"
-            >
-              <LogOut className="w-4 h-4" />
-              <span>Cerrar sesión</span>
-            </button>
+            <Button variant="ghost" size="sm" className="w-full justify-start" onClick={handleLogout}>
+              <LogOut className="w-4 h-4 mr-2" />
+              Cerrar sesión
+            </Button>
           </div>
         </aside>
 
-        {/* Main Content */}
         <main className="flex-1 p-4 lg:p-6">
           <Outlet />
         </main>

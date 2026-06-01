@@ -1,4 +1,9 @@
 import { useState } from 'react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Switch } from '@/components/ui/switch'
+import { Label } from '@/components/ui/label'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
 import { Clock, Plus, Trash2 } from 'lucide-react'
 
 const DAYS = [
@@ -8,7 +13,7 @@ const DAYS = [
   { value: 3, label: 'Miércoles' },
   { value: 4, label: 'Jueves' },
   { value: 5, label: 'Viernes' },
-  { value: 6, label: 'Sábado' }
+  { value: 6, label: 'Sábado' },
 ]
 
 export default function SchedulePage() {
@@ -21,96 +26,65 @@ export default function SchedulePage() {
   ])
 
   const toggleDay = (day) => {
-    setSchedules(prev =>
-      prev.map(s =>
-        s.day_of_week === day
-          ? { ...s, is_active: !s.is_active }
-          : s
-      )
-    )
+    setSchedules(prev => prev.map(s => s.day_of_week === day ? { ...s, is_active: !s.is_active } : s))
   }
 
   const updateTime = (day, field, value) => {
-    setSchedules(prev =>
-      prev.map(s =>
-        s.day_of_week === day
-          ? { ...s, [field]: value }
-          : s
-      )
-    )
+    setSchedules(prev => prev.map(s => s.day_of_week === day ? { ...s, [field]: value } : s))
   }
 
   return (
     <div>
-      <h1 className="text-3xl font-bold mb-6">Horarios</h1>
+      <h1 className="text-3xl font-bold mb-2">Horarios</h1>
       <p className="text-muted-foreground mb-8">Configurá tu disponibilidad semanal.</p>
 
-      <div className="space-y-4">
-        {DAYS.map((day) => {
-          const schedule = schedules.find(s => s.day_of_week === day.value)
-          const isActive = schedule?.is_active || false
+      <Card>
+        <CardHeader>
+          <CardTitle>Disponibilidad semanal</CardTitle>
+          <CardDescription>Activá los días que trabajás y ajustá tus horarios</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {DAYS.map((day) => {
+            const schedule = schedules.find(s => s.day_of_week === day.value)
+            const isActive = schedule?.is_active || false
 
-          return (
-            <div
-              key={day.value}
-              className={`p-4 rounded-lg border transition-colors ${
-                isActive ? 'bg-card' : 'bg-muted/50'
-              }`}
-            >
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={() => toggleDay(day.value)}
-                    className={`w-12 h-6 rounded-full transition-colors relative ${
-                      isActive ? 'bg-primary' : 'bg-muted'
-                    }`}
-                    aria-label={`Toggle ${day.label}`}
-                    aria-pressed={isActive}
-                  >
-                    <div
-                      className={`w-5 h-5 rounded-full bg-white absolute top-0.5 transition-transform ${
-                        isActive ? 'translate-x-6' : 'translate-x-0.5'
-                      }`}
-                    />
-                  </button>
-                  <span className="font-medium">{day.label}</span>
-                </div>
-                {isActive && (
-                  <button className="p-2 text-muted-foreground hover:text-destructive">
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                )}
-              </div>
-
-              {isActive && (
-                <div className="flex items-center gap-4 ml-15">
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-muted-foreground" />
-                    <input
-                      type="time"
-                      value={schedule?.start_time || '09:00'}
-                      onChange={(e) => updateTime(day.value, 'start_time', e.target.value)}
-                      className="px-3 py-1 rounded-md border bg-background focus:outline-none focus:ring-2 focus:ring-primary"
-                    />
-                    <span className="text-muted-foreground">a</span>
-                    <input
-                      type="time"
-                      value={schedule?.end_time || '18:00'}
-                      onChange={(e) => updateTime(day.value, 'end_time', e.target.value)}
-                      className="px-3 py-1 rounded-md border bg-background focus:outline-none focus:ring-2 focus:ring-primary"
-                    />
+            return (
+              <div key={day.value} className={`p-4 rounded-lg border transition-colors ${isActive ? 'bg-card' : 'bg-muted/50'}`}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Switch checked={isActive} onCheckedChange={() => toggleDay(day.value)} id={`day-${day.value}`} />
+                    <Label htmlFor={`day-${day.value}`} className="font-medium">{day.label}</Label>
                   </div>
+                  {isActive && (
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-4 h-4 text-muted-foreground" />
+                      <Input
+                        type="time"
+                        value={schedule?.start_time || '09:00'}
+                        onChange={(e) => updateTime(day.value, 'start_time', e.target.value)}
+                        className="w-32"
+                      />
+                      <span className="text-muted-foreground">a</span>
+                      <Input
+                        type="time"
+                        value={schedule?.end_time || '18:00'}
+                        onChange={(e) => updateTime(day.value, 'end_time', e.target.value)}
+                        className="w-32"
+                      />
+                      <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-destructive">
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-          )
-        })}
-      </div>
+              </div>
+            )
+          })}
+        </CardContent>
+      </Card>
 
       <div className="mt-8 flex justify-end">
-        <button className="px-6 py-2 rounded-md bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors">
-          Guardar Cambios
-        </button>
+        <Button>Guardar Cambios</Button>
       </div>
     </div>
   )

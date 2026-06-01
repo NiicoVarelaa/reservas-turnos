@@ -1,5 +1,6 @@
-import { useServices } from '../../hooks/useServices'
-import ServiceCard from '../../components/booking/ServiceCard'
+import { useServices } from '@/hooks/useServices'
+import ServiceCard from '@/components/booking/ServiceCard'
+import { Skeleton } from '@/components/ui/skeleton'
 
 export default function LandingPage() {
   const { services, loading, error } = useServices()
@@ -25,7 +26,7 @@ export default function LandingPage() {
           {loading && (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="h-32 rounded-lg bg-muted animate-pulse" />
+                <Skeleton key={i} className="h-32" />
               ))}
             </div>
           )}

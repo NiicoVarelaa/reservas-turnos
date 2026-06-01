@@ -1,4 +1,7 @@
-import { useAppointments } from '../../hooks/useAppointments'
+import { useAppointments } from '@/hooks/useAppointments'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Skeleton } from '@/components/ui/skeleton'
 import { Calendar, Clock, DollarSign, TrendingUp } from 'lucide-react'
 
 export default function DashboardHome() {
@@ -18,51 +21,54 @@ export default function DashboardHome() {
     .filter(a => a.status === 'paid')
     .reduce((sum, a) => sum + (a.services?.price_cents || 0), 0)
 
+  const statusBadge = (status) => {
+    const variants = {
+      paid: 'success',
+      pending: 'warning',
+      confirmed: 'default',
+      cancelled: 'destructive',
+    }
+    return <Badge variant={variants[status] || 'outline'}>{status}</Badge>
+  }
+
   return (
     <div>
       <h1 className="text-3xl font-bold mb-6">Dashboard</h1>
 
       {loading ? (
         <div className="grid gap-4 md:grid-cols-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="h-24 rounded-lg bg-muted animate-pulse" />
-          ))}
+          {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24" />)}
         </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-4">
-          <div className="p-6 border rounded-lg">
-            <div className="flex items-center gap-2 text-muted-foreground mb-2">
-              <Calendar className="w-4 h-4" />
-              <span className="text-sm">Total</span>
-            </div>
-            <p className="text-3xl font-bold">{stats.total}</p>
-          </div>
-
-          <div className="p-6 border rounded-lg">
-            <div className="flex items-center gap-2 text-muted-foreground mb-2">
-              <Clock className="w-4 h-4" />
-              <span className="text-sm">Próximos</span>
-            </div>
-            <p className="text-3xl font-bold">{stats.today}</p>
-          </div>
-
-          <div className="p-6 border rounded-lg">
-            <div className="flex items-center gap-2 text-muted-foreground mb-2">
-              <TrendingUp className="w-4 h-4" />
-              <span className="text-sm">Pendientes</span>
-            </div>
-            <p className="text-3xl font-bold">{stats.pending}</p>
-          </div>
-
-          <div className="p-6 border rounded-lg">
-            <div className="flex items-center gap-2 text-muted-foreground mb-2">
-              <DollarSign className="w-4 h-4" />
-              <span className="text-sm">Ingresos</span>
-            </div>
-            <p className="text-3xl font-bold">
-              ${(revenue / 100).toFixed(2)}
-            </p>
-          </div>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Total</CardTitle>
+              <Calendar className="w-4 h-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent><p className="text-3xl font-bold">{stats.total}</p></CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Próximos</CardTitle>
+              <Clock className="w-4 h-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent><p className="text-3xl font-bold">{stats.today}</p></CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Pendientes</CardTitle>
+              <TrendingUp className="w-4 h-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent><p className="text-3xl font-bold">{stats.pending}</p></CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Ingresos</CardTitle>
+              <DollarSign className="w-4 h-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent><p className="text-3xl font-bold">${(revenue / 100).toFixed(2)}</p></CardContent>
+          </Card>
         </div>
       )}
 
@@ -73,28 +79,21 @@ export default function DashboardHome() {
         ) : (
           <div className="space-y-2">
             {appointments.slice(0, 5).map((apt) => (
-              <div key={apt.id} className="p-4 border rounded-lg flex items-center justify-between">
-                <div>
-                  <p className="font-medium">{apt.client_name}</p>
-                  <p className="text-sm text-muted-foreground">{apt.services?.name}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm">
-                    {new Date(apt.start_at).toLocaleDateString('es-ES')}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {new Date(apt.start_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
-                  </p>
-                  <span className={`inline-block px-2 py-1 rounded text-xs font-medium mt-1 ${
-                    apt.status === 'paid' ? 'bg-green-100 text-green-800' :
-                    apt.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                    apt.status === 'confirmed' ? 'bg-blue-100 text-blue-800' :
-                    'bg-gray-100 text-gray-800'
-                  }`}>
-                    {apt.status}
-                  </span>
-                </div>
-              </div>
+              <Card key={apt.id}>
+                <CardContent className="flex items-center justify-between p-4">
+                  <div>
+                    <p className="font-medium">{apt.client_name}</p>
+                    <p className="text-sm text-muted-foreground">{apt.services?.name}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm">{new Date(apt.start_at).toLocaleDateString('es-ES')}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {new Date(apt.start_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                    <div className="mt-1">{statusBadge(apt.status)}</div>
+                  </div>
+                </CardContent>
+              </Card>
             ))}
           </div>
         )}

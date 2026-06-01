@@ -1,11 +1,15 @@
 const { body, param, query, validationResult } = require('express-validator')
+const { validatePhone } = require('../utils/helpers')
 
 const handleValidationErrors = (req, res, next) => {
   const errors = validationResult(req)
   if (!errors.isEmpty()) {
     return res.status(400).json({
       error: 'Validation failed',
-      details: errors.array()
+      details: errors.array().map(e => ({
+        field: e.path,
+        message: e.msg
+      }))
     })
   }
   next()
@@ -36,9 +40,12 @@ const validateBooking = [
     .normalizeEmail()
     .withMessage('Valid email is required'),
   body('clientPhone')
-    .trim()
-    .isLength({ min: 7, max: 20 })
-    .withMessage('Valid phone number is required'),
+    .custom((value) => {
+      if (!validatePhone(value)) {
+        throw new Error('Valid phone number is required')
+      }
+      return true
+    }),
   body('notes')
     .optional()
     .trim()
@@ -75,10 +82,42 @@ const validateServiceId = [
   handleValidationErrors
 ]
 
+const validateBusinessId = [
+  param('id')
+    .isUUID()
+    .withMessage('Valid business ID is required'),
+  handleValidationErrors
+]
+
+const validateBusiness = [
+  body('name')
+    .trim()
+    .isLength({ min: 2, max: 100 })
+    .withMessage('Business name must be between 2 and 100 characters'),
+  body('category')
+    .isIn([
+      'odontologia', 'medicina', 'belleza', 'peluqueria',
+      'psicologia', 'veterinaria', 'fitness', 'educacion',
+      'legal', 'consultoria', 'general'
+    ])
+    .withMessage('Valid category is required'),
+  body('whatsapp_number')
+    .optional()
+    .custom((value) => {
+      if (value && !validatePhone(value)) {
+        throw new Error('Valid WhatsApp number is required')
+      }
+      return true
+    }),
+  handleValidationErrors
+]
+
 module.exports = {
   handleValidationErrors,
   validateBooking,
   validatePaymentSession,
   validateAppointmentId,
-  validateServiceId
+  validateServiceId,
+  validateBusinessId,
+  validateBusiness
 }

@@ -1,34 +1,30 @@
-const errorHandler = (err, req, res, next) => {
-  console.error('Error:', err)
+const logger = require('../utils/logger')
 
-  if (err.name === 'ValidationError') {
-    return res.status(400).json({
+const errorHandler = (err, req, res, next) => {
+  if (err.isOperational) {
+    logger.warn(`${err.message} [${err.statusCode}]`, {
+      path: req.originalUrl,
+      method: req.method,
+      details: err.details
+    })
+
+    return res.status(err.statusCode).json({
       error: {
         message: err.message,
-        status: 400
+        status: err.statusCode,
+        ...(err.details && { details: err.details })
       }
     })
   }
 
-  if (err.name === 'UnauthorizedError') {
-    return res.status(401).json({
-      error: {
-        message: 'Unauthorized',
-        status: 401
-      }
-    })
-  }
+  logger.error('Unhandled error:', {
+    message: err.message,
+    stack: err.stack,
+    path: req.originalUrl,
+    method: req.method
+  })
 
-  if (err.name === 'ForbiddenError') {
-    return res.status(403).json({
-      error: {
-        message: 'Forbidden',
-        status: 403
-      }
-    })
-  }
-
-  if (err.code === 'PGRST116') {
+  if (err.code === 'PGRST116' || err.code === '404') {
     return res.status(404).json({
       error: {
         message: 'Resource not found',
@@ -37,15 +33,28 @@ const errorHandler = (err, req, res, next) => {
     })
   }
 
-  res.status(err.status || 500).json({
+  if (err.code === '23505') {
+    return res.status(409).json({
+      error: {
+        message: 'Resource already exists',
+        status: 409
+      }
+    })
+  }
+
+  res.status(500).json({
     error: {
-      message: err.message || 'Internal Server Error',
-      status: err.status || 500
+      message: process.env.NODE_ENV === 'production'
+        ? 'Internal server error'
+        : err.message,
+      status: 500
     }
   })
 }
 
 const notFoundHandler = (req, res) => {
+  logger.warn(`Route not found: ${req.method} ${req.originalUrl}`)
+
   res.status(404).json({
     error: {
       message: `Route ${req.method} ${req.originalUrl} not found`,

@@ -41,7 +41,10 @@ class WhatsAppService {
         components
       )
 
-      await db.updateNotification(appointmentId, {
+      await db.createNotification({
+        appointment_id: appointmentId,
+        type: 'confirmation',
+        channel: 'whatsapp',
         status: 'sent',
         sent_at: new Date().toISOString()
       })

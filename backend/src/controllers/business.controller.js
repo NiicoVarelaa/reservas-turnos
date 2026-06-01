@@ -1,8 +1,15 @@
 const db = require('../services/database')
+const AppError = require('../utils/AppError')
 
 class BusinessController {
   async createBusiness(req, res, next) {
     try {
+      const existingBusiness = await db.getBusinessByOwnerId(req.user.id)
+
+      if (existingBusiness) {
+        throw AppError.conflict('You already have a business. Update it instead.')
+      }
+
       const businessData = {
         ...req.body,
         owner_id: req.user.id
@@ -16,9 +23,6 @@ class BusinessController {
 
       res.status(201).json({ business })
     } catch (error) {
-      if (error.code === '23505') {
-        return res.status(409).json({ error: 'Este slug ya está en uso' })
-      }
       next(error)
     }
   }
@@ -28,7 +32,7 @@ class BusinessController {
       const business = await db.getBusiness(req.params.id)
 
       if (!business) {
-        return res.status(404).json({ error: 'Business not found' })
+        throw AppError.notFound('Business not found')
       }
 
       res.json({ business })
@@ -42,7 +46,7 @@ class BusinessController {
       const business = await db.getBusinessBySlug(req.params.slug)
 
       if (!business) {
-        return res.status(404).json({ error: 'Business not found' })
+        throw AppError.notFound('Business not found')
       }
 
       res.json({ business })
@@ -56,7 +60,7 @@ class BusinessController {
       const business = await db.getBusiness(req.params.id)
 
       if (business.owner_id !== req.user.id) {
-        return res.status(403).json({ error: 'Not authorized' })
+        throw AppError.forbidden('Not authorized to update this business')
       }
 
       const updated = await db.updateBusiness(req.params.id, req.body)
@@ -71,7 +75,7 @@ class BusinessController {
       const business = await db.getBusinessByOwnerId(req.user.id)
 
       if (!business) {
-        return res.status(404).json({ error: 'No business found' })
+        throw AppError.notFound('No business found. Complete onboarding first.')
       }
 
       res.json({ business })

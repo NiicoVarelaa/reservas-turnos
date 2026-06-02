@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useBookingStore } from '@/store/bookingStore'
+import { bookingSchema } from '@/validators'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -10,22 +11,15 @@ export default function BookingForm({ onSubmit, loading }) {
   const [errors, setErrors] = useState({})
 
   const validate = () => {
-    const newErrors = {}
-
-    if (!clientInfo.name.trim() || clientInfo.name.length < 2) {
-      newErrors.name = 'Nombre debe tener al menos 2 caracteres'
+    const result = bookingSchema.safeParse(clientInfo)
+    if (!result.success) {
+      const formatted = {}
+      result.error.errors.forEach(err => { formatted[err.path[0]] = err.message })
+      setErrors(formatted)
+      return false
     }
-
-    if (!clientInfo.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clientInfo.email)) {
-      newErrors.email = 'Email inválido'
-    }
-
-    if (!clientInfo.phone || clientInfo.phone.length < 7) {
-      newErrors.phone = 'Teléfono inválido'
-    }
-
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
+    setErrors({})
+    return true
   }
 
   const handleSubmit = (e) => {
@@ -51,14 +45,12 @@ export default function BookingForm({ onSubmit, loading }) {
               id="name"
               type="text"
               value={clientInfo.name}
-              onChange={(e) => setClientInfo({ name: e.target.value })}
+              onChange={(e) => { setClientInfo({ name: e.target.value }); setErrors(prev => { const n = {...prev}; delete n.name; return n }) }}
               placeholder="Juan Pérez"
               className={errors.name ? 'border-destructive' : ''}
               aria-invalid={!!errors.name}
             />
-            {errors.name && (
-              <p className="text-sm text-destructive">{errors.name}</p>
-            )}
+            {errors.name && <p className="text-sm text-destructive">{errors.name}</p>}
           </div>
 
           <div className="space-y-2">
@@ -67,14 +59,12 @@ export default function BookingForm({ onSubmit, loading }) {
               id="email"
               type="email"
               value={clientInfo.email}
-              onChange={(e) => setClientInfo({ email: e.target.value })}
+              onChange={(e) => { setClientInfo({ email: e.target.value }); setErrors(prev => { const n = {...prev}; delete n.email; return n }) }}
               placeholder="juan@example.com"
               className={errors.email ? 'border-destructive' : ''}
               aria-invalid={!!errors.email}
             />
-            {errors.email && (
-              <p className="text-sm text-destructive">{errors.email}</p>
-            )}
+            {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
           </div>
 
           <div className="space-y-2">
@@ -83,14 +73,12 @@ export default function BookingForm({ onSubmit, loading }) {
               id="phone"
               type="tel"
               value={clientInfo.phone}
-              onChange={(e) => setClientInfo({ phone: e.target.value })}
+              onChange={(e) => { setClientInfo({ phone: e.target.value }); setErrors(prev => { const n = {...prev}; delete n.phone; return n }) }}
               placeholder="+5491112345678"
               className={errors.phone ? 'border-destructive' : ''}
               aria-invalid={!!errors.phone}
             />
-            {errors.phone && (
-              <p className="text-sm text-destructive">{errors.phone}</p>
-            )}
+            {errors.phone && <p className="text-sm text-destructive">{errors.phone}</p>}
           </div>
 
           <Button type="submit" className="w-full" disabled={loading}>

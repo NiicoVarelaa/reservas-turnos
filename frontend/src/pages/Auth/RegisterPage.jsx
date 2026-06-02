@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@/store/authStore'
+import { registerSchema } from '@/validators'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -16,7 +17,7 @@ export default function RegisterPage() {
     password: '',
     confirmPassword: ''
   })
-  const [error, setError] = useState('')
+  const [errors, setErrors] = useState({})
   const [loading, setLoading] = useState(false)
   const [role, setRole] = useState('client')
   const register = useAuthStore((state) => state.register)
@@ -24,31 +25,42 @@ export default function RegisterPage() {
 
   const handleChange = (e) => {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }))
-  }
-
-  const validate = () => {
-    if (formData.password !== formData.confirmPassword) {
-      setError('Las contraseñas no coinciden')
-      return false
+    if (errors[e.target.name]) {
+      setErrors(prev => { const next = { ...prev }; delete next[e.target.name]; return next })
     }
-    if (formData.password.length < 8) {
-      setError('La contraseña debe tener al menos 8 caracteres')
-      return false
-    }
-    return true
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    setError('')
-    if (!validate()) return
+    setErrors({})
+
+    if (formData.password !== formData.confirmPassword) {
+      setErrors({ confirmPassword: 'Las contraseñas no coinciden' })
+      return
+    }
+
+    const result = registerSchema.safeParse({
+      email: formData.email,
+      password: formData.password,
+      full_name: formData.fullName,
+      phone: formData.phone
+    })
+
+    if (!result.success) {
+      const formatted = {}
+      result.error.errors.forEach(err => {
+        const field = err.path[0]
+        formatted[field] = err.message
+      })
+      setErrors(formatted)
+      return
+    }
 
     setLoading(true)
     try {
       await register(formData.email, formData.password, {
         full_name: formData.fullName,
-        phone: formData.phone,
-        role
+        phone: formData.phone
       })
 
       if (role === 'professional') {
@@ -57,7 +69,7 @@ export default function RegisterPage() {
         navigate('/book')
       }
     } catch (err) {
-      setError(err.message || 'Error al crear la cuenta')
+      setErrors({ form: err.message || 'Error al crear la cuenta' })
     } finally {
       setLoading(false)
     }
@@ -74,9 +86,9 @@ export default function RegisterPage() {
           <CardDescription>Elegí el tipo de cuenta</CardDescription>
         </CardHeader>
         <CardContent>
-          {error && (
+          {errors.form && (
             <div className="mb-4 p-3 rounded-md bg-destructive/10 text-destructive text-sm" role="alert">
-              {error}
+              {errors.form}
             </div>
           )}
 
@@ -108,23 +120,28 @@ export default function RegisterPage() {
           <form onSubmit={handleSubmit} className="space-y-4 mt-4">
             <div className="space-y-2">
               <Label htmlFor="fullName">Nombre completo</Label>
-              <Input id="fullName" name="fullName" type="text" value={formData.fullName} onChange={handleChange} placeholder={role === 'professional' ? 'Dr. María García' : 'Juan Pérez'} required />
+              <Input id="fullName" name="fullName" type="text" value={formData.fullName} onChange={handleChange} placeholder={role === 'professional' ? 'Dr. María García' : 'Juan Pérez'} className={errors.full_name ? 'border-destructive' : ''} />
+              {errors.full_name && <p className="text-sm text-destructive">{errors.full_name}</p>}
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" name="email" type="email" value={formData.email} onChange={handleChange} placeholder="tu@email.com" required />
+              <Input id="email" name="email" type="email" value={formData.email} onChange={handleChange} placeholder="tu@email.com" className={errors.email ? 'border-destructive' : ''} />
+              {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
             </div>
             <div className="space-y-2">
               <Label htmlFor="phone">Teléfono</Label>
-              <Input id="phone" name="phone" type="tel" value={formData.phone} onChange={handleChange} placeholder="+5491112345678" required />
+              <Input id="phone" name="phone" type="tel" value={formData.phone} onChange={handleChange} placeholder="+5491112345678" className={errors.phone ? 'border-destructive' : ''} />
+              {errors.phone && <p className="text-sm text-destructive">{errors.phone}</p>}
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Contraseña</Label>
-              <Input id="password" name="password" type="password" value={formData.password} onChange={handleChange} placeholder="••••••••" required />
+              <Input id="password" name="password" type="password" value={formData.password} onChange={handleChange} placeholder="••••••••" className={errors.password ? 'border-destructive' : ''} />
+              {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
             </div>
             <div className="space-y-2">
               <Label htmlFor="confirmPassword">Confirmar contraseña</Label>
-              <Input id="confirmPassword" name="confirmPassword" type="password" value={formData.confirmPassword} onChange={handleChange} placeholder="••••••••" required />
+              <Input id="confirmPassword" name="confirmPassword" type="password" value={formData.confirmPassword} onChange={handleChange} placeholder="••••••••" className={errors.confirmPassword ? 'border-destructive' : ''} />
+              {errors.confirmPassword && <p className="text-sm text-destructive">{errors.confirmPassword}</p>}
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? 'Creando cuenta...' : `Crear cuenta de ${role === 'professional' ? 'Profesional' : 'Cliente'}`}

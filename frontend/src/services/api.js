@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { authService } from './authService'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000'
 
@@ -9,14 +10,65 @@ const api = axios.create({
   }
 })
 
-// Add auth token to requests
+let isRefreshing = false
+let refreshSubscribers = []
+
+const onRefreshed = (token) => {
+  refreshSubscribers.forEach(callback => callback(token))
+  refreshSubscribers = []
+}
+
+const addRefreshSubscriber = (callback) => {
+  refreshSubscribers.push(callback)
+}
+
+// Request interceptor: attach JWT access token
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('sb-token')
+  const token = authService.getAccessToken()
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
   }
   return config
 })
+
+// Response interceptor: handle 401 with token refresh
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config
+
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      if (isRefreshing) {
+        return new Promise((resolve) => {
+          addRefreshSubscriber((token) => {
+            originalRequest.headers.Authorization = `Bearer ${token}`
+            resolve(api(originalRequest))
+          })
+        })
+      }
+
+      originalRequest._retry = true
+      isRefreshing = true
+
+      try {
+        const { accessToken } = await authService.refresh()
+        isRefreshing = false
+        onRefreshed(accessToken)
+
+        originalRequest.headers.Authorization = `Bearer ${accessToken}`
+        return api(originalRequest)
+      } catch (refreshError) {
+        isRefreshing = false
+        refreshSubscribers = []
+        authService.clearTokens()
+        window.location.href = '/login'
+        return Promise.reject(refreshError)
+      }
+    }
+
+    return Promise.reject(error)
+  }
+)
 
 export const servicesApi = {
   getAll: (filters = {}) =>

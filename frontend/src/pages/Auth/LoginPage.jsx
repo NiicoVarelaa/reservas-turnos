@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@/store/authStore'
+import { loginSchema } from '@/validators'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -13,21 +14,30 @@ export default function LoginPage() {
   const [professionalPassword, setProfessionalPassword] = useState('')
   const [clientEmail, setClientEmail] = useState('')
   const [clientPassword, setClientPassword] = useState('')
-  const [error, setError] = useState('')
+  const [errors, setErrors] = useState({})
   const [loading, setLoading] = useState(false)
   const login = useAuthStore((state) => state.login)
   const navigate = useNavigate()
 
   const handleProfessionalLogin = async (e) => {
     e.preventDefault()
-    setError('')
+    setErrors({})
     setLoading(true)
+
+    const result = loginSchema.safeParse({ email: professionalEmail, password: professionalPassword })
+    if (!result.success) {
+      const formatted = {}
+      result.error.errors.forEach(err => { formatted[err.path[0]] = err.message })
+      setErrors(formatted)
+      setLoading(false)
+      return
+    }
 
     try {
       await login(professionalEmail, professionalPassword)
       navigate('/dashboard')
     } catch (err) {
-      setError(err.message || 'Error al iniciar sesión')
+      setErrors({ form: err.message || 'Error al iniciar sesión' })
     } finally {
       setLoading(false)
     }
@@ -35,14 +45,23 @@ export default function LoginPage() {
 
   const handleClientLogin = async (e) => {
     e.preventDefault()
-    setError('')
+    setErrors({})
     setLoading(true)
+
+    const result = loginSchema.safeParse({ email: clientEmail, password: clientPassword })
+    if (!result.success) {
+      const formatted = {}
+      result.error.errors.forEach(err => { formatted[err.path[0]] = err.message })
+      setErrors(formatted)
+      setLoading(false)
+      return
+    }
 
     try {
       await login(clientEmail, clientPassword)
       navigate('/dashboard')
     } catch (err) {
-      setError(err.message || 'Error al iniciar sesión')
+      setErrors({ form: err.message || 'Error al iniciar sesión' })
     } finally {
       setLoading(false)
     }
@@ -59,9 +78,9 @@ export default function LoginPage() {
           <CardDescription>Elegí cómo querés ingresar</CardDescription>
         </CardHeader>
         <CardContent>
-          {error && (
+          {errors.form && (
             <div className="mb-4 p-3 rounded-md bg-destructive/10 text-destructive text-sm" role="alert">
-              {error}
+              {errors.form}
             </div>
           )}
 
@@ -87,8 +106,9 @@ export default function LoginPage() {
                     value={professionalEmail}
                     onChange={(e) => setProfessionalEmail(e.target.value)}
                     placeholder="tu@email.com"
-                    required
+                    className={errors.email ? 'border-destructive' : ''}
                   />
+                  {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="prof-password">Contraseña</Label>
@@ -98,8 +118,9 @@ export default function LoginPage() {
                     value={professionalPassword}
                     onChange={(e) => setProfessionalPassword(e.target.value)}
                     placeholder="••••••••"
-                    required
+                    className={errors.password ? 'border-destructive' : ''}
                   />
+                  {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? 'Ingresando...' : 'Iniciar Sesión'}
@@ -117,8 +138,9 @@ export default function LoginPage() {
                     value={clientEmail}
                     onChange={(e) => setClientEmail(e.target.value)}
                     placeholder="tu@email.com"
-                    required
+                    className={errors.email ? 'border-destructive' : ''}
                   />
+                  {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="client-password">Contraseña</Label>
@@ -128,8 +150,9 @@ export default function LoginPage() {
                     value={clientPassword}
                     onChange={(e) => setClientPassword(e.target.value)}
                     placeholder="••••••••"
-                    required
+                    className={errors.password ? 'border-destructive' : ''}
                   />
+                  {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? 'Ingresando...' : 'Iniciar Sesión'}

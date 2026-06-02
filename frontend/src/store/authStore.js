@@ -1,45 +1,35 @@
 import { create } from 'zustand'
-import { supabase } from '@/lib/supabase'
+import { authService } from '@/services/authService'
 
 export const useAuthStore = create((set) => ({
-  user: null,
-  session: null,
-  profile: null,
+  user: authService.getUser(),
   guestInfo: null,
-  isAuthenticated: false,
+  isAuthenticated: authService.isAuthenticated(),
   isGuest: false,
-  loading: true,
-
-  setSession: (session) => {
-    set({ session, isAuthenticated: !!session, loading: false })
-  },
-
-  setUser: (user) => {
-    set({ user })
-  },
-
-  setProfile: (profile) => {
-    set({ profile })
-  },
+  loading: false,
 
   login: async (email, password) => {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
-    if (error) throw error
-    set({ session: data.session, user: data.user, isAuthenticated: true, isGuest: false, guestInfo: null })
-    return data
+    set({ loading: true })
+    try {
+      const data = await authService.login(email, password)
+      set({ user: data.user, isAuthenticated: true, isGuest: false, guestInfo: null, loading: false })
+      return data
+    } catch (error) {
+      set({ loading: false })
+      throw error
+    }
   },
 
-  register: async (email, password, metadata) => {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { data: metadata }
-    })
-    if (error) throw error
-    return data
+  register: async (email, password, metadata = {}) => {
+    set({ loading: true })
+    try {
+      const data = await authService.register(email, password, metadata)
+      set({ user: data.user, isAuthenticated: true, isGuest: false, guestInfo: null, loading: false })
+      return data
+    } catch (error) {
+      set({ loading: false })
+      throw error
+    }
   },
 
   loginAsGuest: (info) => {
@@ -51,16 +41,22 @@ export const useAuthStore = create((set) => ({
   },
 
   logout: async () => {
-    await supabase.auth.signOut()
-    set({ user: null, session: null, profile: null, isAuthenticated: false, isGuest: false, guestInfo: null })
+    await authService.logout()
+    set({ user: null, guestInfo: null, isAuthenticated: false, isGuest: false })
   },
 
-  init: async () => {
-    const { data: { session } } = await supabase.auth.getSession()
-    set({ session, user: session?.user || null, isAuthenticated: !!session, loading: false })
+  init: () => {
+    const user = authService.getUser()
+    const isAuth = authService.isAuthenticated()
+    set({ user, isAuthenticated: isAuth, loading: false })
+  },
 
-    supabase.auth.onAuthStateChange((_event, session) => {
-      set({ session, user: session?.user || null, isAuthenticated: !!session })
-    })
+  refreshProfile: async () => {
+    try {
+      const data = await authService.getProfile()
+      set({ user: data.user })
+    } catch {
+      // Ignore errors
+    }
   }
 }))

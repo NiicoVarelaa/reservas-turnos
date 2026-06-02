@@ -5,7 +5,7 @@ const whatsappService = require('../services/whatsapp')
 class PaymentsController {
   async createCheckoutSession(req, res, next) {
     try {
-      const { appointmentId, amount, currency } = req.body
+      const { appointmentId, amount, currency } = req.validatedData
 
       // Get appointment details
       const appointment = await db.getAppointment(appointmentId)
@@ -29,7 +29,7 @@ class PaymentsController {
               currency: currency || 'usd',
               product_data: {
                 name: appointment.services.name,
-                description: `Booking with ${appointment.profiles.full_name}`,
+                description: `Booking at ${appointment.businesses?.name || 'Our Clinic'}`,
               },
               unit_amount: amount,
             },

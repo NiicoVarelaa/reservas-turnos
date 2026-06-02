@@ -4,11 +4,12 @@ import { useBookingStore } from '@/store/bookingStore'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import { Switch } from '@/components/ui/switch'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { User, Lock, Mail, Phone, ArrowRight } from 'lucide-react'
+import { supabase } from '@/lib/supabase'
 
 export default function AuthModal({ open, onOpenChange, onContinue, onLogin }) {
   const { loginAsGuest, login } = useAuthStore()
@@ -37,6 +38,19 @@ export default function AuthModal({ open, onOpenChange, onContinue, onLogin }) {
 
     try {
       if (createAccount) {
+        // Registrar nuevo usuario
+        const { error: signUpError } = await supabase.auth.signUp({
+          email: clientInfo.email,
+          password: accountPassword,
+          options: {
+            data: {
+              full_name: clientInfo.name,
+              phone: clientInfo.phone
+            }
+          }
+        })
+        if (signUpError) throw signUpError
+        // Después del registro, hacer login
         await login(clientInfo.email, accountPassword)
       } else {
         await login(email, password)

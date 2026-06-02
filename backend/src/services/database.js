@@ -2,6 +2,97 @@ const { supabaseAdmin } = require('../config/supabase')
 
 class DatabaseService {
   // ==========================================
+  // USERS (JWT Auth)
+  // ==========================================
+  async createUser(userData) {
+    const { data, error } = await supabaseAdmin
+      .from('users')
+      .insert({
+        email: userData.email,
+        password_hash: userData.passwordHash,
+        full_name: userData.full_name || null,
+        phone: userData.phone || null,
+        role: userData.role || 'client'
+      })
+      .select()
+      .single()
+
+    if (error) throw error
+    return data
+  }
+
+  async getUserById(userId) {
+    const { data, error } = await supabaseAdmin
+      .from('users')
+      .select('*')
+      .eq('id', userId)
+      .single()
+
+    if (error) return null
+    return data
+  }
+
+  async getUserByEmail(email) {
+    const { data, error } = await supabaseAdmin
+      .from('users')
+      .select('*')
+      .eq('email', email)
+      .single()
+
+    if (error) return null
+    return data
+  }
+
+  async createRefreshToken(userId, token, expiresAt) {
+    const { data, error } = await supabaseAdmin
+      .from('refresh_tokens')
+      .insert({
+        user_id: userId,
+        token,
+        expires_at: expiresAt.toISOString()
+      })
+      .select()
+      .single()
+
+    if (error) throw error
+    return data
+  }
+
+  async getRefreshToken(token) {
+    const { data, error } = await supabaseAdmin
+      .from('refresh_tokens')
+      .select('*')
+      .eq('token', token)
+      .is('revoked_at', null)
+      .gt('expires_at', new Date().toISOString())
+      .single()
+
+    if (error) return null
+    return data
+  }
+
+  async revokeRefreshToken(token) {
+    const { error } = await supabaseAdmin
+      .from('refresh_tokens')
+      .update({ revoked_at: new Date().toISOString() })
+      .eq('token', token)
+
+    if (error) throw error
+    return true
+  }
+
+  async revokeAllUserTokens(userId) {
+    const { error } = await supabaseAdmin
+      .from('refresh_tokens')
+      .update({ revoked_at: new Date().toISOString() })
+      .eq('user_id', userId)
+      .is('revoked_at', null)
+
+    if (error) throw error
+    return true
+  }
+
+  // ==========================================
   // PROFILES
   // ==========================================
   async getProfile(userId) {
@@ -248,7 +339,11 @@ class DatabaseService {
     const { data, error } = await supabaseAdmin
       .from('appointments')
       .insert(appointmentData)
-      .select()
+      .select(`
+        *,
+        services(name, duration_min, price_cents, currency),
+        businesses(name, slug, logo_url, primary_color, whatsapp_number, timezone)
+      `)
       .single()
 
     if (error) throw error

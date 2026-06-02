@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useParams, useSearchParams, Link } from 'react-router-dom'
 import Calendar from '@/components/booking/Calendar'
 import TimeSlots from '@/components/booking/TimeSlots'
@@ -13,14 +13,37 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ArrowLeft, Calendar as CalendarIcon, Clock, CheckCircle, User } from 'lucide-react'
 
 export default function BookingPage() {
-  const { serviceId } = useParams()
+  const { serviceId: paramServiceId } = useParams()
   const [searchParams] = useSearchParams()
+
+  // Persistir serviceId en ref para que no se pierda durante re-renders
+  const serviceIdRef = useRef(paramServiceId)
+  if (paramServiceId) {
+    serviceIdRef.current = paramServiceId
+  }
+  const serviceId = serviceIdRef.current
+
+  // Cleanup al montar
+  useEffect(() => {
+    sessionStorage.removeItem('booking-response')
+    sessionStorage.removeItem('booking-appointment')
+    sessionStorage.removeItem('booking-service')
+    sessionStorage.removeItem('booking-logs')
+  }, [])
+
+  // Persistent debug log
+  useEffect(() => {
+    const logs = JSON.parse(sessionStorage.getItem('booking-logs') || '[]')
+    logs.push({ time: new Date().toISOString(), event: 'render', serviceId })
+    sessionStorage.setItem('booking-logs', JSON.stringify(logs.slice(-20)))
+  }, [serviceId])
+
   const [service, setService] = useState(null)
   const [step, setStep] = useState(1)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [showAuthModal, setShowAuthModal] = useState(false)
-  const [currentAppointment, setCurrentAppointment] = useState(null)
+  const currentAppointmentRef = useRef(null)
 
   const { selectedDate, selectedSlot, setSelectedDate, setSelectedSlot, setSelectedService, reset } = useBookingStore()
   const { isAuthenticated, isGuest } = useAuthStore()
@@ -30,13 +53,23 @@ export default function BookingPage() {
   )
 
   useEffect(() => {
+    if (!serviceId || serviceId === 'undefined') {
+      setError('ID de servicio no válido')
+      return
+    }
+
     const fetchService = async () => {
       try {
         const { data } = await servicesApi.getById(serviceId)
+        if (!data?.service) {
+          setError('Servicio no encontrado')
+          return
+        }
         setService(data.service)
         setSelectedService(data.service)
       } catch (err) {
-        setError('Servicio no encontrado')
+        console.error('Error fetching service:', err)
+        setError('Error al cargar el servicio. Verificá que existan servicios en la base de datos.')
       }
     }
     fetchService()
@@ -49,59 +82,112 @@ export default function BookingPage() {
     }
   }, [selectedDate, refetchSlots, setSelectedSlot])
 
-  const handleBookingSubmit = async (clientInfo) => {
+  const handleBookingSubmit = useCallback(async (clientInfo) => {
     setLoading(true)
     setError(null)
+
+    const startDate = new Date(selectedSlot.start)
+    const endDate = new Date(selectedSlot.end)
 
     try {
       const { data } = await bookingsApi.create({
         serviceId,
         professionalId: service.professional_id,
-        date: selectedDate.toISOString().split('T')[0],
-        startTime: new Date(selectedSlot.start).toTimeString().slice(0, 5),
-        endTime: new Date(selectedSlot.end).toTimeString().slice(0, 5),
+        date: startDate.toISOString().split('T')[0],
+        startTime: startDate.toISOString().split('T')[1].slice(0, 5),
+        endTime: endDate.toISOString().split('T')[1].slice(0, 5),
         clientName: clientInfo.name,
         clientEmail: clientInfo.email,
         clientPhone: clientInfo.phone
       })
 
-      setCurrentAppointment(data.appointment)
-      setShowAuthModal(true)
+      if (!data?.appointment) {
+        setError('Error: la reserva no se creó correctamente.')
+        setLoading(false)
+        return
+      }
+
+      // Guardar en ref y sessionStorage inmediatamente (síncrono)
+      currentAppointmentRef.current = data.appointment
+      sessionStorage.setItem('booking-appointment', JSON.stringify(data.appointment))
+      sessionStorage.setItem('booking-service', JSON.stringify(service))
+
+      // Abrir modal en el siguiente tick para asegurar que el estado se actualizó
+      requestAnimationFrame(() => {
+        setShowAuthModal(true)
+      })
     } catch (err) {
-      setError(err.response?.data?.error || 'Error al crear la reserva')
+      const errorMsg = err.response?.data?.error || err.response?.data?.error?.message || err.message || 'Error al crear la reserva'
+      let translatedMsg = typeof errorMsg === 'string' ? errorMsg : 'Error al crear la reserva'
+      if (translatedMsg === 'This time slot is already booked') {
+        translatedMsg = 'Este horario ya fue reservado. Por favor, elegí otro horario.'
+      }
+      setError(translatedMsg)
+      refetchSlots()
     } finally {
       setLoading(false)
     }
-  }
+  }, [serviceId, service, selectedSlot, refetchSlots])
 
-  const handlePayment = async (appointmentId) => {
+  const handlePayment = useCallback(async (appointmentId) => {
+    // Usar ref y sessionStorage como fuente principal
+    const appt = currentAppointmentRef.current || JSON.parse(sessionStorage.getItem('booking-appointment') || 'null')
+    const svc = service || JSON.parse(sessionStorage.getItem('booking-service') || 'null')
+
+    if (!svc) {
+      setError('Error: servicio no disponible. Volvé a intentar.')
+      return
+    }
+
     try {
       const paymentResponse = await paymentsApi.createSession({
-        appointmentId,
-        amount: service.price_cents,
-        currency: service.currency?.toLowerCase() || 'usd'
+        appointmentId: appt?.id || appointmentId,
+        amount: svc.price_cents,
+        currency: svc.currency?.toLowerCase() || 'usd'
       })
       window.location.href = paymentResponse.checkoutUrl
     } catch (err) {
-      setError(err.response?.data?.error || 'Error al procesar el pago')
+      const errorMsg = err.response?.data?.error?.message || err.response?.data?.error || err.message || 'Error al procesar el pago'
+      setError(typeof errorMsg === 'string' ? errorMsg : 'Error al procesar el pago')
     }
-  }
+  }, [service])
 
-  const handleAuthContinue = () => {
+  const handleAuthContinue = useCallback(() => {
     setShowAuthModal(false)
-    if (currentAppointment) {
-      handlePayment(currentAppointment.id)
+    const appt = currentAppointmentRef.current
+    if (appt?.id) {
+      handlePayment(appt.id)
+    } else {
+      setError('Error: no se encontró la reserva. Volvé a intentar.')
     }
-  }
+  }, [handlePayment])
 
-  const handleAuthLogin = () => {
+  const handleAuthLogin = useCallback(() => {
     setShowAuthModal(false)
-    if (currentAppointment) {
-      handlePayment(currentAppointment.id)
+    const appt = currentAppointmentRef.current
+    if (appt?.id) {
+      handlePayment(appt.id)
+    } else {
+      setError('Error: no se encontró la reserva. Volvé a intentar.')
     }
+  }, [handlePayment])
+
+  // Guard: solo mostrar error si no hay serviceId válido Y no hay datos en sessionStorage
+  const hasValidServiceId = serviceId && serviceId !== 'undefined'
+  const hasSavedData = sessionStorage.getItem('booking-appointment')
+
+  if (!hasValidServiceId && !hasSavedData) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Seleccioná un servicio primero</h1>
+          <Link to="/book" className="text-primary hover:underline">Ver servicios disponibles</Link>
+        </div>
+      </div>
+    )
   }
 
-  if (error && !service) {
+  if (error && !service && !hasSavedData) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
@@ -112,7 +198,7 @@ export default function BookingPage() {
     )
   }
 
-  if (!service) {
+  if (!service && !hasSavedData) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="animate-pulse text-muted-foreground">Cargando...</div>
@@ -128,8 +214,8 @@ export default function BookingPage() {
             <ArrowLeft className="w-5 h-5" />
           </Link>
           <div>
-            <h1 className="text-xl font-bold">{service.name}</h1>
-            <p className="text-sm text-muted-foreground">{service.duration_min} min</p>
+            <h1 className="text-xl font-bold">{service?.name || 'Reserva'}</h1>
+            {service && <p className="text-sm text-muted-foreground">{service.duration_min} min</p>}
           </div>
         </div>
       </header>

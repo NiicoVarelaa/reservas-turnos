@@ -5,6 +5,10 @@ import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 
 export default function ServiceCard({ service, className }) {
+  if (!service?.id) {
+    return null
+  }
+
   const formatPrice = (cents, currency) => {
     return new Intl.NumberFormat('es-AR', {
       style: 'currency',

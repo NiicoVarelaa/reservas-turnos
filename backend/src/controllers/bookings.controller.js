@@ -13,14 +13,14 @@ class BookingsController {
         clientEmail,
         clientPhone,
         notes
-      } = req.body
+      } = req.validatedData
 
       // Get service to find the business
       const service = await db.getService(serviceId)
 
-      // Check for overlapping appointments
-      const startAt = new Date(`${date}T${startTime}:00`)
-      const endAt = new Date(`${date}T${endTime}:00`)
+      // Check for overlapping appointments - interpret times as UTC
+      const startAt = new Date(`${date}T${startTime}:00Z`)
+      const endAt = new Date(`${date}T${endTime}:00Z`)
 
       const hasOverlap = await db.checkAppointmentOverlap(
         professionalId,

@@ -18,17 +18,14 @@ const TESTIMONIALS = [
 export default function LandingPage() {
   const { services, loading: servicesLoading } = useServices()
   const [business, setBusiness] = useState(null)
-  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchBusiness = async () => {
       try {
-        const { data } = await businessApi.getMyBusiness()
+        const { data } = await businessApi.getBySlug('clnica-dental-sonrisa')
         setBusiness(data.business)
       } catch {
         setBusiness(null)
-      } finally {
-        setLoading(false)
       }
     }
     fetchBusiness()

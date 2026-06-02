@@ -11,7 +11,7 @@ class BusinessController {
       }
 
       const businessData = {
-        ...req.body,
+        ...req.validatedData,
         owner_id: req.user.id
       }
 

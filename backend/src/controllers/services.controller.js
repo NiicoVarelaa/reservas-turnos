@@ -55,7 +55,7 @@ class ServicesController {
       }
 
       const serviceData = {
-        ...req.body,
+        ...req.validatedData,
         business_id: business.id,
         professional_id: req.user.id
       }

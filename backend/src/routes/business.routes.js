@@ -1,13 +1,14 @@
 const express = require('express')
 const router = express.Router()
 const businessController = require('../controllers/business.controller')
-const { authMiddleware } = require('../middleware/auth')
-const { validateBusiness, validateBusinessId } = require('../middleware/validation')
+const { jwtAuth } = require('../middleware/jwtAuth')
+const { validate } = require('../middleware/zodValidator')
+const { businessSchema, uuidParamSchema, slugParamSchema } = require('../utils/validators')
 
-router.get('/my', authMiddleware, businessController.getMyBusiness)
-router.get('/:id', validateBusinessId, businessController.getBusiness)
-router.get('/slug/:slug', businessController.getBusinessBySlug)
-router.post('/', authMiddleware, validateBusiness, businessController.createBusiness)
-router.put('/:id', authMiddleware, validateBusinessId, businessController.updateBusiness)
+router.get('/my', jwtAuth, businessController.getMyBusiness)
+router.get('/slug/:slug', validate(slugParamSchema, 'params'), businessController.getBusinessBySlug)
+router.get('/:id', validate(uuidParamSchema, 'params'), businessController.getBusiness)
+router.post('/', jwtAuth, validate(businessSchema), businessController.createBusiness)
+router.put('/:id', jwtAuth, validate(uuidParamSchema, 'params'), businessController.updateBusiness)
 
 module.exports = router

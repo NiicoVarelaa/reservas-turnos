@@ -1,8 +1,9 @@
 const express = require('express')
 const router = express.Router()
 const paymentsController = require('../controllers/payments.controller')
-const { validatePaymentSession } = require('../middleware/validation')
+const { validate } = require('../middleware/zodValidator')
+const { paymentSessionSchema } = require('../utils/validators')
 
-router.post('/create-session', validatePaymentSession, paymentsController.createCheckoutSession)
+router.post('/create-session', validate(paymentSessionSchema), paymentsController.createCheckoutSession)
 
 module.exports = router

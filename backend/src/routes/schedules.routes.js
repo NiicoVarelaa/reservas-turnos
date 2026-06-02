@@ -1,9 +1,11 @@
 const express = require('express')
 const router = express.Router()
 const db = require('../services/database')
-const { authMiddleware } = require('../middleware/auth')
+const { jwtAuth } = require('../middleware/jwtAuth')
+const { validate } = require('../middleware/zodValidator')
+const { scheduleSchema } = require('../utils/validators')
 
-router.post('/', authMiddleware, async (req, res, next) => {
+router.post('/', jwtAuth, validate(scheduleSchema), async (req, res, next) => {
   try {
     const business = await db.getBusinessByOwnerId(req.user.id)
 
@@ -12,7 +14,7 @@ router.post('/', authMiddleware, async (req, res, next) => {
     }
 
     const scheduleData = {
-      ...req.body,
+      ...req.validatedData,
       business_id: business.id,
       professional_id: req.user.id
     }
@@ -24,7 +26,7 @@ router.post('/', authMiddleware, async (req, res, next) => {
   }
 })
 
-router.get('/', authMiddleware, async (req, res, next) => {
+router.get('/', jwtAuth, async (req, res, next) => {
   try {
     const business = await db.getBusinessByOwnerId(req.user.id)
 

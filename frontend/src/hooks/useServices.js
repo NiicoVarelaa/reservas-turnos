@@ -12,7 +12,8 @@ export function useServices(filters = {}) {
 
     try {
       const { data } = await servicesApi.getAll(filters)
-      setServices(data.services || [])
+      const validServices = (data.services || []).filter(s => s?.id)
+      setServices(validServices)
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to fetch services')
       setServices([])

@@ -28,9 +28,10 @@ BEGIN
   ON CONFLICT (id) DO NOTHING;
 
   -- 3. Create/update profile
-  INSERT INTO profiles (id, full_name, phone, role, bio, is_verified, onboarding_completed)
+  INSERT INTO profiles (id, email, full_name, phone, role, bio, is_verified, onboarding_completed)
   VALUES (
     v_user_id,
+    'profesional@test.com',
     'Dra. María García',
     '+5491112345678',
     'professional',
@@ -39,6 +40,7 @@ BEGIN
     true
   )
   ON CONFLICT (id) DO UPDATE SET
+    email = EXCLUDED.email,
     full_name = EXCLUDED.full_name,
     phone = EXCLUDED.phone,
     role = EXCLUDED.role,

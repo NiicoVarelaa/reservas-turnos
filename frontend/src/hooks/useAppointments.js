@@ -19,7 +19,7 @@ export function useAppointments(filters = {}) {
     } finally {
       setLoading(false)
     }
-  }, [filters])
+  }, [JSON.stringify(filters)])
 
   useEffect(() => {
     fetchAppointments()

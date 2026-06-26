@@ -455,6 +455,19 @@ class DatabaseService {
     return data
   }
 
+  async getNotification(appointmentId, type, status) {
+    const { data, error } = await supabaseAdmin
+      .from('notifications')
+      .select('id')
+      .eq('appointment_id', appointmentId)
+      .eq('type', type)
+      .eq('status', status)
+      .maybeSingle()
+
+    if (error) return null
+    return data
+  }
+
   // ==========================================
   // AVAILABLE SLOTS
   // ==========================================

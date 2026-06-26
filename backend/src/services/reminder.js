@@ -48,18 +48,8 @@ class ReminderService {
 
   async hasReminderSent(appointmentId) {
     try {
-      const notifications = await db.getAppointments({})
-
-      const { supabaseAdmin } = require('../config/supabase')
-      const { data } = await supabaseAdmin
-        .from('notifications')
-        .select('id')
-        .eq('appointment_id', appointmentId)
-        .eq('type', 'reminder')
-        .eq('status', 'sent')
-        .single()
-
-      return !!data
+      const notification = await db.getNotification(appointmentId, 'reminder', 'sent')
+      return !!notification
     } catch {
       return false
     }

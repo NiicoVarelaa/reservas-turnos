@@ -121,9 +121,6 @@ export const appointmentsApi = {
 }
 
 export const authApi = {
-  verifyToken: () =>
-    api.post('/api/auth/verify'),
-
   getProfile: () =>
     api.get('/api/auth/profile'),
 

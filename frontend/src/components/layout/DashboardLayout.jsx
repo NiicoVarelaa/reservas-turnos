@@ -1,6 +1,7 @@
-import { Outlet, useNavigate, Link } from 'react-router-dom'
+import { Outlet, useNavigate, Link, Navigate } from 'react-router-dom'
 import { useAuthStore } from '@/store/authStore'
 import { Button } from '@/components/ui/button'
+import { ToastViewport } from '@/components/ui/toast'
 import { Calendar, Clock, LayoutDashboard, LogOut, Menu, X } from 'lucide-react'
 import { useState } from 'react'
 
@@ -18,8 +19,7 @@ export default function DashboardLayout() {
   }
 
   if (!isAuthenticated) {
-    navigate('/login')
-    return null
+    return <Navigate to="/login" replace />
   }
 
   const handleLogout = async () => {
@@ -95,6 +95,7 @@ export default function DashboardLayout() {
           <Outlet />
         </main>
       </div>
+      <ToastViewport />
     </div>
   )
 }

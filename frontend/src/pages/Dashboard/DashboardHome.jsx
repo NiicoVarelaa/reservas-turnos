@@ -1,18 +1,33 @@
+import { useCallback } from 'react'
 import { useAppointments } from '@/hooks/useAppointments'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Calendar, Clock, DollarSign, TrendingUp } from 'lucide-react'
+import { Calendar, Clock, DollarSign, TrendingUp, RefreshCw } from 'lucide-react'
+import { getStatusBadge } from '@/lib/utils'
+import { toast } from '@/hooks/use-toast'
 
 export default function DashboardHome() {
-  const { appointments, loading } = useAppointments()
+  const { appointments, loading, refetch } = useAppointments()
+
+  const handleRefresh = useCallback(async () => {
+    toast({ title: 'Actualizando...', description: 'Cargando datos del panel' })
+    await refetch()
+    toast({ title: 'Datos actualizados', variant: 'success' })
+  }, [refetch])
 
   const today = new Date()
   today.setHours(0, 0, 0, 0)
+  const tomorrow = new Date(today)
+  tomorrow.setDate(tomorrow.getDate() + 1)
 
   const stats = {
     total: appointments.length,
-    today: appointments.filter(a => new Date(a.start_at) >= today).length,
+    today: appointments.filter(a => {
+      const start = new Date(a.start_at)
+      return start >= today && start < tomorrow
+    }).length,
     pending: appointments.filter(a => a.status === 'pending').length,
     paid: appointments.filter(a => a.status === 'paid').length,
   }
@@ -21,19 +36,15 @@ export default function DashboardHome() {
     .filter(a => a.status === 'paid')
     .reduce((sum, a) => sum + (a.services?.price_cents || 0), 0)
 
-  const statusBadge = (status) => {
-    const variants = {
-      paid: 'success',
-      pending: 'warning',
-      confirmed: 'default',
-      cancelled: 'destructive',
-    }
-    return <Badge variant={variants[status] || 'outline'}>{status}</Badge>
-  }
-
   return (
     <div>
-      <h1 className="text-3xl font-bold mb-6">Dashboard</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-3xl font-bold">Dashboard</h1>
+        <Button variant="outline" size="sm" onClick={handleRefresh}>
+          <RefreshCw className="w-4 h-4 mr-2" />
+          Actualizar
+        </Button>
+      </div>
 
       {loading ? (
         <div className="grid gap-4 md:grid-cols-4">
@@ -50,7 +61,7 @@ export default function DashboardHome() {
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Próximos</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Hoy</CardTitle>
               <Clock className="w-4 h-4 text-muted-foreground" />
             </CardHeader>
             <CardContent><p className="text-3xl font-bold">{stats.today}</p></CardContent>
@@ -74,7 +85,11 @@ export default function DashboardHome() {
 
       <div className="mt-8">
         <h2 className="text-xl font-semibold mb-4">Próximas Reservas</h2>
-        {appointments.length === 0 ? (
+        {loading ? (
+          <div className="space-y-2">
+            {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-16" />)}
+          </div>
+        ) : appointments.length === 0 ? (
           <p className="text-muted-foreground">No hay reservas próximas.</p>
         ) : (
           <div className="space-y-2">
@@ -90,7 +105,9 @@ export default function DashboardHome() {
                     <p className="text-sm text-muted-foreground">
                       {new Date(apt.start_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
                     </p>
-                    <div className="mt-1">{statusBadge(apt.status)}</div>
+                    <div className="mt-1">
+                      <Badge variant={getStatusBadge(apt.status).variant}>{getStatusBadge(apt.status).label}</Badge>
+                    </div>
                   </div>
                 </CardContent>
               </Card>

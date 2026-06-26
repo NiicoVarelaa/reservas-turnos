@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Skeleton } from '@/components/ui/skeleton'
 import { CheckCircle, Calendar, Clock, Mail, Phone, ArrowLeft } from 'lucide-react'
 import { bookingsApi } from '@/services/api'
 
@@ -14,9 +15,11 @@ export default function ConfirmPage() {
   useEffect(() => {
     const fetchAppointment = async () => {
       try {
-        setLoading(false)
+        const { data } = await bookingsApi.getById(sessionId)
+        setAppointment(data.appointment || null)
       } catch (err) {
         setError('No se pudo verificar la reserva')
+      } finally {
         setLoading(false)
       }
     }
@@ -25,8 +28,11 @@ export default function ConfirmPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-pulse text-muted-foreground">Verificando...</div>
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className="w-full max-w-md space-y-4">
+          <Skeleton className="h-8 w-48 mx-auto" />
+          <Skeleton className="h-64" />
+        </div>
       </div>
     )
   }
@@ -57,12 +63,12 @@ export default function ConfirmPage() {
         <Card>
           <CardHeader>
             <CardTitle>Detalles de la Reserva</CardTitle>
-            <CardDescription>Información de tu turno</CardDescription>
+            <CardDescription>{appointment?.services?.name || 'Información de tu turno'}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
             <div className="flex items-center gap-2">
               <Calendar className="w-4 h-4 text-muted-foreground" />
-              <span>Fecha: {appointment?.start_at ? new Date(appointment.start_at).toLocaleDateString('es-ES') : 'N/A'}</span>
+              <span>Fecha: {appointment?.start_at ? new Date(appointment.start_at).toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A'}</span>
             </div>
             <div className="flex items-center gap-2">
               <Clock className="w-4 h-4 text-muted-foreground" />

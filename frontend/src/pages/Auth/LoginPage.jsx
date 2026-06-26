@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { LogIn, Building2, User } from 'lucide-react'
+import { toast } from '@/hooks/use-toast'
 
 export default function LoginPage() {
   const [professionalEmail, setProfessionalEmail] = useState('')
@@ -35,9 +36,11 @@ export default function LoginPage() {
 
     try {
       await login(professionalEmail, professionalPassword)
+      toast({ title: 'Inicio de sesión exitoso', description: 'Bienvenido de vuelta', variant: 'success' })
       navigate('/dashboard')
     } catch (err) {
       setErrors({ form: err.message || 'Error al iniciar sesión' })
+      toast({ title: 'Error al iniciar sesión', description: err.message || 'Credenciales inválidas', variant: 'destructive' })
     } finally {
       setLoading(false)
     }
@@ -59,9 +62,11 @@ export default function LoginPage() {
 
     try {
       await login(clientEmail, clientPassword)
+      toast({ title: 'Inicio de sesión exitoso', description: 'Bienvenido de vuelta', variant: 'success' })
       navigate('/dashboard')
     } catch (err) {
       setErrors({ form: err.message || 'Error al iniciar sesión' })
+      toast({ title: 'Error al iniciar sesión', description: err.message || 'Credenciales inválidas', variant: 'destructive' })
     } finally {
       setLoading(false)
     }

@@ -1,16 +1,25 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { useAppointments } from '@/hooks/useAppointments'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Calendar, Clock, Mail, Phone, Search } from 'lucide-react'
+import { Calendar, Clock, Mail, Phone, Search, RefreshCw } from 'lucide-react'
+import { getStatusBadge } from '@/lib/utils'
+import { toast } from '@/hooks/use-toast'
 
 export default function BookingsPage() {
   const { appointments, loading, refetch } = useAppointments()
   const [filter, setFilter] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
+
+  const handleRefresh = useCallback(async () => {
+    toast({ title: 'Actualizando...', description: 'Cargando reservas' })
+    await refetch()
+    toast({ title: 'Reservas actualizadas', variant: 'success' })
+  }, [refetch])
 
   const filtered = appointments.filter(apt => {
     const matchesSearch = apt.client_name?.toLowerCase().includes(filter.toLowerCase()) ||
@@ -19,19 +28,15 @@ export default function BookingsPage() {
     return matchesSearch && matchesStatus
   })
 
-  const statusBadge = (status) => {
-    const variants = {
-      paid: 'success',
-      pending: 'warning',
-      confirmed: 'default',
-      cancelled: 'destructive',
-    }
-    return <Badge variant={variants[status] || 'outline'}>{status}</Badge>
-  }
-
   return (
     <div>
-      <h1 className="text-3xl font-bold mb-6">Reservas</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-3xl font-bold">Reservas</h1>
+        <Button variant="outline" size="sm" onClick={handleRefresh}>
+          <RefreshCw className="w-4 h-4 mr-2" />
+          Actualizar
+        </Button>
+      </div>
 
       <div className="flex flex-col sm:flex-row gap-4 mb-6">
         <div className="relative flex-1">
@@ -93,7 +98,7 @@ export default function BookingsPage() {
                       <span>{apt.client_phone}</span>
                     </div>
                   </div>
-                  {statusBadge(apt.status)}
+                  <Badge variant={getStatusBadge(apt.status).variant}>{getStatusBadge(apt.status).label}</Badge>
                 </div>
               </CardContent>
             </Card>

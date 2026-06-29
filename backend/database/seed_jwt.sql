@@ -84,34 +84,61 @@ BEGIN
   -- 6. Insert sample appointments
   INSERT INTO appointments (business_id, professional_id, service_id, client_name, client_email, client_phone, start_at, end_at, status)
   VALUES
+    -- Existing
     (v_business_id, v_user_id, (SELECT id FROM services WHERE business_id = v_business_id AND name = 'Consulta General' LIMIT 1), 'Juan Pérez', 'juan@example.com', '+5491198765432', NOW() + INTERVAL '2 days', NOW() + INTERVAL '2 days 30 minutes', 'confirmed'),
-    (v_business_id, v_user_id, (SELECT id FROM services WHERE business_id = v_business_id AND name = 'Blanqueamiento' LIMIT 1), 'Ana López', 'ana@example.com', '+5491187654321', NOW() + INTERVAL '3 days', NOW() + INTERVAL '3 days 60 minutes', 'paid');
+    (v_business_id, v_user_id, (SELECT id FROM services WHERE business_id = v_business_id AND name = 'Blanqueamiento' LIMIT 1), 'Ana López', 'ana@example.com', '+5491187654321', NOW() + INTERVAL '3 days', NOW() + INTERVAL '3 days 60 minutes', 'paid'),
+    -- Past paid (last week)
+    (v_business_id, v_user_id, (SELECT id FROM services WHERE business_id = v_business_id AND name = 'Limpieza Dental' LIMIT 1), 'Carlos Mendoza', 'carlos@ejemplo.com', '+5491122334455', NOW() - INTERVAL '7 days', NOW() - INTERVAL '7 days 45 minutes', 'paid'),
+    (v_business_id, v_user_id, (SELECT id FROM services WHERE business_id = v_business_id AND name = 'Consulta General' LIMIT 1), 'Laura Fernández', 'laura@ejemplo.com', '+5491133445566', NOW() - INTERVAL '5 days', NOW() - INTERVAL '5 days 30 minutes', 'paid'),
+    (v_business_id, v_user_id, (SELECT id FROM services WHERE business_id = v_business_id AND name = 'Extracción Simple' LIMIT 1), 'Pedro Ramírez', 'pedro@ejemplo.com', '+5491144556677', NOW() - INTERVAL '3 days', NOW() - INTERVAL '3 days 45 minutes', 'paid'),
+    -- Past cancelled
+    (v_business_id, v_user_id, (SELECT id FROM services WHERE business_id = v_business_id AND name = 'Ortodoncia - Control' LIMIT 1), 'Sofía Torres', 'sofia@ejemplo.com', '+5491155667788', NOW() - INTERVAL '2 days', NOW() - INTERVAL '2 days 20 minutes', 'cancelled'),
+    -- Today confirmed
+    (v_business_id, v_user_id, (SELECT id FROM services WHERE business_id = v_business_id AND name = 'Limpieza Dental' LIMIT 1), 'Diego Martínez', 'diego@ejemplo.com', '+5491166778899', NOW() + INTERVAL '2 hours', NOW() + INTERVAL '2 hours 45 minutes', 'confirmed'),
+    (v_business_id, v_user_id, (SELECT id FROM services WHERE business_id = v_business_id AND name = 'Consulta General' LIMIT 1), 'Valentina Ruiz', 'valentina@ejemplo.com', '+5491177889900', NOW() + INTERVAL '4 hours', NOW() + INTERVAL '4 hours 30 minutes', 'confirmed'),
+    -- Tomorrow
+    (v_business_id, v_user_id, (SELECT id FROM services WHERE business_id = v_business_id AND name = 'Endodoncia' LIMIT 1), 'Martín Díaz', 'martin@ejemplo.com', '+5491188990011', NOW() + INTERVAL '1 day', NOW() + INTERVAL '1 day 60 minutes', 'pending'),
+    (v_business_id, v_user_id, (SELECT id FROM services WHERE business_id = v_business_id AND name = 'Implante Dental' LIMIT 1), 'Camila Gómez', 'camila@ejemplo.com', '+5491199001122', NOW() + INTERVAL '1 day 3 hours', NOW() + INTERVAL '1 day 4 hours 30 minutes', 'confirmed'),
+    -- Next week
+    (v_business_id, v_user_id, (SELECT id FROM services WHERE business_id = v_business_id AND name = 'Carillas de Porcelana' LIMIT 1), 'Lucas Castro', 'lucas@ejemplo.com', '+5491100112233', NOW() + INTERVAL '7 days', NOW() + INTERVAL '7 days 120 minutes', 'pending'),
+    (v_business_id, v_user_id, (SELECT id FROM services WHERE business_id = v_business_id AND name = 'Blanqueamiento' LIMIT 1), 'Florencia Vargas', 'florencia@ejemplo.com', '+5491111223344', NOW() + INTERVAL '8 days', NOW() + INTERVAL '8 days 60 minutes', 'confirmed');
 
-  -- 7. Insert sample payments
+  -- 7. Insert payments for all paid appointments (including the new ones)
   INSERT INTO payments (appointment_id, stripe_payment_intent_id, amount_cents, currency, status, paid_at)
   SELECT 
-    id,
-    'pi_test_' || id,
-    15000,
+    a.id,
+    'pi_test_' || a.id,
+    COALESCE(s.price_cents, 0),
     'USD',
     'succeeded',
-    NOW()
-  FROM appointments 
-  WHERE status = 'paid' 
-  LIMIT 1;
+    a.end_at
+  FROM appointments a
+  JOIN services s ON s.id = a.service_id
+  WHERE a.status = 'paid'
+    AND NOT EXISTS (SELECT 1 FROM payments p WHERE p.appointment_id = a.id);
 
-  -- 8. Insert sample notifications
+  -- 8. Insert notifications for all confirmed and paid appointments
   INSERT INTO notifications (appointment_id, type, channel, status, sent_at)
   SELECT 
-    id,
-    'confirmation',
+    a.id,
+    CASE WHEN a.status = 'paid' THEN 'confirmation' ELSE 'reminder' END,
     'whatsapp',
     'sent',
-    NOW()
-  FROM appointments 
-  WHERE status IN ('confirmed', 'paid')
-  LIMIT 2;
+    a.created_at
+  FROM appointments a
+  WHERE a.status IN ('confirmed', 'paid')
+    AND NOT EXISTS (SELECT 1 FROM notifications n WHERE n.appointment_id = a.id AND n.type = CASE WHEN a.status = 'paid' THEN 'confirmation' ELSE 'reminder' END);
 
-  RAISE NOTICE 'Seed completed. User ID: %', v_user_id;
-  RAISE NOTICE 'Login with: profesional@test.com / Test1234!';
+  -- 9. Create client test user (for client login testing)
+  IF NOT EXISTS (SELECT 1 FROM users WHERE email = 'cliente@test.com') THEN
+    INSERT INTO users (id, email, password_hash, role, full_name, phone, is_active)
+    VALUES (gen_random_uuid(), 'cliente@test.com', v_password_hash, 'client', 'Juan Pérez', '+5491111111111', true);
+
+    INSERT INTO profiles (id, email, full_name, phone, role)
+    SELECT id, email, full_name, phone, role FROM users WHERE email = 'cliente@test.com';
+  END IF;
+
+  RAISE NOTICE 'Seed completed. Professional ID: %', v_user_id;
+  RAISE NOTICE 'Login profesional: profesional@test.com / Test1234!';
+  RAISE NOTICE 'Login cliente:      cliente@test.com / Test1234!';
 END $$;

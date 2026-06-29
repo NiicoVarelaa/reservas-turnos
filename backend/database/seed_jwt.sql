@@ -129,13 +129,14 @@ BEGIN
   WHERE a.status IN ('confirmed', 'paid')
     AND NOT EXISTS (SELECT 1 FROM notifications n WHERE n.appointment_id = a.id AND n.type = CASE WHEN a.status = 'paid' THEN 'confirmation' ELSE 'reminder' END);
 
-  -- 9. Create client test user (for client login testing)
+  -- 9. Ensure profiles role constraint allows 'client' (fixes "profiles_role_check" violation)
+  ALTER TABLE profiles DROP CONSTRAINT IF EXISTS profiles_role_check;
+  ALTER TABLE profiles ADD CONSTRAINT profiles_role_check CHECK (role IN ('client', 'professional', 'admin'));
+
+  -- 10. Create client test user (for client login testing) — no profile needed
   IF NOT EXISTS (SELECT 1 FROM users WHERE email = 'cliente@test.com') THEN
     INSERT INTO users (id, email, password_hash, role, full_name, phone, is_active)
     VALUES (gen_random_uuid(), 'cliente@test.com', v_password_hash, 'client', 'Juan Pérez', '+5491111111111', true);
-
-    INSERT INTO profiles (id, email, full_name, phone, role)
-    SELECT id, email, full_name, phone, role FROM users WHERE email = 'cliente@test.com';
   END IF;
 
   RAISE NOTICE 'Seed completed. Professional ID: %', v_user_id;

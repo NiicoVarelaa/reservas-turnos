@@ -71,7 +71,7 @@ FROM users WHERE email = 'profesional@test.com';
 -- SERVICES
 --------------------------------------------------------------------------------
 INSERT INTO services (business_id, professional_id, name, description, duration_min, price_cents, currency, is_active)
-SELECT b.id, u.id, s.name, s.desc, s.dur, s.price, 'USD', true
+SELECT b.id, u.id, s.name, s.descrip, s.dur, s.price, 'USD', true
 FROM users u
 JOIN businesses b ON b.owner_id = u.id, (VALUES
   ('Consulta General',       'Evaluación completa de salud bucal',                             30,  5000),
@@ -82,7 +82,7 @@ JOIN businesses b ON b.owner_id = u.id, (VALUES
   ('Implante Dental',        'Colocación de implante dental',                                  90, 25000),
   ('Endodoncia',             'Tratamiento de conducto',                                         60, 18000),
   ('Carillas de Porcelana',  'Diseño de sonrisa con carillas',                                 120, 35000)
-) AS s(name, desc, dur, price)
+) AS s(name, descrip, dur, price)
 WHERE u.email = 'profesional@test.com';
 
 --------------------------------------------------------------------------------

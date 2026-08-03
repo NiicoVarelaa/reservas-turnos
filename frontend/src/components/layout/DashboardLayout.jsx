@@ -94,10 +94,8 @@ function MobileHeader({ onMenuToggle, isOpen }) {
     <header className="lg:hidden border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60 sticky top-0 z-40">
       <div className="flex items-center justify-between px-4 py-3">
         <Link to="/dashboard" className="flex items-center gap-2 font-semibold text-lg">
-          <div className="w-8 h-8 rounded-lg bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold">
-            R
-          </div>
-          <span>Reservas</span>
+          <img src="/logo.png" alt="Smile Book" className="w-8 h-8 object-contain" />
+          <span>Smile Book</span>
         </Link>
         <Button variant="ghost" size="icon" onClick={onMenuToggle} aria-label="Abrir menú">
           {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -121,10 +119,8 @@ function MobileSidebar({ open, onClose }) {
       }`}>
         <div className="flex items-center justify-between px-4 h-14 border-b">
           <Link to="/dashboard" className="flex items-center gap-2 font-semibold text-lg" onClick={onClose}>
-            <div className="w-8 h-8 rounded-lg bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold">
-              R
-            </div>
-            <span>Reservas</span>
+            <img src="/logo.png" alt="Smile Book" className="w-8 h-8 object-contain" />
+            <span>Smile Book</span>
           </Link>
           <Button variant="ghost" size="icon" onClick={onClose} aria-label="Cerrar menú">
             <X className="w-5 h-5" />
@@ -145,11 +141,9 @@ function DesktopSidebar() {
   return (
     <aside className="hidden lg:flex lg:flex-col w-64 border-r bg-card min-h-screen">
       <div className="flex items-center gap-2.5 px-6 h-16 border-b shrink-0">
-        <div className="w-9 h-9 rounded-lg bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold shadow-sm">
-          R
-        </div>
+        <img src="/logo.png" alt="Smile Book" className="w-9 h-9 object-contain" />
         <div>
-          <p className="font-semibold text-sm leading-tight">Reservas</p>
+          <p className="font-semibold text-sm leading-tight">Smile Book</p>
           <p className="text-xs text-muted-foreground leading-tight">Panel de control</p>
         </div>
       </div>

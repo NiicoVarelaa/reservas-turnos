@@ -32,7 +32,7 @@ export default function LandingPage() {
   }, [])
 
   const featuredServices = services.slice(0, 4)
-  const businessName = business?.name || 'Clínica Dental Sonrisa'
+  const businessName = business?.name || 'Smile Book'
   const tagline = business?.tagline || 'Tu sonrisa, nuestra prioridad'
   const description = business?.description || 'Centro odontológico especializado en tratamientos de estética, implantes y ortodoncia con más de 10 años de experiencia.'
 
@@ -42,9 +42,7 @@ export default function LandingPage() {
       <header className="border-b sticky top-0 z-50 bg-background/95 backdrop-blur">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-              <Sparkles className="w-4 h-4 text-primary-foreground" />
-            </div>
+            <img src="/logo.png" alt="Smile Book" className="w-8 h-8 object-contain" />
             <span className="font-bold text-lg">{businessName}</span>
           </div>
           <div className="flex items-center gap-2">
@@ -208,9 +206,7 @@ export default function LandingPage() {
           <div className="grid gap-8 md:grid-cols-3">
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-                  <Sparkles className="w-4 h-4 text-primary-foreground" />
-                </div>
+                <img src="/logo.png" alt="Smile Book" className="w-8 h-8 object-contain" />
                 <span className="font-bold">{businessName}</span>
               </div>
               <p className="text-sm text-muted-foreground">{description}</p>

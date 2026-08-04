@@ -65,7 +65,14 @@ const serviceSchema = z.object({
   duration_min: z.number().int().min(5, 'Duration must be at least 5 minutes').max(480),
   price_cents: z.number().int().min(0, 'Price cannot be negative'),
   currency: z.string().length(3).optional(),
-  is_active: z.boolean().optional()
+  is_active: z.boolean().optional(),
+  professional_ids: z.array(z.string().uuid('Valid professional ID is required')).optional()
+})
+
+// Slots query schema (servicio -> profesional + fecha)
+const slotsQuerySchema = z.object({
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Valid date is required (YYYY-MM-DD)'),
+  professionalId: z.string().uuid('Valid professionalId is required')
 })
 
 // Schedule schema
@@ -101,6 +108,7 @@ module.exports = {
   paymentSessionSchema,
   businessSchema,
   serviceSchema,
+  slotsQuerySchema,
   scheduleSchema,
   profileUpdateSchema,
   uuidParamSchema,

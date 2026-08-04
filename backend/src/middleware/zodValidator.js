@@ -19,9 +19,10 @@ const validate = (schema, source = 'body') => {
     const result = schema.safeParse(data)
 
     if (!result.success) {
+      const issues = result.error.issues || result.error.errors || []
       return res.status(400).json({
         error: 'Validation failed',
-        details: result.error.errors.map(e => ({
+        details: issues.map(e => ({
           field: e.path.join('.'),
           message: e.message
         }))

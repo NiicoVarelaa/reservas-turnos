@@ -7,6 +7,7 @@ export const useBookingStore = create((set, get) => ({
   selectedDate: null,
   selectedSlot: null,
   selectedService: null,
+  selectedProfessional: null,
   clientInfo: { name: '', email: '', phone: '' },
   bookingStatus: 'idle',
   currentAppointment: null,
@@ -15,12 +16,14 @@ export const useBookingStore = create((set, get) => ({
   setSelectedDate: (date) => set({ selectedDate: date }),
   setSelectedSlot: (slot) => set({ selectedSlot: slot }),
   setSelectedService: (service) => set({ selectedService: service }),
+  setSelectedProfessional: (professional) => set({ selectedProfessional: professional }),
   setClientInfo: (info) => set({ clientInfo: { ...get().clientInfo, ...info } }),
 
   reset: () => set({
     selectedDate: null,
     selectedSlot: null,
     selectedService: null,
+    selectedProfessional: null,
     clientInfo: { name: '', email: '', phone: '' },
     bookingStatus: 'idle',
     currentAppointment: null,
@@ -28,9 +31,9 @@ export const useBookingStore = create((set, get) => ({
   }),
 
   createBooking: async () => {
-    const { selectedService, selectedDate, selectedSlot, clientInfo } = get()
+    const { selectedService, selectedDate, selectedSlot, selectedProfessional, clientInfo } = get()
 
-    if (!selectedService || !selectedDate || !selectedSlot) {
+    if (!selectedService || !selectedProfessional || !selectedDate || !selectedSlot) {
       set({ error: 'Missing booking details', bookingStatus: 'error' })
       return
     }
@@ -40,7 +43,7 @@ export const useBookingStore = create((set, get) => ({
     try {
       const { data } = await axios.post(`${API_URL}/api/bookings`, {
         serviceId: selectedService.id,
-        professionalId: selectedService.professional_id,
+        professionalId: selectedProfessional.id,
         date: selectedDate,
         startTime: selectedSlot.start,
         endTime: selectedSlot.end,

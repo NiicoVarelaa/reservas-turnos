@@ -77,8 +77,11 @@ export const servicesApi = {
   getById: (id) =>
     api.get(`/api/services/${id}`),
 
-  getSlots: (id, date) =>
-    api.get(`/api/services/${id}/slots`, { params: { date } }),
+  getProfessionals: (id) =>
+    api.get(`/api/services/${id}/professionals`),
+
+  getSlots: (id, date, professionalId) =>
+    api.get(`/api/services/${id}/slots`, { params: { date, professionalId } }),
 
   create: (data) =>
     api.post('/api/services', data),

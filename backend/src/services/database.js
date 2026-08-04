@@ -237,6 +237,64 @@ class DatabaseService {
     return data
   }
 
+  async getServiceProfessionals(serviceId) {
+    const { data, error } = await supabaseAdmin
+      .from('service_professionals')
+      .select(`
+        professional_id,
+        users(
+          full_name,
+          email,
+          avatar_url,
+          profiles(title, specialty, bio, avatar_url, full_name, phone)
+        )
+      `)
+      .eq('service_id', serviceId)
+      .order('created_at', { ascending: true })
+
+    if (error) throw error
+
+    return (data || []).map(row => {
+      const profiles = Array.isArray(row.users?.profiles)
+        ? row.users.profiles[0]
+        : row.users?.profiles || null
+
+      return {
+        professional_id: row.professional_id,
+        users: row.users
+          ? {
+              full_name: row.users.full_name,
+              email: row.users.email,
+              avatar_url: row.users.avatar_url
+            }
+          : null,
+        profiles
+      }
+    })
+  }
+
+  async setServiceProfessionals(serviceId, professionalIds) {
+    await supabaseAdmin
+      .from('service_professionals')
+      .delete()
+      .eq('service_id', serviceId)
+
+    if (!professionalIds || professionalIds.length === 0) return
+
+    const rows = professionalIds.map(professionalId => ({
+      service_id: serviceId,
+      professional_id: professionalId
+    }))
+
+    const { data, error } = await supabaseAdmin
+      .from('service_professionals')
+      .insert(rows)
+      .select('professional_id')
+
+    if (error) throw error
+    return data
+  }
+
   // ==========================================
   // SCHEDULES
   // ==========================================
@@ -472,7 +530,8 @@ class DatabaseService {
   // AVAILABLE SLOTS
   // ==========================================
   async getAvailableSlots(professionalId, date, serviceDuration) {
-    const targetDate = new Date(date)
+    const [year, month, day] = date.split('-').map(Number)
+    const targetDate = new Date(year, month - 1, day)
     const dayOfWeek = targetDate.getDay()
 
     // Get schedule for this day

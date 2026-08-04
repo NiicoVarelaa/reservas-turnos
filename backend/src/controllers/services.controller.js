@@ -24,18 +24,29 @@ class ServicesController {
     }
   }
 
+  async getServiceProfessionals(req, res, next) {
+    try {
+      const professionals = await db.getServiceProfessionals(req.params.id)
+      res.json({ professionals })
+    } catch (error) {
+      next(error)
+    }
+  }
+
   async getAvailableSlots(req, res, next) {
     try {
       const { id } = req.params
-      const { date } = req.query
-
-      if (!date) {
-        return res.status(400).json({ error: 'Date query parameter is required (YYYY-MM-DD)' })
-      }
+      const { date, professionalId } = req.validatedData
 
       const service = await db.getService(id)
+      const professionals = await db.getServiceProfessionals(id)
+
+      if (!professionals.some(p => p.professional_id === professionalId)) {
+        return res.status(400).json({ error: 'Ese profesional no atiende este servicio' })
+      }
+
       const slots = await db.getAvailableSlots(
-        service.professional_id,
+        professionalId,
         date,
         service.duration_min
       )
@@ -54,13 +65,19 @@ class ServicesController {
         return res.status(400).json({ error: 'You must create a business first' })
       }
 
+      const { professional_ids, ...rest } = req.validatedData
       const serviceData = {
-        ...req.validatedData,
+        ...rest,
         business_id: business.id,
         professional_id: req.user.id
       }
 
       const service = await db.createService(serviceData)
+      const ids = professional_ids && professional_ids.length
+        ? professional_ids
+        : [req.user.id]
+      await db.setServiceProfessionals(service.id, ids)
+
       res.status(201).json({ service })
     } catch (error) {
       next(error)
@@ -75,7 +92,11 @@ class ServicesController {
         return res.status(403).json({ error: 'Not authorized to update this service' })
       }
 
-      const updated = await db.updateService(req.params.id, req.body)
+      const { professional_ids, ...rest } = req.body
+      const updated = await db.updateService(req.params.id, rest)
+      if (professional_ids && Array.isArray(professional_ids)) {
+        await db.setServiceProfessionals(req.params.id, professional_ids)
+      }
       res.json({ service: updated })
     } catch (error) {
       next(error)

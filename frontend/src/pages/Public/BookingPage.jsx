@@ -3,14 +3,16 @@ import { useParams, useSearchParams, Link } from 'react-router-dom'
 import Calendar from '@/components/booking/Calendar'
 import TimeSlots from '@/components/booking/TimeSlots'
 import BookingForm from '@/components/booking/BookingForm'
+import ProfessionalSelect from '@/components/booking/ProfessionalSelect'
 import AuthModal from '@/components/auth/AuthModal'
 import { useBookingStore } from '@/store/bookingStore'
 import { useAuthStore } from '@/store/authStore'
 import { useAvailableSlots } from '@/hooks/useAvailableSlots'
+import { useProfessionals } from '@/hooks/useProfessionals'
 import { servicesApi, bookingsApi, paymentsApi } from '@/services/api'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { ArrowLeft, Calendar as CalendarIcon, Clock, CheckCircle, User } from 'lucide-react'
+import { ArrowLeft, Calendar as CalendarIcon, Clock, CheckCircle, User, Stethoscope } from 'lucide-react'
 
 export default function BookingPage() {
   const { serviceId: paramServiceId } = useParams()
@@ -45,11 +47,13 @@ export default function BookingPage() {
   const [showAuthModal, setShowAuthModal] = useState(false)
   const currentAppointmentRef = useRef(null)
 
-  const { selectedDate, selectedSlot, setSelectedDate, setSelectedSlot, setSelectedService, reset } = useBookingStore()
+  const { selectedDate, selectedSlot, selectedProfessional, setSelectedDate, setSelectedSlot, setSelectedService, setSelectedProfessional, reset } = useBookingStore()
   const { isAuthenticated, isGuest } = useAuthStore()
+  const { professionals, loading: professionalsLoading } = useProfessionals(serviceId)
   const { slots, loading: slotsLoading, refetch: refetchSlots } = useAvailableSlots(
     serviceId,
-    selectedDate ? selectedDate.toISOString().split('T')[0] : null
+    selectedDate ? selectedDate.toISOString().split('T')[0] : null,
+    selectedProfessional?.professional_id
   )
 
   useEffect(() => {
@@ -82,6 +86,13 @@ export default function BookingPage() {
     }
   }, [selectedDate, refetchSlots, setSelectedSlot])
 
+  const handleSelectProfessional = useCallback((professionalId) => {
+    setSelectedProfessional({ professional_id: professionalId })
+    setSelectedDate(null)
+    setSelectedSlot(null)
+    setStep(2)
+  }, [setSelectedProfessional, setSelectedDate, setSelectedSlot])
+
   const handleBookingSubmit = useCallback(async (clientInfo) => {
     setLoading(true)
     setError(null)
@@ -92,7 +103,7 @@ export default function BookingPage() {
     try {
       const { data } = await bookingsApi.create({
         serviceId,
-        professionalId: service.professional_id,
+        professionalId: selectedProfessional.professional_id,
         date: startDate.toISOString().split('T')[0],
         startTime: startDate.toISOString().split('T')[1].slice(0, 5),
         endTime: endDate.toISOString().split('T')[1].slice(0, 5),
@@ -127,7 +138,7 @@ export default function BookingPage() {
     } finally {
       setLoading(false)
     }
-  }, [serviceId, service, selectedSlot, refetchSlots])
+  }, [serviceId, service, selectedSlot, selectedProfessional, refetchSlots])
 
   const handlePayment = useCallback(async (appointmentId) => {
     // Usar ref y sessionStorage como fuente principal
@@ -240,15 +251,35 @@ export default function BookingPage() {
               <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
                 step >= s ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
               }`}>
-                {step > s ? <CheckCircle className="w-4 h-4" /> : s === 4 ? <User className="w-4 h-4" /> : s}
+                {step > s ? <CheckCircle className="w-4 h-4" /> : s === 1 ? <Stethoscope className="w-4 h-4" /> : s === 4 ? <User className="w-4 h-4" /> : s}
               </div>
               {s < 4 && <div className={`w-12 h-1 mx-2 ${step > s ? 'bg-primary' : 'bg-muted'}`} />}
             </div>
           ))}
         </div>
 
-        {/* Step 1: Select Date */}
+        {/* Step 1: Select Doctor */}
         {step === 1 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Stethoscope className="w-5 h-5" />
+                ¿Con qué profesional querés tu turno?
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ProfessionalSelect
+                professionals={professionals}
+                selected={selectedProfessional}
+                onSelect={handleSelectProfessional}
+                loading={professionalsLoading}
+              />
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Step 2: Select Date */}
+        {step === 2 && (
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -258,15 +289,16 @@ export default function BookingPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <Calendar selectedDate={selectedDate} onSelect={setSelectedDate} />
-              <Button className="w-full" onClick={() => setStep(2)} disabled={!selectedDate}>
-                Continuar
-              </Button>
+              <div className="flex gap-2">
+                <Button variant="outline" className="flex-1" onClick={() => setStep(1)}>Atrás</Button>
+                <Button className="flex-1" onClick={() => setStep(3)} disabled={!selectedDate}>Continuar</Button>
+              </div>
             </CardContent>
           </Card>
         )}
 
-        {/* Step 2: Select Time */}
-        {step === 2 && (
+        {/* Step 3: Select Time */}
+        {step === 3 && (
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -277,18 +309,18 @@ export default function BookingPage() {
             <CardContent className="space-y-4">
               <TimeSlots slots={slots} selectedSlot={selectedSlot} onSelect={setSelectedSlot} loading={slotsLoading} />
               <div className="flex gap-2">
-                <Button variant="outline" className="flex-1" onClick={() => setStep(1)}>Atrás</Button>
-                <Button className="flex-1" onClick={() => setStep(3)} disabled={!selectedSlot}>Continuar</Button>
+                <Button variant="outline" className="flex-1" onClick={() => setStep(2)}>Atrás</Button>
+                <Button className="flex-1" onClick={() => setStep(4)} disabled={!selectedSlot}>Continuar</Button>
               </div>
             </CardContent>
           </Card>
         )}
 
-        {/* Step 3: Client Info */}
-        {step === 3 && (
+        {/* Step 4: Client Info */}
+        {step === 4 && (
           <div className="space-y-4">
             <BookingForm onSubmit={handleBookingSubmit} loading={loading} />
-            <Button variant="outline" className="w-full" onClick={() => setStep(2)}>Atrás</Button>
+            <Button variant="outline" className="w-full" onClick={() => setStep(3)}>Atrás</Button>
           </div>
         )}
 

@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Calendar, Clock, MapPin, Phone, Mail, Star, ChevronRight, Sparkles, Shield, Heart } from 'lucide-react'
+import { Calendar, Clock, MapPin, Phone, Mail, Star, ChevronRight, Sparkles, Shield, Heart, Facebook, Instagram, MessageCircle } from 'lucide-react'
 
 const TESTIMONIALS = [
   { name: 'María López', text: 'Excelente atención, muy profesional y puntual. Mi familia y yo somos pacientes hace años.', rating: 5 },
@@ -43,7 +43,7 @@ export default function LandingPage() {
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <img src="/logo.png" alt="Smile Book" className="w-8 h-8 object-contain" />
-            <span className="font-bold text-lg">{businessName}</span>
+            <span className="font-bold text-lg">Smile Book</span>
           </div>
           <div className="flex items-center gap-2">
             <Link to="/login">
@@ -201,44 +201,111 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t py-12">
-        <div className="container mx-auto px-4">
-          <div className="grid gap-8 md:grid-cols-3">
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <img src="/logo.png" alt="Smile Book" className="w-8 h-8 object-contain" />
-                <span className="font-bold">{businessName}</span>
+      <footer className="bg-slate-900 text-slate-300">
+        <div className="container mx-auto px-4 py-16">
+          <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
+            <div className="lg:col-span-1">
+              <div className="flex items-center gap-2.5 mb-4">
+                <img src="/logo.png" alt="Smile Book" className="w-9 h-9 object-contain" />
+                <span className="font-bold text-lg text-white">Smile Book</span>
               </div>
-              <p className="text-sm text-muted-foreground">{description}</p>
+              <p className="text-sm leading-relaxed text-slate-400">
+                {description}
+              </p>
+              <div className="flex items-center gap-3 mt-6">
+                <a
+                  href="https://facebook.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Facebook"
+                  className="w-9 h-9 rounded-full bg-slate-800 hover:bg-primary hover:text-white flex items-center justify-center text-slate-400 transition-colors"
+                >
+                  <Facebook className="w-4 h-4" />
+                </a>
+                <a
+                  href="https://instagram.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Instagram"
+                  className="w-9 h-9 rounded-full bg-slate-800 hover:bg-primary hover:text-white flex items-center justify-center text-slate-400 transition-colors"
+                >
+                  <Instagram className="w-4 h-4" />
+                </a>
+                <a
+                  href="https://wa.me/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="WhatsApp"
+                  className="w-9 h-9 rounded-full bg-slate-800 hover:bg-primary hover:text-white flex items-center justify-center text-slate-400 transition-colors"
+                >
+                  <MessageCircle className="w-4 h-4" />
+                </a>
+              </div>
             </div>
+
             <div>
-              <h4 className="font-semibold mb-4">Contacto</h4>
-              <div className="space-y-2 text-sm text-muted-foreground">
-                {business?.whatsapp_number && (
-                  <div className="flex items-center gap-2">
-                    <Phone className="w-4 h-4" />
-                    <span>{business.whatsapp_number}</span>
-                  </div>
+              <h4 className="font-semibold text-white mb-4">Navegación</h4>
+              <ul className="space-y-2.5 text-sm">
+                <li>
+                  <Link to="/" className="hover:text-white transition-colors">Inicio</Link>
+                </li>
+                <li>
+                  <Link to="/book" className="hover:text-white transition-colors">Reservar Turno</Link>
+                </li>
+                <li>
+                  <Link to="/login" className="hover:text-white transition-colors">Acceso Profesional</Link>
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="font-semibold text-white mb-4">Servicios</h4>
+              <ul className="space-y-2.5 text-sm">
+                {featuredServices.map((service) => (
+                  <li key={service.id}>
+                    <Link to="/book" className="hover:text-white transition-colors">{service.name}</Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="font-semibold text-white mb-4">Contacto</h4>
+              <ul className="space-y-2.5 text-sm">
+                {(business?.whatsapp_number || business?.phone) && (
+                  <li className="flex items-start gap-2.5">
+                    <Phone className="w-4 h-4 mt-0.5 shrink-0 text-primary" />
+                    <span>{business.whatsapp_number || business.phone}</span>
+                  </li>
                 )}
+                <li className="flex items-start gap-2.5">
+                  <Mail className="w-4 h-4 mt-0.5 shrink-0 text-primary" />
+                  <span>{business?.email || 'hola@smilebook.com'}</span>
+                </li>
                 {business?.address && (
-                  <div className="flex items-center gap-2">
-                    <MapPin className="w-4 h-4" />
+                  <li className="flex items-start gap-2.5">
+                    <MapPin className="w-4 h-4 mt-0.5 shrink-0 text-primary" />
                     <span>{business.address}{business.city ? `, ${business.city}` : ''}</span>
-                  </div>
+                  </li>
                 )}
-              </div>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Horarios</h4>
-              <div className="space-y-2 text-sm text-muted-foreground">
-                <p>Lunes a Viernes: 9:00 - 18:00</p>
-                <p>Sábados: 9:00 - 14:00</p>
-                <p>Domingos: Cerrado</p>
-              </div>
+                <li className="flex items-start gap-2.5">
+                  <Clock className="w-4 h-4 mt-0.5 shrink-0 text-primary" />
+                  <span>
+                    Lun a Vie: 9:00 - 18:00<br />
+                    Sábados: 9:00 - 14:00
+                  </span>
+                </li>
+              </ul>
             </div>
           </div>
-          <div className="border-t mt-8 pt-8 text-center text-sm text-muted-foreground">
-            <p>&copy; {new Date().getFullYear()} {businessName}. Todos los derechos reservados.</p>
+        </div>
+        <div className="border-t border-slate-800">
+          <div className="container mx-auto px-4 py-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-slate-500">
+            <p>&copy; {new Date().getFullYear()} Smile Book. Todos los derechos reservados.</p>
+            <div className="flex items-center gap-6">
+              <span className="hover:text-slate-300 transition-colors cursor-pointer">Términos y Condiciones</span>
+              <span className="hover:text-slate-300 transition-colors cursor-pointer">Política de Privacidad</span>
+            </div>
           </div>
         </div>
       </footer>

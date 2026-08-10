@@ -1,10 +1,21 @@
-import { Stethoscope } from 'lucide-react'
+import { UserRound } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 
+function getInitials(name) {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map(word => word[0])
+    .join('')
+    .toUpperCase()
+}
+
 function Avatar({ professional, className }) {
   const src = professional?.profiles?.avatar_url || professional?.users?.avatar_url
-  const name = professional?.profiles?.full_name || professional?.users?.full_name || 'Doctor'
+  const name = professional?.profiles?.full_name || professional?.users?.full_name || ''
+  const initials = name ? getInitials(name) : ''
 
   if (src) {
     return <img src={src} alt={name} className={cn('rounded-full object-cover', className)} />
@@ -12,7 +23,11 @@ function Avatar({ professional, className }) {
 
   return (
     <div className={cn('rounded-full bg-primary/10 text-primary flex items-center justify-center font-semibold', className)}>
-      <Stethoscope className="w-6 h-6" />
+      {initials ? (
+        <span className="text-lg">{initials}</span>
+      ) : (
+        <UserRound className="w-6 h-6" />
+      )}
     </div>
   )
 }

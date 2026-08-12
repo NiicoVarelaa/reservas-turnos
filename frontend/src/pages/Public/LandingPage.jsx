@@ -206,7 +206,9 @@ export default function LandingPage() {
           <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
             <div className="lg:col-span-1">
               <div className="flex items-center gap-2.5 mb-4">
-                <img src="/logo.png" alt="Smile Book" className="w-9 h-9 object-contain" />
+                <div className="w-11 h-11 rounded-full bg-white flex items-center justify-center shrink-0">
+                  <img src="/logo.png" alt="Smile Book" className="w-8 h-8 object-contain" />
+                </div>
                 <span className="font-bold text-lg text-white">Smile Book</span>
               </div>
               <p className="text-sm leading-relaxed text-slate-400">

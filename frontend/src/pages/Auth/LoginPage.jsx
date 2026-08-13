@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { LogIn, Building2, User } from 'lucide-react'
+import { Building2, User } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
 
 export default function LoginPage() {
@@ -76,8 +76,8 @@ export default function LoginPage() {
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-            <LogIn className="w-6 h-6 text-primary" />
+          <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+            <img src="/logo.png" alt="Smile Book" className="w-10 h-10 object-contain" />
           </div>
           <CardTitle className="text-2xl">Iniciar Sesión</CardTitle>
           <CardDescription>Elegí cómo querés ingresar</CardDescription>

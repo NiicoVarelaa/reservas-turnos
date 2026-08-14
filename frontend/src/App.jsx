@@ -7,6 +7,7 @@ import LandingPage from '@/pages/Public/LandingPage'
 import ServicesList from '@/pages/Public/ServicesList'
 import BookingPage from '@/pages/Public/BookingPage'
 import ConfirmPage from '@/pages/Public/ConfirmPage'
+import TermsPage from '@/pages/Public/TermsPage'
 
 // Auth Pages
 import LoginPage from '@/pages/Auth/LoginPage'
@@ -38,6 +39,7 @@ function App() {
         <Route path="/book" element={<ServicesList />} />
         <Route path="/book/:serviceId" element={<BookingPage />} />
         <Route path="/confirm/:sessionId" element={<ConfirmPage />} />
+        <Route path="/terms" element={<TermsPage />} />
 
         {/* Auth Routes */}
         <Route path="/login" element={<LoginPage />} />

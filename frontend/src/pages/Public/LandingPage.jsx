@@ -544,7 +544,7 @@ export default function LandingPage() {
           <div className="container mx-auto px-4 py-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-slate-500">
             <p>&copy; {new Date().getFullYear()} Smile Book. Todos los derechos reservados.</p>
             <div className="flex items-center gap-6">
-              <span className="hover:text-slate-300 transition-colors cursor-pointer">Términos y Condiciones</span>
+              <Link to="/terms" className="hover:text-slate-300 transition-colors cursor-pointer">Términos y Condiciones</Link>
               <span className="hover:text-slate-300 transition-colors cursor-pointer">Política de Privacidad</span>
             </div>
           </div>

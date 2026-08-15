@@ -54,7 +54,7 @@ export default function LandingPage() {
       img.onload = () => setImgsReady(prev => ({ ...prev, [key]: true }))
       img.src = src
     }
-    probe('/images/hero-dental.jpg', 'hero')
+    probe('/images/Clinica.jpg', 'hero')
     probe('/images/clinica-interior.jpg', 'clinic')
   }, [])
 
@@ -146,9 +146,9 @@ export default function LandingPage() {
               <div className="relative aspect-[4/3] rounded-3xl overflow-hidden shadow-2xl bg-gradient-to-br from-primary/15 via-muted to-primary/10">
                 {imgsReady.hero ? (
                   <img
-                    src="/images/hero-dental.jpg"
+                    src="/images/Clinica.jpg"
                     alt="Consultorio Smile Book"
-                    className="absolute inset-0 w-full h-full object-cover"
+                    className="absolute inset-0 w-full h-full"
                   />
                 ) : (
                   <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-primary/30">

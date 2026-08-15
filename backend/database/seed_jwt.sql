@@ -34,6 +34,7 @@ BEGIN
       phone = '+5491112345678',
       role = 'professional',
       bio = 'Odontóloga especializada en estética dental con más de 10 años de experiencia.',
+      avatar_url = '/images/doctors/maria-garcia.jpg',
       is_verified = true,
       onboarding_completed = true
     WHERE id = v_user_id;
@@ -44,8 +45,8 @@ BEGIN
     INSERT INTO users (id, email, password_hash, role, full_name, phone, is_active)
     VALUES (v_user_id, 'profesional@test.com', v_password_hash, 'professional', 'Dra. María García', '+5491112345678', true);
 
-    INSERT INTO profiles (id, email, full_name, phone, role, bio, is_verified, onboarding_completed)
-    VALUES (v_user_id, 'profesional@test.com', 'Dra. María García', '+5491112345678', 'professional', 'Odontóloga especializada en estética dental con más de 10 años de experiencia.', true, true);
+    INSERT INTO profiles (id, email, full_name, phone, role, bio, avatar_url, is_verified, onboarding_completed)
+    VALUES (v_user_id, 'profesional@test.com', 'Dra. María García', '+5491112345678', 'professional', 'Odontóloga especializada en estética dental con más de 10 años de experiencia.', '/images/doctors/maria-garcia.jpg', true, true);
   END IF;
 
   -- 2. Clean old data

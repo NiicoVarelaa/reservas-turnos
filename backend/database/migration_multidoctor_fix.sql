@@ -13,3 +13,6 @@ ALTER TABLE profiles DROP CONSTRAINT IF EXISTS profiles_id_fkey;
 ALTER TABLE profiles
   ADD CONSTRAINT profiles_id_fkey
   FOREIGN KEY (id) REFERENCES users(id) ON DELETE CASCADE;
+
+-- 3. Garantizar columna de avatar en profiles
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS avatar_url TEXT;

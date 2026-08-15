@@ -21,36 +21,37 @@ BEGIN
 --------------------------------------------------------------------------------
 -- EQUIPO DE ODONTÓLOGOS (7 profesionales)
 --------------------------------------------------------------------------------
-INSERT INTO users (id, email, password_hash, role, full_name, phone, is_active)
-SELECT gen_random_uuid(), d.email, v_pw, 'professional', d.full_name, d.phone, true
+INSERT INTO users (id, email, password_hash, role, full_name, phone, avatar_url, is_active)
+SELECT gen_random_uuid(), d.email, v_pw, 'professional', d.full_name, d.phone, d.avatar, true
 FROM (VALUES
-  ('profesional@test.com',      'Dra. María García',    '+5491112345678'),
-  ('carlos@test.com',           'Dr. Carlos López',     '+5491123456789'),
-  ('lucia@test.com',            'Dra. Lucía Fernández', '+5491134567890'),
-  ('javier@test.com',           'Dr. Javier Ruiz',      '+5491145678901'),
-  ('sofia@test.com',            'Dra. Sofía Herrera',   '+5491156789012'),
-  ('martin@test.com',           'Dr. Martín Sosa',      '+5491167890123'),
-  ('camila@test.com',           'Dra. Camila Duarte',   '+5491178901234')
-) AS d(email, full_name, phone)
+  ('profesional@test.com',      'Dra. María García',    '+5491112345678', '/images/doctors/maria-garcia.jpg'),
+  ('carlos@test.com',           'Dr. Carlos López',     '+5491123456789', '/images/doctors/carlos-lopez.jpg'),
+  ('lucia@test.com',            'Dra. Lucía Fernández', '+5491134567890', '/images/doctors/lucia-fernandez.jpg'),
+  ('javier@test.com',           'Dr. Javier Ruiz',      '+5491145678901', '/images/doctors/javier-ruiz.jpg'),
+  ('sofia@test.com',            'Dra. Sofía Herrera',   '+5491156789012', '/images/doctors/sofia-herrera.jpg'),
+  ('martin@test.com',           'Dr. Martín Sosa',      '+5491167890123', '/images/doctors/martin-sosa.jpg'),
+  ('camila@test.com',           'Dra. Camila Duarte',   '+5491178901234', '/images/doctors/camila-duarte.jpg')
+) AS d(email, full_name, phone, avatar)
 ON CONFLICT (email) DO UPDATE SET
   password_hash = v_pw,
   role          = 'professional',
   full_name     = EXCLUDED.full_name,
   phone         = EXCLUDED.phone,
+  avatar_url    = EXCLUDED.avatar_url,
   is_active     = true;
 
-INSERT INTO profiles (id, email, full_name, phone, role, title, specialty, bio, is_verified, onboarding_completed)
-SELECT u.id, u.email, u.full_name, u.phone, 'professional', p.title, p.specialty, p.bio, true, true
+INSERT INTO profiles (id, email, full_name, phone, role, title, specialty, bio, avatar_url, is_verified, onboarding_completed)
+SELECT u.id, u.email, u.full_name, u.phone, 'professional', p.title, p.specialty, p.bio, p.avatar, true, true
 FROM users u
 JOIN (VALUES
-  ('profesional@test.com', 'Odontóloga', 'Estética dental', 'Odontóloga especializada en estética dental y diseño de sonrisa con más de 10 años de experiencia.'),
-  ('carlos@test.com',      'Ortodoncista', 'Ortodoncia', 'Especialista en ortodoncia y tratamientos de alineación para adultos y adolescentes.'),
-  ('lucia@test.com',       'Implantóloga', 'Implantes y cirugía', 'Especialista en implantología y rehabilitación oral avanzada.'),
-  ('javier@test.com',      'Endodoncista', 'Endodoncia', 'Especializado en endodoncia y tratamientos de conducto indoloros.'),
-  ('sofia@test.com',       'Odontopediatra', 'Odontología pediátrica', 'Atención odontológica cálida y especializada para los más chicos.'),
-  ('martin@test.com',      'Periodoncista', 'Periodoncia', 'Especialista en encías y tratamientos periodontales.'),
-  ('camila@test.com',      'Cirujana', 'Cirugía y extracciones', 'Especialista en cirugía bucal y extracciones de terceros molares.')
-) AS p(email, title, specialty, bio) ON p.email = u.email
+  ('profesional@test.com', 'Odontóloga', 'Estética dental', 'Odontóloga especializada en estética dental y diseño de sonrisa con más de 10 años de experiencia.', '/images/doctors/maria-garcia.jpg'),
+  ('carlos@test.com',      'Ortodoncista', 'Ortodoncia', 'Especialista en ortodoncia y tratamientos de alineación para adultos y adolescentes.', '/images/doctors/carlos-lopez.jpg'),
+  ('lucia@test.com',       'Implantóloga', 'Implantes y cirugía', 'Especialista en implantología y rehabilitación oral avanzada.', '/images/doctors/lucia-fernandez.jpg'),
+  ('javier@test.com',      'Endodoncista', 'Endodoncia', 'Especializado en endodoncia y tratamientos de conducto indoloros.', '/images/doctors/javier-ruiz.jpg'),
+  ('sofia@test.com',       'Odontopediatra', 'Odontología pediátrica', 'Atención odontológica cálida y especializada para los más chicos.', '/images/doctors/sofia-herrera.jpg'),
+  ('martin@test.com',      'Periodoncista', 'Periodoncia', 'Especialista en encías y tratamientos periodontales.', '/images/doctors/martin-sosa.jpg'),
+  ('camila@test.com',      'Cirujana', 'Cirugía y extracciones', 'Especialista en cirugía bucal y extracciones de terceros molares.', '/images/doctors/camila-duarte.jpg')
+) AS p(email, title, specialty, bio, avatar) ON p.email = u.email
 ON CONFLICT (id) DO UPDATE SET
   email              = EXCLUDED.email,
   full_name          = EXCLUDED.full_name,
@@ -59,6 +60,7 @@ ON CONFLICT (id) DO UPDATE SET
   title              = EXCLUDED.title,
   specialty          = EXCLUDED.specialty,
   bio                = EXCLUDED.bio,
+  avatar_url         = EXCLUDED.avatar_url,
   is_verified        = true,
   onboarding_completed = true;
 

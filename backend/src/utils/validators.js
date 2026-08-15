@@ -87,7 +87,7 @@ const scheduleSchema = z.object({
 const profileUpdateSchema = z.object({
   full_name: z.string().min(2).max(100).optional(),
   phone: z.string().regex(phoneRegex, 'Invalid phone number').optional(),
-  avatar_url: z.string().url('Invalid URL').optional(),
+  avatar_url: z.string().min(1, 'Invalid avatar URL').optional(),
   bio: z.string().max(500).optional()
 })
 

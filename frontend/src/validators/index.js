@@ -45,7 +45,7 @@ export const serviceSchema = z.object({
 export const profileUpdateSchema = z.object({
   full_name: z.string().min(2).max(100).optional(),
   phone: z.string().regex(phoneRegex, 'Teléfono inválido').optional(),
-  avatar_url: z.string().url('URL inválida').optional(),
+  avatar_url: z.string().min(1, 'URL inválida').optional(),
   bio: z.string().max(500).optional()
 })
 

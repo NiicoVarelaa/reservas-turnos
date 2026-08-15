@@ -110,7 +110,7 @@ export default function TermsPage() {
         </div>
       </section>
 
-      <footer className="bg-slate-900 text-slate-300">
+      <footer className="bg-[#002a5e] text-slate-300">
         <div className="border-t border-slate-800">
           <div className="container mx-auto px-4 py-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-slate-500">
             <p>&copy; {new Date().getFullYear()} Smile Book. Todos los derechos reservados.</p>

@@ -158,7 +158,7 @@ export default function LandingPage() {
                 )}
               </div>
               <div className="absolute -bottom-5 left-6 bg-background rounded-xl shadow-lg border px-4 py-3 flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full bg-green-100 text-green-600 flex items-center justify-center">
+                <div className="w-9 h-9 rounded-full bg-[#11b7c1]/15 text-[#0e8f98] flex items-center justify-center">
                   <CheckCircle2 className="w-5 h-5" />
                 </div>
                 <div>
@@ -441,7 +441,7 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-slate-900 text-slate-300">
+      <footer className="bg-[#002a5e] text-slate-300">
         <div className="container mx-auto px-4 py-16">
           <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
             <div className="lg:col-span-1">
@@ -460,7 +460,7 @@ export default function LandingPage() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Facebook"
-                  className="w-9 h-9 rounded-full bg-slate-800 hover:bg-primary hover:text-white flex items-center justify-center text-slate-400 transition-colors"
+                  className="w-9 h-9 rounded-full bg-slate-800 hover:bg-[#11b7c1] hover:text-white flex items-center justify-center text-slate-400 transition-colors"
                 >
                   <Facebook className="w-4 h-4" />
                 </a>
@@ -469,7 +469,7 @@ export default function LandingPage() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Instagram"
-                  className="w-9 h-9 rounded-full bg-slate-800 hover:bg-primary hover:text-white flex items-center justify-center text-slate-400 transition-colors"
+                  className="w-9 h-9 rounded-full bg-slate-800 hover:bg-[#11b7c1] hover:text-white flex items-center justify-center text-slate-400 transition-colors"
                 >
                   <Instagram className="w-4 h-4" />
                 </a>
@@ -478,7 +478,7 @@ export default function LandingPage() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="WhatsApp"
-                  className="w-9 h-9 rounded-full bg-slate-800 hover:bg-primary hover:text-white flex items-center justify-center text-slate-400 transition-colors"
+                  className="w-9 h-9 rounded-full bg-slate-800 hover:bg-[#11b7c1] hover:text-white flex items-center justify-center text-slate-400 transition-colors"
                 >
                   <MessageCircle className="w-4 h-4" />
                 </a>

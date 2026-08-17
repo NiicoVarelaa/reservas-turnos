@@ -8,6 +8,7 @@ import ServicesList from '@/pages/Public/ServicesList'
 import BookingPage from '@/pages/Public/BookingPage'
 import ConfirmPage from '@/pages/Public/ConfirmPage'
 import TermsPage from '@/pages/Public/TermsPage'
+import LegalPage from '@/pages/Public/LegalPage'
 
 // Auth Pages
 import LoginPage from '@/pages/Auth/LoginPage'
@@ -40,6 +41,7 @@ function App() {
         <Route path="/book/:serviceId" element={<BookingPage />} />
         <Route path="/confirm/:sessionId" element={<ConfirmPage />} />
         <Route path="/terms" element={<TermsPage />} />
+        <Route path="/legal" element={<LegalPage />} />
 
         {/* Auth Routes */}
         <Route path="/login" element={<LoginPage />} />

@@ -116,7 +116,7 @@ export default function TermsPage() {
             <p>&copy; {new Date().getFullYear()} Smile Book. Todos los derechos reservados.</p>
             <div className="flex items-center gap-6">
               <Link to="/terms" className="hover:text-slate-300 transition-colors">Términos y Condiciones</Link>
-              <span className="hover:text-slate-300 transition-colors cursor-pointer">Política de Privacidad</span>
+              <Link to="/legal" className="hover:text-slate-300 transition-colors">Política de Privacidad</Link>
             </div>
           </div>
         </div>

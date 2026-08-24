@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
+import Header from '@/components/layout/Header'
 import { Shield, FileText } from 'lucide-react'
 
 const SECTIONS = [
@@ -56,22 +57,7 @@ const SECTIONS = [
 export default function TermsPage() {
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b sticky top-0 z-50 bg-background/95 backdrop-blur">
-        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2">
-            <img src="/logo.png" alt="Smile Book" className="w-8 h-8 object-contain" />
-            <span className="font-bold text-lg">Smile Book</span>
-          </Link>
-          <div className="flex items-center gap-2">
-            <Link to="/login">
-              <Button variant="ghost" size="sm">Iniciar Sesión</Button>
-            </Link>
-            <Link to="/book">
-              <Button size="sm">Reservar Turno</Button>
-            </Link>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       <section className="relative py-16 lg:py-20 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-primary/5" />

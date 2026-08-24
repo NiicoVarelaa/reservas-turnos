@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useServices } from '@/hooks/useServices'
 import { businessApi } from '@/services/api'
+import Header from '@/components/layout/Header'
 import ServiceCard from '@/components/booking/ServiceCard'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -87,22 +88,13 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b sticky top-0 z-50 bg-background/95 backdrop-blur">
-        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <img src="/logo.png" alt="Smile Book" className="w-8 h-8 object-contain" />
-            <span className="font-bold text-lg">Smile Book</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Link to="/login">
-              <Button variant="ghost" size="sm">Iniciar Sesión</Button>
-            </Link>
-            <Link to="/book">
-              <Button size="sm">Reservar Turno</Button>
-            </Link>
-          </div>
-        </div>
-      </header>
+      <Header
+        navLinks={[
+          { label: 'Inicio', to: '/' },
+          { label: 'Servicios', to: '/book' },
+          { label: 'Contacto', to: '#contacto' },
+        ]}
+      />
 
       {/* Hero */}
       <section className="relative py-16 lg:py-24 overflow-hidden">

@@ -1,13 +1,67 @@
 import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
-import { Menu, X, Calendar } from 'lucide-react'
+import { Menu, X, Calendar, MessageCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const DEFAULT_LINKS = [
   { label: 'Inicio', to: '/' },
   { label: 'Reservar Turno', to: '/book' },
 ]
+
+function NavLink({ link, active, onClick }) {
+  const isExternal = link.to?.startsWith('http')
+
+  const className = cn(
+    'px-3 py-1.5 text-sm rounded-md transition-colors',
+    active
+      ? 'text-primary font-medium'
+      : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+  )
+
+  if (isExternal) {
+    return (
+      <a href={link.to} target="_blank" rel="noopener noreferrer" className={className} onClick={onClick}>
+        {link.icon && <link.icon className="w-4 h-4 mr-1.5 inline-block" />}
+        {link.label}
+      </a>
+    )
+  }
+
+  return (
+    <Link to={link.to} className={className} onClick={onClick}>
+      {link.icon && <link.icon className="w-4 h-4 mr-1.5 inline-block" />}
+      {link.label}
+    </Link>
+  )
+}
+
+function MobileNavLink({ link, active, onClick }) {
+  const isExternal = link.to?.startsWith('http')
+
+  const className = cn(
+    'block px-3 py-2.5 rounded-md text-sm transition-colors',
+    active
+      ? 'bg-primary/10 text-primary font-medium'
+      : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+  )
+
+  if (isExternal) {
+    return (
+      <a href={link.to} target="_blank" rel="noopener noreferrer" className={className} onClick={onClick}>
+        {link.icon && <link.icon className="w-4 h-4 mr-1.5 inline-block" />}
+        {link.label}
+      </a>
+    )
+  }
+
+  return (
+    <Link to={link.to} className={className} onClick={onClick}>
+      {link.icon && <link.icon className="w-4 h-4 mr-1.5 inline-block" />}
+      {link.label}
+    </Link>
+  )
+}
 
 export default function Header({ navLinks, showLogin = true }) {
   const [open, setOpen] = useState(false)
@@ -43,18 +97,11 @@ export default function Header({ navLinks, showLogin = true }) {
         {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-1">
           {links.map((link) => (
-            <Link
+            <NavLink
               key={link.label}
-              to={link.to}
-              className={cn(
-                'px-3 py-1.5 text-sm rounded-md transition-colors',
-                location.pathname === link.to
-                  ? 'text-primary font-medium'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-              )}
-            >
-              {link.label}
-            </Link>
+              link={link}
+              active={!link.to?.startsWith('http') && location.pathname === link.to}
+            />
           ))}
         </nav>
 
@@ -88,18 +135,12 @@ export default function Header({ navLinks, showLogin = true }) {
         <div className="md:hidden border-t bg-background">
           <nav className="container mx-auto px-4 py-3 space-y-1">
             {links.map((link) => (
-              <Link
+              <MobileNavLink
                 key={link.label}
-                to={link.to}
-                className={cn(
-                  'block px-3 py-2.5 rounded-md text-sm transition-colors',
-                  location.pathname === link.to
-                    ? 'bg-primary/10 text-primary font-medium'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-                )}
-              >
-                {link.label}
-              </Link>
+                link={link}
+                active={!link.to?.startsWith('http') && location.pathname === link.to}
+                onClick={() => setOpen(false)}
+              />
             ))}
             <div className="border-t pt-3 mt-3 space-y-2">
               {showLogin && (

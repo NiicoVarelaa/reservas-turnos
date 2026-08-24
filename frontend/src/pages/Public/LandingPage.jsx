@@ -92,7 +92,7 @@ export default function LandingPage() {
         navLinks={[
           { label: 'Inicio', to: '/' },
           { label: 'Servicios', to: '/book' },
-          { label: 'Contacto', to: '#contacto' },
+          { label: 'Escribinos', to: `https://wa.me/${waNumber}`, icon: MessageCircle },
         ]}
       />
 

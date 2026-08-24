@@ -433,52 +433,61 @@ export default function LandingPage() {
 
       {/* Footer */}
       <footer className="bg-[#002a5e] text-slate-300">
-        <div className="container mx-auto px-4 py-16">
-          <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
-            <div className="lg:col-span-1">
-              <div className="flex items-center gap-2.5 mb-4">
+        <div className="container mx-auto px-4 pt-16 pb-8">
+          <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-12">
+
+            {/* Brand + CTA */}
+            <div className="lg:col-span-5">
+              <div className="flex items-center gap-2.5 mb-5">
                 <div className="w-11 h-11 rounded-full bg-white flex items-center justify-center shrink-0">
                   <img src="/logo.png" alt="Smile Book" className="w-8 h-8 object-contain" />
                 </div>
                 <span className="font-bold text-lg text-white">Smile Book</span>
               </div>
-              <p className="text-sm leading-relaxed text-slate-400">
+              <p className="text-sm leading-relaxed text-slate-400 max-w-sm mb-6">
                 {description}
               </p>
+              <Link to="/book">
+                <Button size="sm" className="bg-[#11b7c1] hover:bg-[#0e9aa3] text-white font-medium px-5">
+                  <Calendar className="w-4 h-4 mr-2" />
+                  Reservar Turno
+                </Button>
+              </Link>
               <div className="flex items-center gap-3 mt-6">
                 <a
                   href="https://facebook.com"
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Facebook"
-                  className="w-9 h-9 rounded-full bg-slate-800 hover:bg-[#11b7c1] hover:text-white flex items-center justify-center text-slate-400 transition-colors"
+                  className="w-10 h-10 rounded-full bg-white/10 hover:bg-[#11b7c1] flex items-center justify-center text-slate-300 hover:text-white transition-all"
                 >
-                  <Facebook className="w-4 h-4" />
+                  <Facebook className="w-[18px] h-[18px]" />
                 </a>
                 <a
                   href="https://instagram.com"
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Instagram"
-                  className="w-9 h-9 rounded-full bg-slate-800 hover:bg-[#11b7c1] hover:text-white flex items-center justify-center text-slate-400 transition-colors"
+                  className="w-10 h-10 rounded-full bg-white/10 hover:bg-[#11b7c1] flex items-center justify-center text-slate-300 hover:text-white transition-all"
                 >
-                  <Instagram className="w-4 h-4" />
+                  <Instagram className="w-[18px] h-[18px]" />
                 </a>
                 <a
                   href={`https://wa.me/${waNumber}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="WhatsApp"
-                  className="w-9 h-9 rounded-full bg-slate-800 hover:bg-[#11b7c1] hover:text-white flex items-center justify-center text-slate-400 transition-colors"
+                  className="w-10 h-10 rounded-full bg-white/10 hover:bg-[#11b7c1] flex items-center justify-center text-slate-300 hover:text-white transition-all"
                 >
-                  <MessageCircle className="w-4 h-4" />
+                  <MessageCircle className="w-[18px] h-[18px]" />
                 </a>
               </div>
             </div>
 
-            <div>
-              <h4 className="font-semibold text-white mb-4">Navegación</h4>
-              <ul className="space-y-2.5 text-sm">
+            {/* Navegación */}
+            <div className="lg:col-span-3">
+              <h4 className="font-semibold text-white text-sm uppercase tracking-wider mb-4">Navegación</h4>
+              <ul className="space-y-3 text-sm">
                 <li>
                   <Link to="/" className="hover:text-white transition-colors">Inicio</Link>
                 </li>
@@ -494,34 +503,24 @@ export default function LandingPage() {
               </ul>
             </div>
 
-            <div>
-              <h4 className="font-semibold text-white mb-4">Servicios</h4>
-              <ul className="space-y-2.5 text-sm">
-                {featuredServices.map((service) => (
-                  <li key={service.id}>
-                    <Link to="/book" className="hover:text-white transition-colors">{service.name}</Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="font-semibold text-white mb-4">Contacto</h4>
-              <ul className="space-y-2.5 text-sm">
+            {/* Contacto */}
+            <div className="lg:col-span-4">
+              <h4 className="font-semibold text-white text-sm uppercase tracking-wider mb-4">Contacto</h4>
+              <ul className="space-y-3 text-sm">
                 <li className="flex items-start gap-2.5">
-                  <Phone className="w-4 h-4 mt-0.5 shrink-0 text-primary" />
+                  <Phone className="w-4 h-4 mt-0.5 shrink-0 text-[#11b7c1]" />
                   <span>{contactPhone}</span>
                 </li>
                 <li className="flex items-start gap-2.5">
-                  <Mail className="w-4 h-4 mt-0.5 shrink-0 text-primary" />
+                  <Mail className="w-4 h-4 mt-0.5 shrink-0 text-[#11b7c1]" />
                   <span>{contactEmail}</span>
                 </li>
                 <li className="flex items-start gap-2.5">
-                  <MapPin className="w-4 h-4 mt-0.5 shrink-0 text-primary" />
+                  <MapPin className="w-4 h-4 mt-0.5 shrink-0 text-[#11b7c1]" />
                   <span>{contactAddress}</span>
                 </li>
                 <li className="flex items-start gap-2.5">
-                  <Clock className="w-4 h-4 mt-0.5 shrink-0 text-primary" />
+                  <Clock className="w-4 h-4 mt-0.5 shrink-0 text-[#11b7c1]" />
                   <span>
                     Lun a Vie: 9:00 - 18:00<br />
                     Sábados: 9:00 - 14:00
@@ -529,14 +528,17 @@ export default function LandingPage() {
                 </li>
               </ul>
             </div>
+
           </div>
         </div>
-        <div className="border-t border-slate-800">
-          <div className="container mx-auto px-4 py-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-slate-500">
+
+        {/* Bottom bar */}
+        <div className="border-t border-white/10">
+          <div className="container mx-auto px-4 py-5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-400">
             <p>&copy; {new Date().getFullYear()} Smile Book. Todos los derechos reservados.</p>
-            <div className="flex items-center gap-6">
-              <Link to="/terms" className="hover:text-slate-300 transition-colors cursor-pointer">Términos y Condiciones</Link>
-              <Link to="/legal" className="hover:text-slate-300 transition-colors cursor-pointer">Política de Privacidad</Link>
+            <div className="flex items-center gap-5">
+              <Link to="/terms" className="hover:text-white transition-colors">Términos y Condiciones</Link>
+              <Link to="/legal" className="hover:text-white transition-colors">Política de Privacidad</Link>
             </div>
           </div>
         </div>

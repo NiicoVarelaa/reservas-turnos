@@ -111,12 +111,12 @@ export default function TermsPage() {
       </section>
 
       <footer className="bg-[#002a5e] text-slate-300">
-        <div className="border-t border-slate-800">
-          <div className="container mx-auto px-4 py-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-slate-500">
+        <div className="border-t border-white/10">
+          <div className="container mx-auto px-4 py-5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-400">
             <p>&copy; {new Date().getFullYear()} Smile Book. Todos los derechos reservados.</p>
-            <div className="flex items-center gap-6">
-              <Link to="/terms" className="hover:text-slate-300 transition-colors">Términos y Condiciones</Link>
-              <Link to="/legal" className="hover:text-slate-300 transition-colors">Política de Privacidad</Link>
+            <div className="flex items-center gap-5">
+              <Link to="/terms" className="hover:text-white transition-colors">Términos y Condiciones</Link>
+              <Link to="/legal" className="hover:text-white transition-colors">Política de Privacidad</Link>
             </div>
           </div>
         </div>

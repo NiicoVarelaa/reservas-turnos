@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import SecurePaymentBadge from '@/components/booking/SecurePaymentBadge'
 
 export default function BookingForm({ onSubmit, loading }) {
   const { clientInfo, setClientInfo } = useBookingStore()
@@ -84,6 +85,7 @@ export default function BookingForm({ onSubmit, loading }) {
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? 'Procesando...' : 'Confirmar Reserva'}
           </Button>
+          <SecurePaymentBadge />
         </form>
       </CardContent>
     </Card>

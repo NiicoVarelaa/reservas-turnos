@@ -12,6 +12,14 @@ const statusConfig = {
   cancelled: { variant: 'destructive', label: 'Cancelado' },
 }
 
+export function formatCurrency(amount, currency = 'ARS', locale = 'es-AR') {
+  return new Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency,
+    minimumFractionDigits: 0
+  }).format(amount / 100)
+}
+
 export function getStatusBadge(status) {
   return statusConfig[status] || { variant: 'outline', label: status }
 }

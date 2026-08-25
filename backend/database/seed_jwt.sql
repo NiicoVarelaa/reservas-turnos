@@ -59,20 +59,20 @@ BEGIN
 
   -- 3. Create business
   INSERT INTO businesses (owner_id, name, slug, category, tagline, description, primary_color, secondary_color, currency, timezone, whatsapp_number, is_active) VALUES
-    (v_user_id, 'Clínica Dental Sonrisa', 'sonrisa', 'odontologia', 'Tu sonrisa, nuestra prioridad', 'Centro odontológico especializado en tratamientos de estética, implantes y ortodoncia.', '#0f172a', '#3b82f6', 'USD', 'America/Argentina/Buenos_Aires', '+5491112345678', true);
+    (v_user_id, 'Clínica Dental Sonrisa', 'sonrisa', 'odontologia', 'Tu sonrisa, nuestra prioridad', 'Centro odontológico especializado en tratamientos de estética, implantes y ortodoncia.', '#0f172a', '#3b82f6', 'ARS', 'America/Argentina/Buenos_Aires', '+5491112345678', true);
 
   SELECT id INTO v_business_id FROM businesses WHERE owner_id = v_user_id LIMIT 1;
 
   -- 4. Insert services (odontología)
   INSERT INTO services (business_id, professional_id, name, description, duration_min, price_cents, currency, is_active) VALUES
-    (v_business_id, v_user_id, 'Consulta General', 'Evaluación completa de salud bucal', 30, 5000, 'USD', true),
-    (v_business_id, v_user_id, 'Limpieza Dental', 'Limpieza profesional con ultrasonido', 45, 8000, 'USD', true),
-    (v_business_id, v_user_id, 'Blanqueamiento', 'Blanqueamiento LED profesional', 60, 15000, 'USD', true),
-    (v_business_id, v_user_id, 'Ortodoncia - Control', 'Seguimiento de tratamiento de ortodoncia', 20, 3000, 'USD', true),
-    (v_business_id, v_user_id, 'Extracción Simple', 'Extracción de pieza dental', 45, 10000, 'USD', true),
-    (v_business_id, v_user_id, 'Implante Dental', 'Colocación de implante dental', 90, 25000, 'USD', true),
-    (v_business_id, v_user_id, 'Endodoncia', 'Tratamiento de conducto', 60, 18000, 'USD', true),
-    (v_business_id, v_user_id, 'Carillas de Porcelana', 'Diseño de sonrisa con carillas', 120, 35000, 'USD', true);
+    (v_business_id, v_user_id, 'Consulta General', 'Evaluación completa de salud bucal', 30, 5000, 'ARS', true),
+    (v_business_id, v_user_id, 'Limpieza Dental', 'Limpieza profesional con ultrasonido', 45, 8000, 'ARS', true),
+    (v_business_id, v_user_id, 'Blanqueamiento', 'Blanqueamiento LED profesional', 60, 15000, 'ARS', true),
+    (v_business_id, v_user_id, 'Ortodoncia - Control', 'Seguimiento de tratamiento de ortodoncia', 20, 3000, 'ARS', true),
+    (v_business_id, v_user_id, 'Extracción Simple', 'Extracción de pieza dental', 45, 10000, 'ARS', true),
+    (v_business_id, v_user_id, 'Implante Dental', 'Colocación de implante dental', 90, 25000, 'ARS', true),
+    (v_business_id, v_user_id, 'Endodoncia', 'Tratamiento de conducto', 60, 18000, 'ARS', true),
+    (v_business_id, v_user_id, 'Carillas de Porcelana', 'Diseño de sonrisa con carillas', 120, 35000, 'ARS', true);
 
   -- 5. Insert schedules (Monday-Friday)
   INSERT INTO schedules (business_id, professional_id, day_of_week, start_time, end_time, is_active) VALUES
@@ -110,7 +110,7 @@ BEGIN
     a.id,
     'pi_test_' || a.id,
     COALESCE(s.price_cents, 0),
-    'USD',
+    'ARS',
     'succeeded',
     a.end_at
   FROM appointments a

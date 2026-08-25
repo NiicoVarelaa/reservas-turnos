@@ -4,7 +4,7 @@ import { useBookingStore } from '@/store/bookingStore'
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
+import { cn, formatCurrency } from '@/lib/utils'
 
 export default function ServiceCard({ service, className }) {
   const navigate = useNavigate()
@@ -12,14 +12,6 @@ export default function ServiceCard({ service, className }) {
 
   if (!service?.id) {
     return null
-  }
-
-  const formatPrice = (cents, currency) => {
-    return new Intl.NumberFormat('es-AR', {
-      style: 'currency',
-      currency: currency || 'ARS',
-      minimumFractionDigits: 0
-    }).format(cents / 100)
   }
 
   const handleNavigate = () => {
@@ -33,6 +25,7 @@ export default function ServiceCard({ service, className }) {
   }
 
   const businessName = service.businesses?.name
+  const currency = service.currency || service.businesses?.currency || 'ARS'
 
   return (
     <Card
@@ -66,7 +59,7 @@ export default function ServiceCard({ service, className }) {
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-1.5 font-semibold">
             <DollarSign className="w-4 h-4" />
-            <span>{formatPrice(service.price_cents, service.currency)}</span>
+            <span>{formatCurrency(service.price_cents, currency)}</span>
           </div>
           <Button size="sm" onClick={handleReservar}>
             Reservar

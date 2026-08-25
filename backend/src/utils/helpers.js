@@ -23,7 +23,7 @@ const formatTime = (date, locale = 'es-AR') => {
   })
 }
 
-const formatCurrency = (amount, currency = 'USD', locale = 'es-AR') => {
+const formatCurrency = (amount, currency = 'ARS', locale = 'es-AR') => {
   return new Intl.NumberFormat(locale, {
     style: 'currency',
     currency,

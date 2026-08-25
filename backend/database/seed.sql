@@ -86,7 +86,7 @@ DELETE FROM businesses      WHERE owner_id          IN (SELECT id FROM users WHE
 -- BUSINESS
 --------------------------------------------------------------------------------
 INSERT INTO businesses (owner_id, name, slug, category, tagline, description, primary_color, secondary_color, currency, timezone, whatsapp_number, is_active)
-SELECT id, 'Clínica Dental Sonrisa', 'sonrisa', 'odontologia', 'Tu sonrisa, nuestra prioridad', 'Centro odontológico con un equipo de especialistas en estética, implantes, ortodoncia y más.', '#0f172a', '#3b82f6', 'USD', 'America/Argentina/Buenos_Aires', '+5491112345678', true
+SELECT id, 'Clínica Dental Sonrisa', 'sonrisa', 'odontologia', 'Tu sonrisa, nuestra prioridad', 'Centro odontológico con un equipo de especialistas en estética, implantes, ortodoncia y más.', '#0f172a', '#3b82f6', 'ARS', 'America/Argentina/Buenos_Aires', '+5491112345678', true
 FROM users WHERE email = 'profesional@test.com';
 
 -- Buscar id del business y del owner (María)
@@ -97,7 +97,7 @@ SELECT id INTO v_owner  FROM users WHERE email = 'profesional@test.com';
 -- SERVICES (cada servicio tiene un profesional "principal", pero puede ser atendido por varios)
 --------------------------------------------------------------------------------
 INSERT INTO services (business_id, professional_id, name, description, duration_min, price_cents, currency, is_active)
-SELECT v_biz_id, u.id, s.name, s.descrip, s.dur, s.price, 'USD', true
+SELECT v_biz_id, u.id, s.name, s.descrip, s.dur, s.price, 'ARS', true
 FROM (VALUES
   ('Consulta General',       'Evaluación completa de salud bucal',                             30,  5000),
   ('Limpieza Dental',        'Limpieza profesional con ultrasonido',                           45,  8000),
@@ -204,7 +204,7 @@ SELECT
   a.id,
   'pi_test_' || a.id,
   COALESCE(s.price_cents, 0),
-  'USD',
+  'ARS',
   'succeeded',
   a.end_at
 FROM appointments a

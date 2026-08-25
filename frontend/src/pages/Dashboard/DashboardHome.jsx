@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Calendar, Clock, DollarSign, TrendingUp, RefreshCw } from 'lucide-react'
 import { getStatusBadge } from '@/lib/utils'
+import { formatCurrency } from '@/lib/utils'
 import { toast } from '@/hooks/use-toast'
 
 export default function DashboardHome() {
@@ -78,7 +79,7 @@ export default function DashboardHome() {
               <CardTitle className="text-sm font-medium text-muted-foreground">Ingresos</CardTitle>
               <DollarSign className="w-4 h-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent><p className="text-3xl font-bold">${(revenue / 100).toFixed(2)}</p></CardContent>
+            <CardContent><p className="text-3xl font-bold">{formatCurrency(revenue, 'ARS')}</p></CardContent>
           </Card>
         </div>
       )}

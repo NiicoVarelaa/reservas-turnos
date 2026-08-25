@@ -184,7 +184,7 @@ class DatabaseService {
   async getServices(filters = {}) {
     let query = supabaseAdmin
       .from('services')
-      .select('*, businesses(name, slug, logo_url, primary_color)')
+      .select('*, businesses(name, slug, logo_url, primary_color, currency)')
       .eq('is_active', true)
       .order('created_at', { ascending: true })
 

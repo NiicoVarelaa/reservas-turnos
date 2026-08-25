@@ -26,7 +26,7 @@ class PaymentsController {
         line_items: [
           {
             price_data: {
-              currency: currency || 'usd',
+              currency: currency || 'ars',
               product_data: {
                 name: appointment.services.name,
                 description: `Booking at ${appointment.businesses?.name || 'Our Clinic'}`,

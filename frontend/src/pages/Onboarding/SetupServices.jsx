@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Plus, Trash2, Clock, DollarSign, Save } from 'lucide-react'
+import { formatCurrency } from '@/lib/utils'
 
 const DEFAULT_SERVICES = {
   odontologia: [
@@ -58,7 +59,7 @@ export default function SetupServices() {
     }
   }
 
-  const formatPrice = (cents) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }).format(cents)
+  const formatPrice = (cents) => formatCurrency(cents, 'ARS')
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">

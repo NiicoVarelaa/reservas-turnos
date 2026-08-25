@@ -67,7 +67,7 @@ export const useBookingStore = create((set, get) => ({
       const { data } = await axios.post(`${API_URL}/api/payments/create-session`, {
         appointmentId,
         amount: get().selectedService.price_cents,
-        currency: get().selectedService.currency || 'usd'
+        currency: get().selectedService.currency || get().selectedService.businesses?.currency || 'ars'
       })
 
       return data.checkoutUrl

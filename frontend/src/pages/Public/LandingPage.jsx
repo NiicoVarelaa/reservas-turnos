@@ -13,8 +13,9 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
   Calendar, Clock, MapPin, Phone, Mail, Star, ChevronRight, Shield, Heart,
-  Facebook, Instagram, MessageCircle, CheckCircle2, MessageSquare, Stethoscope
+  Facebook, Instagram, CheckCircle2, MessageSquare, Stethoscope
 } from 'lucide-react'
+import WhatsAppIcon from '@/components/icons/WhatsAppIcon'
 
 const TESTIMONIALS = [
   { name: 'María López', text: 'Excelente atención, muy profesional y puntual. Mi familia y yo somos pacientes hace años.', rating: 5, service: 'Limpieza Dental' },
@@ -93,7 +94,7 @@ export default function LandingPage() {
         navLinks={[
           { label: 'Inicio', to: '/' },
           { label: 'Servicios', to: '/book' },
-          { label: 'Escribinos', to: `https://wa.me/${waNumber}`, icon: MessageCircle },
+          { label: 'Escribinos', to: `https://wa.me/${waNumber}`, icon: WhatsAppIcon },
         ]}
       />
 
@@ -121,7 +122,7 @@ export default function LandingPage() {
                   </Button>
                 </Link>
                 <Button variant="outline" size="lg" className="w-full sm:w-auto" onClick={handleWhatsApp}>
-                  <MessageCircle className="w-4 h-4 mr-2" />
+                  <WhatsAppIcon className="w-4 h-4 mr-2 text-[#25D366]" />
                   Escribinos por WhatsApp
                 </Button>
               </div>
@@ -370,7 +371,7 @@ export default function LandingPage() {
                   </div>
                 </div>
                 <Button variant="outline" className="w-full" onClick={handleWhatsApp}>
-                  <MessageCircle className="w-4 h-4 mr-2" />
+                  <WhatsAppIcon className="w-4 h-4 mr-2 text-[#25D366]" />
                   Abrir WhatsApp
                 </Button>
               </CardContent>
@@ -473,7 +474,7 @@ export default function LandingPage() {
                   aria-label="WhatsApp"
                   className="w-10 h-10 rounded-full bg-white/10 hover:bg-[#11b7c1] flex items-center justify-center text-slate-300 hover:text-white transition-all"
                 >
-                  <MessageCircle className="w-[18px] h-[18px]" />
+                  <WhatsAppIcon className="w-[18px] h-[18px] text-[#25D366]" />
                 </a>
               </div>
             </div>

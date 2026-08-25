@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
-import { Menu, X, Calendar, MessageCircle } from 'lucide-react'
+import { Menu, X, Calendar } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const DEFAULT_LINKS = [

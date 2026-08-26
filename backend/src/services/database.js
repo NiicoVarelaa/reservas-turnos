@@ -273,7 +273,91 @@ class DatabaseService {
     })
   }
 
-  async setServiceProfessionals(serviceId, professionalIds) {
+  // ==========================================
+  // NEXT AVAILABLE SLOT
+  // ==========================================
+  async getNextAvailableSlot(businessId) {
+    const now = new Date()
+
+    // Get all active professionals for this business via their services
+    const { data: serviceProfs, error: spErr } = await supabaseAdmin
+      .from('services')
+      .select('professional_id')
+      .eq('business_id', businessId)
+      .eq('is_active', true)
+
+    if (spErr || !serviceProfs?.length) return null
+
+    const professionalIds = [...new Set(serviceProfs.map(sp => sp.professional_id))]
+
+    // Get schedules for these professionals
+    const { data: schedules, error: schErr } = await supabaseAdmin
+      .from('schedules')
+      .select('*')
+      .in('professional_id', professionalIds)
+      .eq('is_active', true)
+
+    if (schErr || !schedules?.length) return null
+
+    // Get upcoming appointments (from now onward)
+    const { data: appointments } = await supabaseAdmin
+      .from('appointments')
+      .select('professional_id, start_at, end_at')
+      .in('professional_id', professionalIds)
+      .not('status', 'eq', 'cancelled')
+      .gte('start_at', now.toISOString())
+      .order('start_at', { ascending: true })
+
+    // Check next 14 days
+    for (let dayOffset = 0; dayOffset < 14; dayOffset++) {
+      const checkDate = new Date(now)
+      checkDate.setDate(checkDate.getDate() + dayOffset)
+      const dayOfWeek = checkDate.getDay()
+
+      const daySchedules = schedules.filter(s => s.day_of_week === dayOfWeek)
+      if (!daySchedules.length) continue
+
+      for (const sched of daySchedules) {
+        const [startH, startM] = sched.start_time.split(':').map(Number)
+        const [endH, endM] = sched.end_time.split(':').map(Number)
+
+        const dayStart = new Date(checkDate)
+        dayStart.setHours(startH, startM, 0, 0)
+        const dayEnd = new Date(checkDate)
+        dayEnd.setHours(endH, endM, 0, 0)
+
+        // Use 30-min default slot for quick availability check
+        const slotDuration = 30 * 60000
+        let cursor = new Date(Math.max(dayStart.getTime(), now.getTime()))
+
+        // Align to schedule start if before it
+        if (cursor < dayStart) cursor = new Date(dayStart)
+
+        while (cursor.getTime() + slotDuration <= dayEnd.getTime()) {
+          const slotEnd = new Date(cursor.getTime() + slotDuration)
+          const profAppts = (appointments || []).filter(
+            a => a.professional_id === sched.professional_id
+          )
+          const hasOverlap = profAppts.some(a => {
+            const aStart = new Date(a.start_at)
+            const aEnd = new Date(a.end_at)
+            return cursor < aEnd && slotEnd > aStart
+          })
+
+          if (!hasOverlap) {
+            return {
+              start: cursor.toISOString(),
+              professional_id: sched.professional_id,
+            }
+          }
+
+          cursor = slotEnd
+        }
+      }
+    }
+
+    return null
+  }
     await supabaseAdmin
       .from('service_professionals')
       .delete()

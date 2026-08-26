@@ -4,6 +4,7 @@ import { useServices } from '@/hooks/useServices'
 import { businessApi } from '@/services/api'
 import Header from '@/components/layout/Header'
 import SecurePaymentBadge from '@/components/booking/SecurePaymentBadge'
+import NextAvailableSlot from '@/components/booking/NextAvailableSlot'
 import ServiceCard from '@/components/booking/ServiceCard'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -128,6 +129,7 @@ export default function LandingPage() {
                 </Button>
               </div>
               <SecurePaymentBadge className="mt-4" />
+              {business?.id && <NextAvailableSlot businessId={business.id} />}
               <div className="border-t mt-10 pt-6 grid grid-cols-3 gap-4">
                 {STATS.map(stat => (
                   <div key={stat.label}>

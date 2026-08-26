@@ -144,6 +144,9 @@ export const businessApi = {
   getBySlug: (slug) =>
     api.get(`/api/business/slug/${slug}`),
 
+  getNextAvailableSlot: (id) =>
+    api.get(`/api/business/${id}/next-available-slot`),
+
   update: (id, data) =>
     api.put(`/api/business/${id}`, data)
 }

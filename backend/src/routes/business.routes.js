@@ -7,6 +7,7 @@ const { businessSchema, uuidParamSchema, slugParamSchema } = require('../utils/v
 
 router.get('/my', jwtAuth, businessController.getMyBusiness)
 router.get('/slug/:slug', validate(slugParamSchema, 'params'), businessController.getBusinessBySlug)
+router.get('/:id/next-available-slot', validate(uuidParamSchema, 'params'), businessController.getNextAvailableSlot)
 router.get('/:id', validate(uuidParamSchema, 'params'), businessController.getBusiness)
 router.post('/', jwtAuth, validate(businessSchema), businessController.createBusiness)
 router.put('/:id', jwtAuth, validate(uuidParamSchema, 'params'), businessController.updateBusiness)

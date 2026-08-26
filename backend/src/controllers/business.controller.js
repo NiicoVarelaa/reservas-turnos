@@ -1,6 +1,10 @@
 const db = require('../services/database')
 const AppError = require('../utils/AppError')
 
+const slotCache = new Map()
+function cacheGet(key) { const e = slotCache.get(key); if (!e || Date.now() > e.exp) { slotCache.delete(key); return undefined } return e.val }
+function cacheSet(key, val, ttl) { slotCache.set(key, { val, exp: Date.now() + ttl * 1000 }) }
+
 class BusinessController {
   async createBusiness(req, res, next) {
     try {
@@ -79,6 +83,22 @@ class BusinessController {
       }
 
       res.json({ business })
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  async getNextAvailableSlot(req, res, next) {
+    try {
+      const { id } = req.params
+      const cacheKey = `next-slot:${id}`
+      const cached = cacheGet(cacheKey)
+      if (cached) return res.json(cached)
+
+      const slot = await db.getNextAvailableSlot(id)
+      const result = { slot }
+      cacheSet(cacheKey, result, 60)
+      res.json(result)
     } catch (error) {
       next(error)
     }

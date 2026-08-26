@@ -3,10 +3,11 @@ import { Link, useLocation } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Menu, X, Calendar } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { CTA } from '@/constants/copy'
 
 const DEFAULT_LINKS = [
   { label: 'Inicio', to: '/' },
-  { label: 'Reservar Turno', to: '/book' },
+  { label: CTA.primary, to: '/book' },
 ]
 
 function NavLink({ link, active, onClick }) {
@@ -115,7 +116,7 @@ export default function Header({ navLinks, showLogin = true }) {
           <Link to="/book">
             <Button size="sm" className="bg-[#11b7c1] hover:bg-[#0e9aa3] text-white">
               <Calendar className="w-4 h-4 mr-1.5" />
-              Reservar
+              {CTA.primary}
             </Button>
           </Link>
         </div>
@@ -153,7 +154,7 @@ export default function Header({ navLinks, showLogin = true }) {
               <Link to="/book" className="block">
                 <Button size="sm" className="w-full bg-[#11b7c1] hover:bg-[#0e9aa3] text-white">
                   <Calendar className="w-4 h-4 mr-1.5" />
-                  Reservar Turno
+                  {CTA.primary}
                 </Button>
               </Link>
             </div>

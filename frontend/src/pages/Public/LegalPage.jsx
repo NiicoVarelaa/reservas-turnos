@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import Header from '@/components/layout/Header'
 import { Scale, Lock, Cookie } from 'lucide-react'
+import { CTA } from '@/constants/copy'
 
 const SECTIONS = [
   {
@@ -104,7 +105,7 @@ export default function LegalPage() {
             <div className="text-center mt-10">
               <Link to="/book">
                 <Button size="lg">
-                  Reservar Turno
+                  {CTA.primary}
                 </Button>
               </Link>
             </div>

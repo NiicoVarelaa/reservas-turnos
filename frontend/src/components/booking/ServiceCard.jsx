@@ -5,6 +5,7 @@ import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { cn, formatCurrency } from '@/lib/utils'
+import { CTA } from '@/constants/copy'
 
 export default function ServiceCard({ service, className }) {
   const navigate = useNavigate()
@@ -62,7 +63,7 @@ export default function ServiceCard({ service, className }) {
             <span>{formatCurrency(service.price_cents, currency)}</span>
           </div>
           <Button size="sm" onClick={handleReservar}>
-            Reservar
+            {CTA.primary}
           </Button>
         </div>
       </CardFooter>

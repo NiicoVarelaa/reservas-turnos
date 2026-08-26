@@ -16,6 +16,7 @@ import {
   Facebook, Instagram, CheckCircle2, MessageSquare, Stethoscope
 } from 'lucide-react'
 import WhatsAppIcon from '@/components/icons/WhatsAppIcon'
+import { CTA } from '@/constants/copy'
 
 const TESTIMONIALS = [
   { name: 'María López', text: 'Excelente atención, muy profesional y puntual. Mi familia y yo somos pacientes hace años.', rating: 5, service: 'Limpieza Dental' },
@@ -118,7 +119,7 @@ export default function LandingPage() {
                 <Link to="/book">
                   <Button size="lg" className="w-full sm:w-auto">
                     <Calendar className="w-4 h-4 mr-2" />
-                    Reservar Turno
+                    {CTA.primary}
                   </Button>
                 </Link>
                 <Button variant="outline" size="lg" className="w-full sm:w-auto" onClick={handleWhatsApp}>
@@ -313,7 +314,7 @@ export default function LandingPage() {
           <Link to="/book">
             <Button size="lg">
               <Calendar className="w-4 h-4 mr-2" />
-              Reservar Ahora
+              {CTA.urgent}
             </Button>
           </Link>
         </div>
@@ -445,7 +446,7 @@ export default function LandingPage() {
               <Link to="/book">
                 <Button size="sm" className="bg-[#11b7c1] hover:bg-[#0e9aa3] text-white font-medium px-5">
                   <Calendar className="w-4 h-4 mr-2" />
-                  Reservar Turno
+                  {CTA.primary}
                 </Button>
               </Link>
               <div className="flex items-center gap-3 mt-6">
@@ -487,7 +488,7 @@ export default function LandingPage() {
                   <Link to="/" className="hover:text-white transition-colors">Inicio</Link>
                 </li>
                 <li>
-                  <Link to="/book" className="hover:text-white transition-colors">Reservar Turno</Link>
+                  <Link to="/book" className="hover:text-white transition-colors">{CTA.primary}</Link>
                 </li>
                 <li>
                   <a href="#contacto" className="hover:text-white transition-colors">Contacto</a>

@@ -107,10 +107,10 @@ export default function Header({ navLinks, showLogin = true }) {
         </nav>
 
         {/* Desktop actions */}
-        <div className="hidden md:flex items-center gap-2">
+        <div className="hidden md:flex items-center gap-3">
           {showLogin && (
-            <Link to="/login">
-              <Button variant="ghost" size="sm">Iniciar Sesión</Button>
+            <Link to="/login" className="text-sm text-muted-foreground hover:text-foreground transition-colors py-1.5 px-2 min-h-[44px] flex items-center">
+              Iniciar Sesión
             </Link>
           )}
           <Link to="/book">
@@ -145,10 +145,8 @@ export default function Header({ navLinks, showLogin = true }) {
             ))}
             <div className="border-t pt-3 mt-3 space-y-2">
               {showLogin && (
-                <Link to="/login" className="block">
-                  <Button variant="ghost" size="sm" className="w-full justify-start">
-                    Iniciar Sesión
-                  </Button>
+                <Link to="/login" onClick={() => setOpen(false)} className="block text-sm text-muted-foreground hover:text-foreground transition-colors py-2.5 px-3 rounded-md min-h-[44px]">
+                  Iniciar Sesión
                 </Link>
               )}
               <Link to="/book" className="block">

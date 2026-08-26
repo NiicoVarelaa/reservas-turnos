@@ -382,6 +382,17 @@ export default function LandingPage() {
 
             <Card>
               <CardContent className="p-6">
+                <div className="bg-primary/5 border border-primary/10 rounded-lg p-4 mb-5">
+                  <p className="text-sm">
+                    ¿Ya sabés qué servicio necesitás?{' '}
+                    <Link to="/book" className="font-semibold text-primary hover:underline">
+                      Reservá tu turno directamente →
+                    </Link>
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Para dudas puntuales, escribinos acá.
+                  </p>
+                </div>
                 <h3 className="font-semibold mb-1">Enviar consulta</h3>
                 <p className="text-sm text-muted-foreground mb-4">
                   Completá el formulario y te va a redirigir a WhatsApp con tu mensaje listo para enviar

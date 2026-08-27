@@ -358,6 +358,8 @@ class DatabaseService {
 
     return null
   }
+
+  async setServiceProfessionals(serviceId, professionalIds) {
     await supabaseAdmin
       .from('service_professionals')
       .delete()

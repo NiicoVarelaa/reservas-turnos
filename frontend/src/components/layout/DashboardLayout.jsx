@@ -3,6 +3,7 @@ import { Outlet, useNavigate, Link, Navigate, useLocation } from 'react-router-d
 import { useAuthStore } from '@/store/authStore'
 import { Button } from '@/components/ui/button'
 import { ToastViewport } from '@/components/ui/toast'
+import InitialsAvatar from '@/components/ui/InitialsAvatar'
 import {
   Calendar,
   Clock,
@@ -68,9 +69,7 @@ function UserSection() {
   return (
     <div className="border-t pt-4 px-3 space-y-3">
       <div className="flex items-center gap-3 px-3">
-        <div className="w-9 h-9 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm font-semibold shrink-0">
-          {initials}
-        </div>
+        <InitialsAvatar name={user?.full_name || user?.email} className="w-9 h-9 text-sm" />
         <div className="min-w-0 flex-1">
           <p className="text-sm font-medium truncate">{user?.full_name || 'Usuario'}</p>
           <p className="text-xs text-muted-foreground truncate">{user?.email}</p>

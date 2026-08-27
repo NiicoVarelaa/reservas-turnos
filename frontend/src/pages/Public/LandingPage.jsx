@@ -6,6 +6,7 @@ import Header from '@/components/layout/Header'
 import SecurePaymentBadge from '@/components/booking/SecurePaymentBadge'
 import NextAvailableSlot from '@/components/booking/NextAvailableSlot'
 import ServiceCard from '@/components/booking/ServiceCard'
+import InitialsAvatar from '@/components/ui/InitialsAvatar'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -30,9 +31,6 @@ const STATS = [
   { value: '+5000', label: 'pacientes atendidos' },
   { value: '4.9★', label: 'valoración en Google' },
 ]
-
-const getInitials = (name) =>
-  name.split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase()
 
 export default function LandingPage() {
   const { services, loading: servicesLoading } = useServices()
@@ -291,9 +289,7 @@ export default function LandingPage() {
                   </div>
                   <p className="text-sm text-muted-foreground mb-4">"{testimonial.text}"</p>
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-semibold text-sm">
-                      {getInitials(testimonial.name)}
-                    </div>
+                    <InitialsAvatar name={testimonial.name} />
                     <div>
                       <p className="font-medium text-sm">{testimonial.name}</p>
                       <p className="text-xs text-muted-foreground">{testimonial.service}</p>

@@ -1,28 +1,19 @@
 import { UserRound } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
-import { cn } from '@/lib/utils'
-
-function getInitials(name) {
-  return name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map(word => word[0])
-    .join('')
-    .toUpperCase()
-}
+import { cn, getInitials, getAvatarColor } from '@/lib/utils'
 
 function Avatar({ professional, className }) {
   const src = professional?.profiles?.avatar_url || professional?.users?.avatar_url
   const name = professional?.profiles?.full_name || professional?.users?.full_name || ''
   const initials = name ? getInitials(name) : ''
+  const { bg, text } = getAvatarColor(name)
 
   if (src) {
     return <img src={src} alt={name} className={cn('rounded-full object-cover', className)} />
   }
 
   return (
-    <div className={cn('rounded-full bg-primary/10 text-primary flex items-center justify-center font-semibold', className)}>
+    <div className={cn('rounded-full flex items-center justify-center font-semibold', bg, text, className)}>
       {initials ? (
         <span className="text-lg">{initials}</span>
       ) : (

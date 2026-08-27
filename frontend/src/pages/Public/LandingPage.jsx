@@ -5,6 +5,7 @@ import { businessApi } from '@/services/api'
 import Header from '@/components/layout/Header'
 import SecurePaymentBadge from '@/components/booking/SecurePaymentBadge'
 import NextAvailableSlot from '@/components/booking/NextAvailableSlot'
+import MobileStickyBookingBar from '@/components/booking/MobileStickyBookingBar'
 import ServiceCard from '@/components/booking/ServiceCard'
 import InitialsAvatar from '@/components/ui/InitialsAvatar'
 import { Button } from '@/components/ui/button'
@@ -114,7 +115,7 @@ export default function LandingPage() {
               <p className="text-lg text-muted-foreground mb-8 max-w-xl">
                 {description}
               </p>
-              <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex flex-col sm:flex-row gap-4" data-hero-cta>
                 <Link to="/book">
                   <Button size="lg" className="w-full sm:w-auto">
                     <Calendar className="w-4 h-4 mr-2" />
@@ -548,6 +549,7 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
+      <MobileStickyBookingBar />
     </div>
   )
 }

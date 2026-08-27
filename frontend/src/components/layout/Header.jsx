@@ -114,7 +114,7 @@ export default function Header({ navLinks, showLogin = true }) {
             </Link>
           )}
           <Link to="/book">
-            <Button size="sm" className="bg-[#11b7c1] hover:bg-[#0e9aa3] text-white">
+            <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground">
               <Calendar className="w-4 h-4 mr-1.5" />
               {CTA.primary}
             </Button>
@@ -150,7 +150,7 @@ export default function Header({ navLinks, showLogin = true }) {
                 </Link>
               )}
               <Link to="/book" className="block">
-                <Button size="sm" className="w-full bg-[#11b7c1] hover:bg-[#0e9aa3] text-white">
+                <Button size="sm" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
                   <Calendar className="w-4 h-4 mr-1.5" />
                   {CTA.primary}
                 </Button>

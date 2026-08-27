@@ -457,7 +457,7 @@ export default function LandingPage() {
                 {description}
               </p>
               <Link to="/book">
-                <Button size="sm" className="bg-[#11b7c1] hover:bg-[#0e9aa3] text-white font-medium px-5">
+                <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium px-5">
                   <Calendar className="w-4 h-4 mr-2" />
                   {CTA.primary}
                 </Button>
@@ -468,7 +468,7 @@ export default function LandingPage() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Facebook"
-                  className="w-10 h-10 rounded-full bg-white/10 hover:bg-[#11b7c1] flex items-center justify-center text-slate-300 hover:text-white transition-all"
+                  className="w-10 h-10 rounded-full bg-white/10 hover:bg-[#0e9aa3] flex items-center justify-center text-slate-300 hover:text-white transition-all"
                 >
                   <Facebook className="w-[18px] h-[18px]" />
                 </a>
@@ -477,7 +477,7 @@ export default function LandingPage() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Instagram"
-                  className="w-10 h-10 rounded-full bg-white/10 hover:bg-[#11b7c1] flex items-center justify-center text-slate-300 hover:text-white transition-all"
+                  className="w-10 h-10 rounded-full bg-white/10 hover:bg-[#0e9aa3] flex items-center justify-center text-slate-300 hover:text-white transition-all"
                 >
                   <Instagram className="w-[18px] h-[18px]" />
                 </a>
@@ -486,7 +486,7 @@ export default function LandingPage() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="WhatsApp"
-                  className="w-10 h-10 rounded-full bg-white/10 hover:bg-[#11b7c1] flex items-center justify-center text-slate-300 hover:text-white transition-all"
+                  className="w-10 h-10 rounded-full bg-white/10 hover:bg-[#0e9aa3] flex items-center justify-center text-slate-300 hover:text-white transition-all"
                 >
                   <WhatsAppIcon className="w-[18px] h-[18px] text-[#25D366]" />
                 </a>

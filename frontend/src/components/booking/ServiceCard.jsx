@@ -52,20 +52,18 @@ export default function ServiceCard({ service, className }) {
           </p>
         )}
       </CardContent>
-      <CardFooter className="flex items-center justify-between pt-0">
-        <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-          <Clock className="w-4 h-4" />
-          <span>{service.duration_min} min</span>
+      <CardFooter className="flex flex-col items-stretch gap-3 pt-0">
+        <div className="flex items-center justify-between text-sm">
+          <span className="inline-flex items-center gap-1.5 text-muted-foreground">
+            <Clock className="w-3.5 h-3.5" /> {service.duration_min} min
+          </span>
+          <span className="font-semibold text-primary">
+            {formatCurrency(service.price_cents, currency)}
+          </span>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1.5 font-semibold">
-            <DollarSign className="w-4 h-4" />
-            <span>{formatCurrency(service.price_cents, currency)}</span>
-          </div>
-          <Button size="sm" onClick={handleReservar}>
-            {CTA.primary}
-          </Button>
-        </div>
+        <Button size="sm" onClick={handleReservar}>
+          {CTA.primary}
+        </Button>
       </CardFooter>
     </Card>
   )

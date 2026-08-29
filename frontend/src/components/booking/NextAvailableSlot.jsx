@@ -39,9 +39,9 @@ export default function NextAvailableSlot({ businessId }) {
   if (loading || !slot) return null
 
   return (
-    <div className="inline-flex items-center gap-1.5 text-sm text-muted-foreground mt-3">
-      <Clock className="w-3.5 h-3.5 text-[#11b7c1]" />
-      <span>Próximo turno disponible: <strong className="text-foreground">{formatRelative(slot.start)}</strong></span>
-    </div>
+    <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-teal/10 px-3.5 py-1.5 text-sm">
+        <Clock className="w-4 h-4 text-teal" />
+        <span className="text-muted-foreground">Próximo turno disponible: <strong className="font-semibold text-foreground">{formatRelative(slot.start)}</strong></span>
+      </div>
   )
 }

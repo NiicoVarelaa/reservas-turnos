@@ -40,11 +40,22 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        teal: {
+          DEFAULT: "hsl(var(--teal))",
+          foreground: "hsl(var(--teal-foreground))",
+        },
+        navy: {
+          DEFAULT: "hsl(var(--navy))",
+          foreground: "hsl(var(--navy-foreground))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+      },
+      fontFamily: {
+        sans: ['"Plus Jakarta Sans"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
       },
     },
   },

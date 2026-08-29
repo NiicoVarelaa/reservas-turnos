@@ -16,10 +16,11 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
   Calendar, Clock, MapPin, Phone, Mail, Star, ChevronRight, Shield, Heart,
-  Facebook, Instagram, CheckCircle2, MessageSquare, Stethoscope
+  Facebook, Instagram, CheckCircle2, MessageSquare, Stethoscope, Quote
 } from 'lucide-react'
 import WhatsAppIcon from '@/components/icons/WhatsAppIcon'
 import { CTA } from '@/constants/copy'
+import Reveal from '@/components/ui/Reveal'
 
 const TESTIMONIALS = [
   { name: 'María López', text: 'Excelente atención, muy profesional y puntual. Mi familia y yo somos pacientes hace años.', rating: 5, service: 'Limpieza Dental' },
@@ -36,7 +37,7 @@ const STATS = [
 export default function LandingPage() {
   const { services, loading: servicesLoading } = useServices()
   const [business, setBusiness] = useState(null)
-  const [imgsReady, setImgsReady] = useState({ hero: false, clinic: false })
+  const [imgsReady, setImgsReady] = useState({ hero: false })
   const [contactForm, setContactForm] = useState({ name: '', contact: '', message: '' })
   const [contactError, setContactError] = useState('')
 
@@ -59,16 +60,21 @@ export default function LandingPage() {
       img.src = src
     }
     probe('/images/Clinica.jpg', 'hero')
-    probe('/images/clinica-interior.jpg', 'clinic')
   }, [])
 
-  const featuredServices = services.slice(0, 4)
-  const tagline = business?.tagline || 'Tu sonrisa, nuestra prioridad'
-  const description = business?.description || 'Centro odontológico especializado en tratamientos de estética, implantes y ortodoncia con más de 10 años de experiencia.'
-  const waNumber = (business?.whatsapp_number || '+5491112345678').replace(/\D/g, '')
-  const contactPhone = business?.whatsapp_number || '+54 9 11 1234-5678'
-  const contactEmail = business?.email || 'hola@smilebook.com'
-  const contactAddress = business?.address || 'Av. Siempre Viva 123, Buenos Aires'
+  if (!business) return null
+
+  const tagline = business.tagline || 'Tu sonrisa, nuestra prioridad'
+  const description = business.description || 'Centro odontológico especializado en tratamientos de estética, implantes y ortodoncia con más de 10 años de experiencia.'
+  const waNumber = (business.whatsapp_number || '+5491112345678').replace(/\D/g, '')
+  const contactPhone = business.whatsapp_number || '+54 9 11 1234-5678'
+  const contactEmail = business.email || 'hola@smilebook.com'
+  const contactAddress = business.address || 'Av. Siempre Viva 123, Buenos Aires'
+
+  // Highlight last word of tagline
+  const words = tagline.trim().split(/\s+/)
+  const lastWord = words.pop() || tagline.trim()
+  const lead = words.join(' ') || ''
 
   const handleWhatsApp = () => {
     const text = encodeURIComponent('Hola Smile Book! Quiero información sobre sus servicios.')
@@ -88,6 +94,8 @@ export default function LandingPage() {
     setContactError('')
   }
 
+  const featuredServices = services.slice(0, 4)
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -104,17 +112,15 @@ export default function LandingPage() {
         <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-primary/5" />
         <div className="container mx-auto px-4 relative">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* Left column */}
             <div>
-              <Badge variant="secondary" className="mb-4">
-                <Star className="w-3 h-3 mr-1" />
-                Clínica dental con más de 10 años de experiencia
-              </Badge>
-              <h1 className="text-4xl lg:text-5xl font-bold tracking-tight mb-6">
+              <h1 className="text-4xl lg:text-5xl font-bold tracking-tight mb-6 text-balance">
                 {tagline}
               </h1>
               <p className="text-lg text-muted-foreground mb-8 max-w-xl">
                 {description}
               </p>
+
               <div className="flex flex-col sm:flex-row gap-4" data-hero-cta>
                 <Link to="/book">
                   <Button size="lg" className="w-full sm:w-auto">
@@ -127,67 +133,129 @@ export default function LandingPage() {
                   Escribinos por WhatsApp
                 </Button>
               </div>
+
               <SecurePaymentBadge className="mt-4" />
-              {business?.id && <NextAvailableSlot businessId={business.id} />}
+              <NextAvailableSlot businessId={business.id} />
+
               <div className="border-t mt-10 pt-6 grid grid-cols-3 gap-4">
                 {STATS.map(stat => (
                   <div key={stat.label}>
-                    <p className="text-2xl font-bold text-primary">{stat.value}</p>
+                    <p className="text-2xl font-bold text-primary tracking-tight">{stat.value}</p>
                     <p className="text-sm text-muted-foreground">{stat.label}</p>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="relative">
-              <div className="relative aspect-[4/3] rounded-3xl overflow-hidden shadow-2xl bg-gradient-to-br from-primary/15 via-muted to-primary/10">
+            {/* Right column - hero image */}
+            <div className="relative lg:pl-4 mt-10 lg:mt-0">
+              <div
+                className={[
+                  'relative',
+                  'aspect-[4/3]',
+                  'rounded-3xl',
+                  'overflow-hidden',
+                  'shadow-2xl',
+                  'bg-gradient-to-br from-primary/15 via-muted to-primary/10',
+                ].join(' ')}
+              >
                 {imgsReady.hero ? (
                   <img
                     src="/images/Clinica.jpg"
                     alt="Consultorio Smile Book"
-                    className="absolute inset-0 w-full h-full"
+                    className="absolute inset-0 w-full h-full object-cover"
+                    loading="eager"
+                    fetchPriority
                   />
                 ) : (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-primary/30">
+                  <div
+                    className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-primary/30"
+                  >
                     <Stethoscope className="w-14 h-14" />
                     <span className="text-sm">Imagen del consultorio</span>
                   </div>
                 )}
+
+                {/* Floating rating card - top left */}
+                <div
+                  className="absolute -top-4 -left-4 sm:-left-6 sm:-top-6 rounded-2xl bg-card border shadow-xl px-4 py-3 flex items-center gap-2 animate-float"
+                >
+                  <Star className="w-5 h-5 fill-current text-teal" />
+                  <span className="text-sm font-bold">4.9 / 5</span>
+                  <span className="text-xs text-muted-foreground mt-1">+200 reseñas Google</span>
+                </div>
+
+                {/* Floating WhatsApp card - bottom right */}
+                <div
+                  className="absolute bottom-4 right-4 sm:bottom-6 sm:right-6 rounded-2xl bg-card border shadow-xl px-4 py-3 flex items-center gap-2 animate-float-delayed"
+                >
+                  <WhatsAppIcon className="w-5 h-5 text-teal" />
+                  <span className="text-sm font-medium">Confirmación por WhatsApp</span>
+                  <span className="text-xs text-muted-foreground">inmediata</span>
+                </div>
+
+                {/* Gradient overlay at bottom */}
+                <div className="absolute inset-0 bg-gradient-to-t from-navy/30 via-transparent to-transparent" />
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Features */}
+      {/* Features - Ventajas */}
       <section className="py-16 bg-muted/50">
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-3 gap-8">
-            <Card>
-              <CardContent className="pt-6 text-center">
-                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                  <Shield className="w-6 h-6 text-primary" />
+            <div className="text-center">
+              <Badge variant="secondary" className="mb-4">
+                <Star className="w-3 h-3 mr-1 fill-primary text-primary" />
+                4.9 en Google · +200 reseñas
+              </Badge>
+              <h2 className="text-2xl font-bold mb-4">Ventajas</h2>
+              <p className="text-sm text-muted-foreground">
+                Todo pensado para tu comodidad y salud bucal
+              </p>
+            </div>
+            {/* Feature 1 */}
+            <Card
+              className="group h-full border-border/70 bg-background transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/5 hover:border-primary/30"
+            >
+              <CardContent className="pt-6 text-left">
+                <div className="w-10 h-10 rounded-xl bg-teal/10 text-teal flex items-center justify-center mb-4 mx-auto">
+                  <Shield className="w-5 h-5" />
                 </div>
                 <h3 className="font-semibold mb-2">Profesionalismo</h3>
-                <p className="text-sm text-muted-foreground">Equipos de última generación y técnicas actualizadas</p>
+                <p className="text-sm text-muted-foreground">
+                  Equipos de última generación y técnicas actualizadas
+                </p>
               </CardContent>
             </Card>
-            <Card>
-              <CardContent className="pt-6 text-center">
-                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                  <Clock className="w-6 h-6 text-primary" />
+            {/* Feature 2 */}
+            <Card
+              className="group h-full border-border/70 bg-background transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/5 hover:border-primary/30"
+            >
+              <CardContent className="pt-6 text-left">
+                <div className="w-10 h-10 rounded-xl bg-teal/10 text-teal flex items-center justify-center mb-4 mx-auto">
+                  <Clock className="w-5 h-5" />
                 </div>
                 <h3 className="font-semibold mb-2">Puntualidad</h3>
-                <p className="text-sm text-muted-foreground">Respetamos tu tiempo con turnos puntuales</p>
+                <p className="text-sm text-muted-foreground">
+                  Respetamos tu tiempo con turnos puntuales
+                </p>
               </CardContent>
             </Card>
-            <Card>
-              <CardContent className="pt-6 text-center">
-                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                  <Heart className="w-6 h-6 text-primary" />
+            {/* Feature 3 */}
+            <Card
+              className="group h-full border-border/70 bg-background transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/5 hover:border-primary/30"
+            >
+              <CardContent className="pt-6 text-left">
+                <div className="w-10 h-10 rounded-xl bg-teal/10 text-teal flex items-center justify-center mb-4 mx-auto">
+                  <Heart className="w-5 h-5" />
                 </div>
                 <h3 className="font-semibold mb-2">Atención Personalizada</h3>
-                <p className="text-sm text-muted-foreground">Cada paciente recibe un plan de tratamiento único</p>
+                <p className="text-sm text-muted-foreground">
+                  Cada paciente recibe un plan de tratamiento único
+                </p>
               </CardContent>
             </Card>
           </div>
@@ -198,6 +266,10 @@ export default function LandingPage() {
       <section className="py-16">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
+            <Badge variant="secondary" className="mb-2">
+              <Star className="w-3 h-3 mr-1 fill-primary text-primary" />
+              Servicios
+            </Badge>
             <h2 className="text-3xl font-bold mb-4">Nuestros Servicios</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
               Ofrecemos una amplia gama de tratamientos para cuidar tu salud bucal
@@ -211,8 +283,10 @@ export default function LandingPage() {
           ) : (
             <>
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-                {featuredServices.map((service) => (
-                  <ServiceCard key={service.id} service={service} />
+                {featuredServices.map((service, index) => (
+                  <Reveal delay={index * 75} className="h-full">
+                    <ServiceCard key={service.id} service={service} />
+                  </Reveal>
                 ))}
               </div>
               {services.length > 4 && (
@@ -230,44 +304,42 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Why choose us */}
-      {imgsReady.clinic && (
-        <section className="py-16 bg-muted/50">
-          <div className="container mx-auto px-4">
-            <div className="grid lg:grid-cols-2 gap-12 items-center">
-              <div className="relative aspect-[4/3] rounded-3xl overflow-hidden shadow-xl">
-                <img
-                  src="/images/clinica-interior.jpg"
-                  alt="Interior de la clínica"
-                  className="absolute inset-0 w-full h-full object-cover"
-                />
-              </div>
-              <div>
-                <h2 className="text-3xl font-bold mb-6">Por qué elegir Smile Book</h2>
-                <ul className="space-y-4">
-                  {[
-                    'Equipo de especialistas en estética, implantes, ortodoncia y más',
-                    'Tecnología de última generación en cada tratamiento',
-                    'Reserva online rápida y confirmación por WhatsApp',
-                    'Pagos seguros y planes de financiación'
-                  ].map(item => (
-                    <li key={item} className="flex items-start gap-3">
-                      <CheckCircle2 className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                      <span className="text-muted-foreground">{item}</span>
-                    </li>
-                  ))}
-                </ul>
-                <Link to="/book" className="mt-8 inline-block">
-                  <Button size="lg">
-                    Conocé nuestros tratamientos
-                    <ChevronRight className="w-4 h-4 ml-2" />
-                  </Button>
-                </Link>
-              </div>
-            </div>
+      {/* Why choose us - always renders */}
+      <section className="py-16 lg:py-24 bg-muted/50">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <Badge variant="secondary" className="mb-4">
+              <Star className="w-3 h-3 mr-1 fill-primary text-primary" />
+              4.9 en Google · +200 reseñas
+            </Badge>
+            <h2 className="text-3xl font-bold mb-4">Por qué elegir Smile Book</h2>
+            <p className="text-muted-foreground mb-8 max-w-2xl mx-auto">
+              Un equipo comprometido con tu salud bucal y la mejor experiencia posible
+            </p>
+            <ul className="space-y-4 max-w-2xl mx-auto">
+              <li className="flex items-start gap-3">
+                <CheckCircle2 className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                <span className="text-muted-foreground">Equipo de especialistas en estética, implantes, ortodoncia y más</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <CheckCircle2 className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                <span className="text-muted-foreground">Tecnología de última generación en cada tratamiento</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <CheckCircle2 className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                <span className="text-muted-foreground">Reserva online rápida y confirmación por WhatsApp</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <CheckCircle2 className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                <span className="text-muted-foreground">Pagos seguros y planes de financiación</span>
+              </li>
+            </ul>
+            <Link to="/book" className="mt-8 inline-block">
+              <Button size="lg">Conocé nuestros tratamientos <ChevronRight className="w-4 h-4 ml-2" /></Button>
+            </Link>
           </div>
-        </section>
-      )}
+        </div>
+      </section>
 
       {/* Testimonials */}
       <section className="py-16 bg-muted/50">
@@ -281,45 +353,75 @@ export default function LandingPage() {
           </div>
           <div className="grid gap-6 md:grid-cols-3">
             {TESTIMONIALS.map((testimonial, i) => (
-              <Card key={i}>
-                <CardContent className="pt-6">
-                  <div className="flex gap-1 mb-4">
-                    {Array.from({ length: testimonial.rating }).map((_, j) => (
-                      <Star key={j} className="w-4 h-4 fill-primary text-primary" />
-                    ))}
-                  </div>
-                  <p className="text-sm text-muted-foreground mb-4">"{testimonial.text}"</p>
-                  <div className="flex items-center gap-3">
-                    <InitialsAvatar name={testimonial.name} />
-                    <div>
-                      <p className="font-medium text-sm">{testimonial.name}</p>
-                      <p className="text-xs text-muted-foreground">{testimonial.service}</p>
+              <Reveal key={i} delay={i * 100}>
+                <Card className="group h-full transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
+                  <Quote
+                    className="absolute top-3 right-3 w-8 h-8 text-teal/15"
+                    aria-hidden="true"
+                  />
+                  <CardContent className="pt-6">
+                    <div className="flex gap-1 mb-4">
+                      {Array.from({ length: testimonial.rating }).map((_, j) => (
+                        <Star key={j} className="w-4 h-4 fill-primary text-primary" />
+                      ))}
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
+                    <p className="text-sm text-muted-foreground mb-4">"{testimonial.text}"</p>
+                    <div className="flex items-center gap-3">
+                      <InitialsAvatar name={testimonial.name} />
+                      <div>
+                        <p className="font-medium text-sm">{testimonial.name}</p>
+                        <p className="text-xs text-muted-foreground">{testimonial.service}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Reveal>
             ))}
           </div>
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="py-20">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold mb-4">¿Listo para tu turno?</h2>
-          <p className="text-muted-foreground mb-8 max-w-xl mx-auto">
-            Reservá online en menos de 2 minutos. Elegí el servicio, fecha y horario que más te convenga.
-          </p>
-          <Link to="/book">
-            <Button size="lg">
-              <Calendar className="w-4 h-4 mr-2" />
-              {CTA.urgent}
-            </Button>
-          </Link>
+      {/* CTA banner - conversión destacada */}
+      <section className="py-16 lg:py-24">
+        <div className="container mx-auto px-4">
+          <div className="relative overflow-hidden rounded-3xl bg-navy px-6 py-14 sm:px-12 lg:px-20 lg:py-16 text-center shadow-2xl">
+            <div aria-hidden className="absolute inset-0">
+              <div className="absolute -top-24 -left-24 w-64 h-64 rounded-full bg-teal/20 blur-3xl" />
+              <div className="absolute -bottom-24 -right-24 w-64 h-64 rounded-full bg-teal/10 blur-3xl" />
+              <div
+                className="absolute inset-0 opacity-[0.08]"
+                style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.35) 1px, transparent 0)', backgroundSize: '28px 28px' }}
+              />
+            </div>
+            <div className="relative">
+              <Badge className="mb-6 bg-teal/15 text-teal text-xs font-medium px-3 py-1.5 rounded">
+                Sonrisa saludable, vida sana
+              </Badge>
+              <h2 className="text-4xl sm:text-5xl lg:text-[3.5rem] font-bold text-white tracking-tight leading-[1.1] text-balance mb-6">
+                {lead}{lead !== '' && ' '}<span className="text-teal">{lastWord}</span>
+              </h2>
+              <p className="text-white text-white/80 text-lg mb-8 max-w-xl mx-auto leading-relaxed">
+                Reservá online en menos de 2 minutos. Elegí el servicio, fecha y horario que más te convenga.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <Link to="/book">
+                  <Button size="lg" className="bg-white text-navy hover:bg-slate-100 shadow-lg shadow-navy/25">
+                    <Calendar className="w-4 h-4 mr-2" />
+                    {CTA.urgent}
+                  </Button>
+                </Link>
+                <Button variant="outline" size="lg" className="border-white/25 text-white hover:bg-white/10 hover:text-white">
+                  <WhatsAppIcon className="w-4 h-4 mr-2 text-[#25D366]" />
+                  Escribinos por WhatsApp
+                </Button>
+              </div>
+              <p className="text-white/60 text-xs mt-6">Sin registro · Confirmación inmediata · Pago seguro</p>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* Contact */}
+      {/* Contacto */}
       <section id="contacto" className="py-16 bg-muted/50 scroll-mt-16">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
@@ -332,25 +434,43 @@ export default function LandingPage() {
             <Card>
               <CardContent className="p-6 space-y-5">
                 <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
                     <Phone className="w-5 h-5" />
                   </div>
                   <div>
                     <p className="font-medium">Teléfono / WhatsApp</p>
-                    <p className="text-sm text-muted-foreground">{contactPhone}</p>
+                    <p className="text-sm text-muted-foreground">
+                      <a
+                        href={`tel:${contactPhone.replace(/\D/g, '')}`}
+                        className="text-primary hover:text-primary transition-colors"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {contactPhone}
+                      </a>
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
                     <Mail className="w-5 h-5" />
                   </div>
                   <div>
                     <p className="font-medium">Email</p>
-                    <p className="text-sm text-muted-foreground">{contactEmail}</p>
+                    <p className="text-sm text-muted-foreground">
+                      <a
+                        href={`mailto:${contactEmail}`}
+                        className="text-primary hover:text-primary transition-colors underline"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {contactEmail}
+                      </a>
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
                     <MapPin className="w-5 h-5" />
                   </div>
                   <div>
@@ -359,7 +479,7 @@ export default function LandingPage() {
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
                     <Clock className="w-5 h-5" />
                   </div>
                   <div>
@@ -379,17 +499,6 @@ export default function LandingPage() {
 
             <Card>
               <CardContent className="p-6">
-                <div className="bg-primary/5 border border-primary/10 rounded-lg p-4 mb-5">
-                  <p className="text-sm">
-                    ¿Ya sabés qué servicio necesitás?{' '}
-                    <Link to="/book" className="font-semibold text-primary hover:underline">
-                      Reservá tu turno directamente →
-                    </Link>
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Para dudas puntuales, escribinos acá.
-                  </p>
-                </div>
                 <h3 className="font-semibold mb-1">Enviar consulta</h3>
                 <p className="text-sm text-muted-foreground mb-4">
                   Completá el formulario y te va a redirigir a WhatsApp con tu mensaje listo para enviar
@@ -400,7 +509,9 @@ export default function LandingPage() {
                     <Input
                       id="contact-name"
                       value={contactForm.name}
-                      onChange={(e) => setContactForm({ ...contactForm, name: e.target.value })}
+                      onChange={(e) =>
+                        setContactForm({ ...contactForm, name: e.target.value })
+                      }
                       placeholder="Tu nombre"
                     />
                   </div>
@@ -409,7 +520,9 @@ export default function LandingPage() {
                     <Input
                       id="contact-phone"
                       value={contactForm.contact}
-                      onChange={(e) => setContactForm({ ...contactForm, contact: e.target.value })}
+                      onChange={(e) =>
+                        setContactForm({ ...contactForm, contact: e.target.value })
+                      }
                       placeholder="+54 9 11 1234-5678"
                     />
                   </div>
@@ -418,7 +531,9 @@ export default function LandingPage() {
                     <textarea
                       id="contact-message"
                       value={contactForm.message}
-                      onChange={(e) => setContactForm({ ...contactForm, message: e.target.value })}
+                      onChange={(e) =>
+                        setContactForm({ ...contactForm, message: e.target.value })
+                      }
                       placeholder="¿En qué podemos ayudarte?"
                       className="flex min-h-[90px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     />
@@ -438,14 +553,14 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-[#002a5e] text-slate-300">
+      <footer className="bg-navy text-slate-300">
         <div className="container mx-auto px-4 pt-16 pb-8">
           <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-12">
 
             {/* Brand + CTA */}
             <div className="lg:col-span-5">
               <div className="flex items-center gap-2.5 mb-5">
-                <div className="w-11 h-11 rounded-full bg-white flex items-center justify-center shrink-0">
+                <div className="w-11 h-11 rounded-full bg-white/20 flex items-center justify-center shrink-0">
                   <img src="/logo.png" alt="Smile Book" className="w-8 h-8 object-contain" />
                 </div>
                 <span className="font-bold text-lg text-white">Smile Book</span>
@@ -454,7 +569,7 @@ export default function LandingPage() {
                 {description}
               </p>
               <Link to="/book">
-                <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium px-5">
+                <Button size="sm" className="bg-white text-navy hover:bg-slate-100 font-medium px-5">
                   <Calendar className="w-4 h-4 mr-2" />
                   {CTA.primary}
                 </Button>
@@ -465,7 +580,7 @@ export default function LandingPage() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Facebook"
-                  className="w-10 h-10 rounded-full bg-white/10 hover:bg-[#0e9aa3] flex items-center justify-center text-slate-300 hover:text-white transition-all"
+                  className="w-10 h-10 rounded-full bg-white/10 hover:bg-teal flex items-center justify-center text-slate-300 hover:text-white transition-all"
                 >
                   <Facebook className="w-[18px] h-[18px]" />
                 </a>
@@ -474,7 +589,7 @@ export default function LandingPage() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Instagram"
-                  className="w-10 h-10 rounded-full bg-white/10 hover:bg-[#0e9aa3] flex items-center justify-center text-slate-300 hover:text-white transition-all"
+                  className="w-10 h-10 rounded-full bg-white/10 hover:bg-teal flex items-center justify-center text-slate-300 hover:text-white transition-all"
                 >
                   <Instagram className="w-[18px] h-[18px]" />
                 </a>
@@ -483,7 +598,7 @@ export default function LandingPage() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="WhatsApp"
-                  className="w-10 h-10 rounded-full bg-white/10 hover:bg-[#0e9aa3] flex items-center justify-center text-slate-300 hover:text-white transition-all"
+                  className="w-10 h-10 rounded-full bg-white/10 hover:bg-teal flex items-center justify-center text-slate-300 hover:text-white transition-all"
                 >
                   <WhatsAppIcon className="w-[18px] h-[18px] text-[#25D366]" />
                 </a>
@@ -498,7 +613,9 @@ export default function LandingPage() {
                   <Link to="/" className="hover:text-white transition-colors">Inicio</Link>
                 </li>
                 <li>
-                  <Link to="/book" className="hover:text-white transition-colors">{CTA.primary}</Link>
+                  <Link to="/book" className="hover:text-white transition-colors">
+                    {CTA.primary}
+                  </Link>
                 </li>
                 <li>
                   <a href="#contacto" className="hover:text-white transition-colors">Contacto</a>
@@ -514,19 +631,19 @@ export default function LandingPage() {
               <h4 className="font-semibold text-white text-sm uppercase tracking-wider mb-4">Contacto</h4>
               <ul className="space-y-3 text-sm">
                 <li className="flex items-start gap-2.5">
-                  <Phone className="w-4 h-4 mt-0.5 shrink-0 text-[#11b7c1]" />
+                  <Phone className="w-4 h-4 mt-0.5 shrink-0 text-teal" />
                   <span>{contactPhone}</span>
                 </li>
                 <li className="flex items-start gap-2.5">
-                  <Mail className="w-4 h-4 mt-0.5 shrink-0 text-[#11b7c1]" />
+                  <Mail className="w-4 h-4 mt-0.5 shrink-0 text-teal" />
                   <span>{contactEmail}</span>
                 </li>
                 <li className="flex items-start gap-2.5">
-                  <MapPin className="w-4 h-4 mt-0.5 shrink-0 text-[#11b7c1]" />
+                  <MapPin className="w-4 h-4 mt-0.5 shrink-0 text-teal" />
                   <span>{contactAddress}</span>
                 </li>
                 <li className="flex items-start gap-2.5">
-                  <Clock className="w-4 h-4 mt-0.5 shrink-0 text-[#11b7c1]" />
+                  <Clock className="w-4 h-4 mt-0.5 shrink-0 text-teal" />
                   <span>
                     Lun a Vie: 9:00 - 18:00<br />
                     Sábados: 9:00 - 14:00
@@ -549,6 +666,7 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
+
       <MobileStickyBookingBar />
     </div>
   )

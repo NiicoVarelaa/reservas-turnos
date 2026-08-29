@@ -24,6 +24,11 @@
     --input: 200 25% 90%;
     --ring: 183 84% 41%;
     --radius: 0.5rem;
+
+    --teal: 184 84% 41%;
+    --teal-foreground: 214 60% 10%;
+    --navy: 213 90% 16%;
+    --navy-foreground: 210 40% 96%;
   }
 
   .dark {
@@ -54,7 +59,37 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans;
     font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  html {
+    @media (prefers-reduced-motion: no-preference) {
+      scroll-behavior: smooth;
+    }
+  }
+  ::selection {
+    background: hsl(var(--teal) / 0.25);
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+  .animate-float-delayed {
+    animation: float 6s ease-in-out 3s infinite;
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .animate-float,
+    .animate-float-delayed {
+      animation: none;
+    }
   }
 }

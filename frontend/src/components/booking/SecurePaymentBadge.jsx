@@ -23,9 +23,9 @@ function MastercardIcon({ className }) {
 
 export default function SecurePaymentBadge({ className }) {
   return (
-    <div className={cn('flex items-center justify-center gap-3 text-xs text-muted-foreground', className)}>
+    <div className={cn('flex items-center gap-3 text-xs text-muted-foreground', className)}>
       <div className="flex items-center gap-1.5">
-        <Shield className="w-3.5 h-3.5 text-[#11b7c1]" />
+        <Shield className="w-3.5 h-3.5 text-teal" />
         <span>Pago seguro con Stripe</span>
       </div>
       <div className="flex items-center gap-1.5">

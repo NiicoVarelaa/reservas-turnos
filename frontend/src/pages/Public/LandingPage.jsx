@@ -128,7 +128,7 @@ export default function LandingPage() {
                     {CTA.primary}
                   </Button>
                 </Link>
-                <Button variant="outline" size="lg" className="w-full sm:w-auto" onClick={handleWhatsApp}>
+                <Button variant="outline" size="lg" className="w-full sm:w-auto bg-white text-navy border-border/60 hover:bg-slate-100" onClick={handleWhatsApp}>
                   <WhatsAppIcon className="w-4 h-4 mr-2 text-[#25D366]" />
                   Escribinos por WhatsApp
                 </Button>

@@ -24,17 +24,6 @@ export default function MobileStickyBookingBar({ targetSelector = '[data-hero-ct
     return () => observer.disconnect()
   }, [targetSelector])
 
-  useEffect(() => {
-    if (!visible) return
-    const paddingEl = document.body
-    const prev = paddingEl.style.paddingBottom
-    paddingEl.style.paddingBottom = 'calc(72px + env(safe-area-inset-bottom))'
-
-    return () => {
-      paddingEl.style.paddingBottom = prev
-    }
-  }, [visible])
-
   return (
     <div
       ref={barRef}

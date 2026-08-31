@@ -178,7 +178,7 @@ export default function LandingPage() {
 
                 {/* Floating rating card - top left */}
                 <div
-                  className="absolute -top-4 -left-4 sm:-left-6 sm:-top-6 rounded-2xl bg-card border shadow-xl px-4 py-3 flex items-center gap-2 animate-float"
+                  className="absolute top-4 left-4 sm:top-6 sm:left-6 rounded-2xl bg-card border shadow-xl px-4 py-3 flex items-center gap-2 animate-float"
                 >
                   <Star className="w-5 h-5 fill-current text-teal" />
                   <span className="text-sm font-bold">4.9 / 5</span>

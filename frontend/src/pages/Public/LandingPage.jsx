@@ -205,17 +205,17 @@ export default function LandingPage() {
       {/* Features - Ventajas */}
       <section className="py-16 bg-muted/50">
         <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <Badge variant="secondary" className="mb-4">
+              <Star className="w-3 h-3 mr-1 fill-primary text-primary" />
+              4.9 en Google · +200 reseñas
+            </Badge>
+            <h2 className="text-2xl font-bold mb-4">Ventajas</h2>
+            <p className="text-sm text-muted-foreground">
+              Todo pensado para tu comodidad y salud bucal
+            </p>
+          </div>
           <div className="grid md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <Badge variant="secondary" className="mb-4">
-                <Star className="w-3 h-3 mr-1 fill-primary text-primary" />
-                4.9 en Google · +200 reseñas
-              </Badge>
-              <h2 className="text-2xl font-bold mb-4">Ventajas</h2>
-              <p className="text-sm text-muted-foreground">
-                Todo pensado para tu comodidad y salud bucal
-              </p>
-            </div>
             {/* Feature 1 */}
             <Card
               className="group h-full border-border/70 bg-background transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/5 hover:border-primary/30"

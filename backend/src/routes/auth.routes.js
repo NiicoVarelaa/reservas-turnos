@@ -8,6 +8,7 @@ const { registerSchema, loginSchema, refreshTokenSchema, profileUpdateSchema } =
 // Public routes
 router.post('/register', validate(registerSchema), authController.register)
 router.post('/login', validate(loginSchema), authController.login)
+router.post('/google', authController.google)
 router.post('/refresh', validate(refreshTokenSchema), authController.refresh)
 router.post('/logout', authController.logout)
 

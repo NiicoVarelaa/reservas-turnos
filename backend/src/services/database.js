@@ -92,6 +92,80 @@ class DatabaseService {
     return true
   }
 
+  async getUserByGoogleId(googleId) {
+    const { data, error } = await supabaseAdmin
+      .from('users')
+      .select('*')
+      .eq('google_id', googleId)
+      .maybeSingle()
+
+    if (error) {
+      console.error('getUserByGoogleId error:', error)
+      return null
+    }
+    return data
+  }
+
+  // Ensure a user exists for a Supabase Auth (Google) identity.
+  // The on_auth_user_created trigger keeps `users` in sync with auth.users,
+  // so normally the row already exists with id = auth.users.id.
+  async getOrCreateGoogleUser({ id, email, fullName, avatarUrl, googleId, role = 'client' }) {
+    // By Supabase Auth id (already synced by trigger)
+    if (id) {
+      const existing = await this.getUserById(id)
+      if (existing) {
+        if (googleId && !existing.google_id) {
+          const { data: linked, error } = await supabaseAdmin
+            .from('users')
+            .update({ google_id: googleId, provider: 'google', avatar_url: avatarUrl || existing.avatar_url })
+            .eq('id', existing.id)
+            .select()
+            .single()
+          if (error) throw error
+          return linked
+        }
+        return existing
+      }
+    }
+
+    // Fallback: match by google_id or email
+    let user = googleId ? await this.getUserByGoogleId(googleId) : null
+    if (!user) user = await this.getUserByEmail(email)
+
+    if (user) {
+      if (googleId && !user.google_id) {
+        const { data: linked, error } = await supabaseAdmin
+          .from('users')
+          .update({ google_id: googleId, provider: 'google', avatar_url: avatarUrl || user.avatar_url })
+          .eq('id', user.id)
+          .select()
+          .single()
+        if (error) throw error
+        return linked
+      }
+      return user
+    }
+
+    // Otherwise create a new user (no password -> Google-only)
+    const { data: created, error } = await supabaseAdmin
+      .from('users')
+      .insert({
+        id: id || undefined,
+        email,
+        password_hash: null,
+        full_name: fullName || null,
+        avatar_url: avatarUrl || null,
+        google_id: googleId || null,
+        provider: 'google',
+        role
+      })
+      .select()
+      .single()
+
+    if (error) throw error
+    return created
+  }
+
   // ==========================================
   // PROFILES
   // ==========================================

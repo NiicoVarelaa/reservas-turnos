@@ -1,5 +1,6 @@
 const bcrypt = require('bcryptjs')
 const db = require('../services/database')
+const { supabaseAdmin } = require('../config/supabase')
 const { generateAccessToken, generateRefreshToken, verifyRefreshToken, getRefreshTokenExpiryDate } = require('../utils/jwt')
 const { registerSchema, loginSchema, refreshTokenSchema } = require('../utils/validators')
 
@@ -58,6 +59,9 @@ class AuthController {
       if (!user) {
         return res.status(401).json({ error: 'Invalid email or password' })
       }
+      if (!user.password_hash) {
+        return res.status(401).json({ error: 'Invalid email or password' })
+      }
 
       // Verify password
       const isValid = await bcrypt.compare(password, user.password_hash)
@@ -70,6 +74,66 @@ class AuthController {
       const refreshToken = generateRefreshToken(user)
 
       // Store refresh token
+      await db.createRefreshToken(user.id, refreshToken, getRefreshTokenExpiryDate())
+
+      res.json({
+        message: 'Login successful',
+        user: {
+          id: user.id,
+          email: user.email,
+          full_name: user.full_name,
+          role: user.role
+        },
+        accessToken,
+        refreshToken
+      })
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  async google(req, res, next) {
+    try {
+      const { providerToken, role = 'client' } = req.body
+
+      if (!providerToken) {
+        return res.status(400).json({ error: 'providerToken is required' })
+      }
+
+      // Verify the Supabase session and get the identity
+      let userData
+      try {
+        const { data: session, error: sessionError } = await supabaseAdmin.auth.getUser(providerToken)
+        if (sessionError || !session?.user) {
+          return res.status(401).json({ error: 'Invalid Google session' })
+        }
+        userData = session.user
+      } catch (err) {
+        return res.status(401).json({ error: 'Invalid Google session' })
+      }
+
+      const email = userData.email
+      const fullName = userData.user_metadata?.full_name || userData.user_metadata?.name || email?.split('@')[0]
+      const avatarUrl = userData.user_metadata?.avatar_url || userData.user_metadata?.picture || null
+      const googleId = userData.identities?.find(i => i.provider === 'google')?.id || userData.id
+
+      // Find or create the user in the custom users table
+      const user = await db.getOrCreateGoogleUser({
+        id: userData.id,
+        email,
+        fullName,
+        avatarUrl,
+        googleId,
+        role
+      })
+
+      if (!user || !user.is_active) {
+        return res.status(401).json({ error: 'User not found or inactive' })
+      }
+
+      // Generate our own JWT tokens (same as email login)
+      const accessToken = generateAccessToken(user)
+      const refreshToken = generateRefreshToken(user)
       await db.createRefreshToken(user.id, refreshToken, getRefreshTokenExpiryDate())
 
       res.json({

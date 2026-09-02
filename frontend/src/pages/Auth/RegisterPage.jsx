@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import GoogleButton from '@/components/auth/GoogleButton'
 import { Building2, User, ArrowLeft, Mail, Lock, Phone, UserCircle, CheckCircle2 } from 'lucide-react'
 
 function getPasswordStrength(password) {
@@ -244,6 +245,18 @@ export default function RegisterPage() {
                 </p>
               </TabsContent>
             </Tabs>
+
+            <div className="mt-4">
+              <GoogleButton role={role} className="mb-2" label="Registrarte con Google" />
+              <div className="relative my-4">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-border" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-background px-2 text-muted-foreground">o con email</span>
+                </div>
+              </div>
+            </div>
 
             <form onSubmit={handleSubmit} className="space-y-4 mt-2">
               <div className="space-y-2">

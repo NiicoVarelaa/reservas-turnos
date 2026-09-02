@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import GoogleButton from '@/components/auth/GoogleButton'
 import { Building2, User, ArrowLeft, Mail, Lock, Calendar, Shield, Star } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
 
@@ -182,6 +183,15 @@ export default function LoginPage() {
             )}
 
             <Tabs defaultValue="professional" className="w-full">
+              <GoogleButton className="mb-4" label="Continuar con Google" />
+              <div className="relative my-4">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-border" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-background px-2 text-muted-foreground">o con email</span>
+                </div>
+              </div>
               <TabsList className="grid w-full grid-cols-2 h-12 p-1 bg-muted/50 rounded-xl">
                 <TabsTrigger
                   value="professional"

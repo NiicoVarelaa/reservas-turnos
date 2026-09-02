@@ -32,6 +32,18 @@ export const useAuthStore = create((set) => ({
     }
   },
 
+  loginWithGoogle: async (providerToken) => {
+    set({ loading: true })
+    try {
+      const data = await authService.googleLogin(providerToken)
+      set({ user: data.user, isAuthenticated: true, isGuest: false, guestInfo: null, loading: false })
+      return data
+    } catch (error) {
+      set({ loading: false })
+      throw error
+    }
+  },
+
   loginAsGuest: (info) => {
     set({
       isGuest: true,

@@ -49,6 +49,12 @@ export const authService = {
     return data
   },
 
+  async googleLogin(providerToken, role = 'client') {
+    const { data } = await api.post('/api/auth/google', { providerToken, role })
+    this.setTokens(data.accessToken, data.refreshToken, data.user)
+    return data
+  },
+
   async refresh() {
     const refreshToken = this.getRefreshToken()
     if (!refreshToken) throw new Error('No refresh token')

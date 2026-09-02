@@ -13,6 +13,7 @@ import LegalPage from '@/pages/Public/LegalPage'
 // Auth Pages
 import LoginPage from '@/pages/Auth/LoginPage'
 import RegisterPage from '@/pages/Auth/RegisterPage'
+import GoogleCallback from '@/pages/Auth/GoogleCallback'
 
 // Onboarding Pages
 import SetupBusiness from '@/pages/Onboarding/SetupBusiness'
@@ -46,6 +47,7 @@ function App() {
         {/* Auth Routes */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/auth/callback" element={<GoogleCallback />} />
 
         {/* Onboarding Routes */}
         <Route path="/onboarding/business" element={<SetupBusiness />} />

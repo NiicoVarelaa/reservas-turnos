@@ -94,7 +94,7 @@ class AuthController {
 
   async google(req, res, next) {
     try {
-      const { providerToken, role = 'client' } = req.body
+      const { providerToken } = req.body
 
       if (!providerToken) {
         return res.status(400).json({ error: 'providerToken is required' })
@@ -117,14 +117,16 @@ class AuthController {
       const avatarUrl = userData.user_metadata?.avatar_url || userData.user_metadata?.picture || null
       const googleId = userData.identities?.find(i => i.provider === 'google')?.id || userData.id
 
-      // Find or create the user in the custom users table
+      // Find or create the user in the custom users table.
+      // role is always 'client' for new accounts (matches email register flow);
+      // professionals are promoted via onboarding like the normal register flow.
       const user = await db.getOrCreateGoogleUser({
         id: userData.id,
         email,
         fullName,
         avatarUrl,
         googleId,
-        role
+        role: 'client'
       })
 
       if (!user || !user.is_active) {

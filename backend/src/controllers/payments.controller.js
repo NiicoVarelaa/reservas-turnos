@@ -5,7 +5,7 @@ const whatsappService = require('../services/whatsapp')
 class PaymentsController {
   async createCheckoutSession(req, res, next) {
     try {
-      const { appointmentId, amount, currency } = req.validatedData
+      const { appointmentId } = req.validatedData
 
       // Get appointment details
       const appointment = await db.getAppointment(appointmentId)
@@ -18,6 +18,14 @@ class PaymentsController {
         return res.status(400).json({
           error: `Cannot create payment for appointment with status: ${appointment.status}`
         })
+      }
+
+      // Derive amount/currency server-side from the service price (do NOT trust client input)
+      const amount = appointment.services?.price_cents
+      const currency = appointment.services?.currency || 'ars'
+
+      if (!amount || amount <= 0) {
+        return res.status(400).json({ error: 'Service is missing a valid price' })
       }
 
       // Create Stripe Checkout Session

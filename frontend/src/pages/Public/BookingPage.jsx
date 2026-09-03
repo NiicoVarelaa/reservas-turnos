@@ -152,9 +152,7 @@ export default function BookingPage() {
 
     try {
       const paymentResponse = await paymentsApi.createSession({
-        appointmentId: appt?.id || appointmentId,
-        amount: svc.price_cents,
-        currency: svc.currency?.toLowerCase() || svc.businesses?.currency?.toLowerCase() || 'ars'
+        appointmentId: appt?.id || appointmentId
       })
       window.location.href = paymentResponse.checkoutUrl
     } catch (err) {

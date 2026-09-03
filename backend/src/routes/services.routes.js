@@ -11,5 +11,6 @@ router.get('/:id/slots', validate(uuidParamSchema, 'params'), validate(slotsQuer
 router.get('/:id', validate(uuidParamSchema, 'params'), servicesController.getService)
 router.post('/', jwtAuth, requireRole('professional', 'admin'), validate(serviceSchema), servicesController.createService)
 router.put('/:id', jwtAuth, requireRole('professional', 'admin'), validate(uuidParamSchema, 'params'), servicesController.updateService)
+router.delete('/:id', jwtAuth, requireRole('professional', 'admin'), validate(uuidParamSchema, 'params'), servicesController.deleteService)
 
 module.exports = router

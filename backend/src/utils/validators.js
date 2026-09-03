@@ -32,11 +32,9 @@ const bookingSchema = z.object({
   notes: z.string().max(500, 'Notes cannot exceed 500 characters').optional()
 })
 
-// Payment schema
+// Payment schema (amount/currency are derived server-side from the service price)
 const paymentSessionSchema = z.object({
-  appointmentId: z.string().uuid('Valid appointmentId is required'),
-  amount: z.number().int().min(1, 'Valid amount in cents is required'),
-  currency: z.string().length(3, 'Valid 3-letter currency code is required').optional()
+  appointmentId: z.string().uuid('Valid appointmentId is required')
 })
 
 // Business schema

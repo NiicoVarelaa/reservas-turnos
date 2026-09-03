@@ -1,4 +1,5 @@
 const db = require('../services/database')
+const whatsappService = require('../services/whatsapp')
 
 class AppointmentsController {
   async getAppointments(req, res, next) {
@@ -23,6 +24,10 @@ class AppointmentsController {
 
       if (!appointment) {
         return res.status(404).json({ error: 'Appointment not found' })
+      }
+
+      if (appointment.professional_id !== req.user.id) {
+        return res.status(403).json({ error: 'Not authorized' })
       }
 
       res.json({ appointment })
@@ -52,6 +57,22 @@ class AppointmentsController {
         }
       }
 
+      // Re-check for overlapping appointments when rescheduling
+      if (updates.start_at || updates.end_at) {
+        const startAt = updates.start_at || appointment.start_at
+        const endAt = updates.end_at || appointment.end_at
+        const overlapping = await db.checkAppointmentOverlap(
+          appointment.professional_id,
+          startAt,
+          endAt,
+          appointment.id
+        )
+
+        if (overlapping) {
+          return res.status(409).json({ error: 'El horario seleccionado se superpone con otra reserva' })
+        }
+      }
+
       const updated = await db.updateAppointment(req.params.id, updates)
       res.json({ appointment: updated })
     } catch (error) {
@@ -72,6 +93,12 @@ class AppointmentsController {
       }
 
       const cancelled = await db.cancelAppointment(req.params.id)
+
+      // Notify the client via WhatsApp (async, don't block response)
+      whatsappService.sendCancellation(req.params.id)
+        .then(() => console.log(`Cancellation WhatsApp sent for appointment: ${req.params.id}`))
+        .catch(err => console.error(`Cancellation WhatsApp failed for appointment: ${req.params.id}`, err))
+
       res.json({ appointment: cancelled })
     } catch (error) {
       next(error)

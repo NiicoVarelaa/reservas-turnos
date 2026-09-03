@@ -1,4 +1,5 @@
 const db = require('../services/database')
+const whatsappService = require('../services/whatsapp')
 
 class BookingsController {
   async createBooking(req, res, next) {
@@ -91,6 +92,11 @@ class BookingsController {
       }
 
       const cancelled = await db.cancelAppointment(req.params.id)
+
+      // Notify the client via WhatsApp (async, don't block response)
+      whatsappService.sendCancellation(req.params.id)
+        .then(() => console.log(`Cancellation WhatsApp sent for booking: ${req.params.id}`))
+        .catch(err => console.error(`Cancellation WhatsApp failed for booking: ${req.params.id}`, err))
 
       res.json({
         message: 'Booking cancelled successfully',

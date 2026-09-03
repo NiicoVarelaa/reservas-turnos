@@ -311,6 +311,24 @@ class DatabaseService {
     return data
   }
 
+  async deleteService(serviceId) {
+    // Remove service_professionals associations
+    await supabaseAdmin
+      .from('service_professionals')
+      .delete()
+      .eq('service_id', serviceId)
+
+    const { data, error } = await supabaseAdmin
+      .from('services')
+      .delete()
+      .eq('id', serviceId)
+      .select()
+      .single()
+
+    if (error) throw error
+    return data
+  }
+
   async getServiceProfessionals(serviceId) {
     const { data, error } = await supabaseAdmin
       .from('service_professionals')

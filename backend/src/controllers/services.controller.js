@@ -102,6 +102,25 @@ class ServicesController {
       next(error)
     }
   }
+
+  async deleteService(req, res, next) {
+    try {
+      const service = await db.getService(req.params.id)
+
+      if (!service) {
+        return res.status(404).json({ error: 'Service not found' })
+      }
+
+      if (service.professional_id !== req.user.id) {
+        return res.status(403).json({ error: 'Not authorized to delete this service' })
+      }
+
+      await db.deleteService(req.params.id)
+      res.json({ message: 'Service deleted successfully' })
+    } catch (error) {
+      next(error)
+    }
+  }
 }
 
 module.exports = new ServicesController()

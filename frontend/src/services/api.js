@@ -87,7 +87,10 @@ export const servicesApi = {
     api.post('/api/services', data),
 
   update: (id, data) =>
-    api.put(`/api/services/${id}`, data)
+    api.put(`/api/services/${id}`, data),
+
+  remove: (id) =>
+    api.delete(`/api/services/${id}`)
 }
 
 export const bookingsApi = {
@@ -156,7 +159,10 @@ export const schedulesApi = {
     api.get('/api/schedules'),
 
   create: (data) =>
-    api.post('/api/schedules', data)
+    api.post('/api/schedules', data),
+
+  remove: (id) =>
+    api.delete(`/api/schedules/${id}`)
 }
 
 export default api

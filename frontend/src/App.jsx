@@ -25,6 +25,9 @@ import DashboardLayout from '@/components/layout/DashboardLayout'
 import DashboardHome from '@/pages/Dashboard/DashboardHome'
 import SchedulePage from '@/pages/Dashboard/SchedulePage'
 import BookingsPage from '@/pages/Dashboard/BookingsPage'
+import ServicesPage from '@/pages/Dashboard/ServicesPage'
+import BusinessSettingsPage from '@/pages/Dashboard/BusinessSettingsPage'
+import ProfilePage from '@/pages/Dashboard/ProfilePage'
 
 function App() {
   const initAuth = useAuthStore((state) => state.init)
@@ -59,6 +62,9 @@ function App() {
           <Route index element={<DashboardHome />} />
           <Route path="schedule" element={<SchedulePage />} />
           <Route path="bookings" element={<BookingsPage />} />
+          <Route path="services" element={<ServicesPage />} />
+          <Route path="settings/business" element={<BusinessSettingsPage />} />
+          <Route path="profile" element={<ProfilePage />} />
         </Route>
       </Routes>
     </BrowserRouter>

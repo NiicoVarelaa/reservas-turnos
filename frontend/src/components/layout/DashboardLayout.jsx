@@ -12,12 +12,18 @@ import {
   Menu,
   X,
   ChevronRight,
+  Scissors,
+  Settings,
+  UserCircle,
 } from 'lucide-react'
 
 const navItems = [
   { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { path: '/dashboard/bookings', icon: Calendar, label: 'Reservas' },
+  { path: '/dashboard/services', icon: Scissors, label: 'Servicios' },
   { path: '/dashboard/schedule', icon: Clock, label: 'Horarios' },
+  { path: '/dashboard/settings/business', icon: Settings, label: 'Mi Negocio' },
+  { path: '/dashboard/profile', icon: UserCircle, label: 'Mi Perfil' },
 ]
 
 function SidebarNav({ onNavClick }) {

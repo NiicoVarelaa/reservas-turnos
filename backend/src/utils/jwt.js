@@ -1,7 +1,12 @@
 const jwt = require('jsonwebtoken')
 
-const ACCESS_SECRET = process.env.JWT_ACCESS_SECRET || 'access-secret-change-in-production'
-const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'refresh-secret-change-in-production'
+const ACCESS_SECRET = process.env.JWT_ACCESS_SECRET
+const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET
+
+if (!ACCESS_SECRET || !REFRESH_SECRET) {
+  throw new Error('JWT_ACCESS_SECRET and JWT_REFRESH_SECRET environment variables are required')
+}
+
 const ACCESS_EXPIRES_IN = process.env.JWT_ACCESS_EXPIRES_IN || '15m'
 const REFRESH_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN || '7d'
 

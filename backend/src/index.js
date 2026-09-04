@@ -1,20 +1,28 @@
 const express = require('express')
 const cors = require('cors')
+const helmet = require('helmet')
 const dotenv = require('dotenv')
 const logger = require('./utils/logger')
 const reminderService = require('./services/reminder')
 const { errorHandler, notFoundHandler } = require('./middleware/errorHandler')
+const { apiLimiter, authLimiter, paymentLimiter } = require('./middleware/rateLimiter')
 
 dotenv.config()
 
 const app = express()
 const PORT = process.env.PORT || 4000
 
+// Security headers
+app.use(helmet())
+
 // Middleware
 app.use(cors({
   origin: process.env.FRONTEND_URL || 'http://localhost:5173',
   credentials: true
 }))
+
+// Baseline rate limit for the API
+app.use('/api', apiLimiter)
 app.use(express.urlencoded({ extended: true }))
 
 // Webhooks route MUST be before express.json() to get raw body for Stripe signature verification

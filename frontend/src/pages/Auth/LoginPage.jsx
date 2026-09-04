@@ -241,6 +241,11 @@ export default function LoginPage() {
                     </div>
                     {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
                   </div>
+                  <div className="flex justify-end -mt-2">
+                    <Link to="/forgot-password" className="text-xs text-primary hover:underline">
+                      ¿Olvidaste tu contraseña?
+                    </Link>
+                  </div>
                   <Button type="submit" className="w-full h-11 rounded-xl font-medium shadow-lg shadow-primary/25 hover:shadow-primary/35 transition-shadow" disabled={loading}>
                     {loading ? (
                       <span className="flex items-center gap-2">
@@ -283,6 +288,11 @@ export default function LoginPage() {
                       />
                     </div>
                     {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
+                  </div>
+                  <div className="flex justify-end -mt-2">
+                    <Link to="/forgot-password" className="text-xs text-primary hover:underline">
+                      ¿Olvidaste tu contraseña?
+                    </Link>
                   </div>
                   <Button type="submit" className="w-full h-11 rounded-xl font-medium shadow-lg shadow-primary/25 hover:shadow-primary/35 transition-shadow" disabled={loading}>
                     {loading ? (

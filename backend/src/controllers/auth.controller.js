@@ -1,8 +1,12 @@
+const crypto = require('crypto')
 const bcrypt = require('bcryptjs')
 const db = require('../services/database')
 const { supabaseAdmin } = require('../config/supabase')
+const emailService = require('../services/email')
 const { generateAccessToken, generateRefreshToken, verifyRefreshToken, getRefreshTokenExpiryDate } = require('../utils/jwt')
 const { registerSchema, loginSchema, refreshTokenSchema } = require('../utils/validators')
+
+const RESET_TOKEN_TTL_MS = 30 * 60 * 1000 // 30 minutes
 
 class AuthController {
   async register(req, res, next) {
@@ -204,6 +208,59 @@ class AuthController {
       }
 
       res.json({ message: 'Logged out successfully' })
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  async forgotPassword(req, res, next) {
+    try {
+      const { email } = req.validatedData
+
+      const user = await db.getUserByEmail(email)
+
+      // Always return 200 to avoid leaking which emails are registered
+      if (user) {
+        const token = crypto.randomBytes(32).toString('hex')
+        const expiresAt = new Date(Date.now() + RESET_TOKEN_TTL_MS)
+
+        await db.createPasswordResetToken(user.id, token, expiresAt)
+
+        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173'
+        const resetLink = `${frontendUrl}/reset-password?token=${token}`
+
+        await emailService.sendPasswordReset(user, resetLink)
+      }
+
+      res.json({ message: 'If that email exists, we sent a password reset link.' })
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  async resetPassword(req, res, next) {
+    try {
+      const { token, password } = req.validatedData
+
+      const resetRecord = await db.getValidPasswordResetToken(token)
+      if (!resetRecord) {
+        return res.status(400).json({ error: 'Invalid or expired reset token' })
+      }
+
+      const user = await db.getUserById(resetRecord.user_id)
+      if (!user) {
+        return res.status(400).json({ error: 'Invalid or expired reset token' })
+      }
+
+      const passwordHash = await bcrypt.hash(password, 12)
+
+      await db.updateUserPassword(user.id, passwordHash)
+      await db.markPasswordResetUsed(token)
+
+      // Revoke all existing sessions after a password change
+      await db.revokeAllUserTokens(user.id)
+
+      res.json({ message: 'Password updated successfully. Please log in again.' })
     } catch (error) {
       next(error)
     }

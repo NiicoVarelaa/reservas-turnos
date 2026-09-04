@@ -92,6 +92,56 @@ class DatabaseService {
     return true
   }
 
+  async updateUserPassword(userId, passwordHash) {
+    const { data, error } = await supabaseAdmin
+      .from('users')
+      .update({ password_hash: passwordHash })
+      .eq('id', userId)
+      .select()
+      .single()
+
+    if (error) throw error
+    return data
+  }
+
+  async createPasswordResetToken(userId, token, expiresAt) {
+    const { data, error } = await supabaseAdmin
+      .from('password_reset_tokens')
+      .insert({
+        user_id: userId,
+        token,
+        expires_at: expiresAt.toISOString()
+      })
+      .select()
+      .single()
+
+    if (error) throw error
+    return data
+  }
+
+  async getValidPasswordResetToken(token) {
+    const { data, error } = await supabaseAdmin
+      .from('password_reset_tokens')
+      .select('*')
+      .eq('token', token)
+      .is('used_at', null)
+      .gt('expires_at', new Date().toISOString())
+      .single()
+
+    if (error) return null
+    return data
+  }
+
+  async markPasswordResetUsed(token) {
+    const { error } = await supabaseAdmin
+      .from('password_reset_tokens')
+      .update({ used_at: new Date().toISOString() })
+      .eq('token', token)
+
+    if (error) throw error
+    return true
+  }
+
   async getUserByGoogleId(googleId) {
     const { data, error } = await supabaseAdmin
       .from('users')

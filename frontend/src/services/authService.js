@@ -88,6 +88,16 @@ export const authService = {
     return data
   },
 
+  async forgotPassword(email) {
+    const { data } = await api.post('/api/auth/forgot-password', { email })
+    return data
+  },
+
+  async resetPassword(token, password) {
+    const { data } = await api.post('/api/auth/reset-password', { token, password })
+    return data
+  },
+
   isAuthenticated() {
     return !!this.getAccessToken()
   }

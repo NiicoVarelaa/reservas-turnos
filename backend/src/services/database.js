@@ -578,7 +578,7 @@ class DatabaseService {
       .select(`
         *,
         services(name, duration_min, price_cents),
-        businesses(name, slug, logo_url)
+        businesses(name, slug, logo_url, timezone)
       `)
       .order('start_at', { ascending: true })
 

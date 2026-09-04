@@ -1,6 +1,27 @@
 const { sendWhatsAppMessage } = require('../config/whatsapp')
 const db = require('../services/database')
 
+function formatAppointmentDateTime(date, appointment) {
+  // Appointments are stored in UTC; display them in the business's timezone
+  const timezone = appointment.businesses?.timezone || 'UTC'
+  const d = new Date(date)
+
+  const formattedDate = d.toLocaleDateString('es-ES', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    timeZone: timezone
+  })
+  const formattedTime = d.toLocaleTimeString('es-ES', {
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: timezone
+  })
+
+  return { formattedDate, formattedTime }
+}
+
 class WhatsAppService {
   async sendConfirmation(appointmentId) {
     try {
@@ -10,17 +31,7 @@ class WhatsAppService {
         throw new Error(`Appointment ${appointmentId} not found`)
       }
 
-      const startDate = new Date(appointment.start_at)
-      const formattedDate = startDate.toLocaleDateString('es-ES', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-      })
-      const formattedTime = startDate.toLocaleTimeString('es-ES', {
-        hour: '2-digit',
-        minute: '2-digit'
-      })
+      const { formattedDate, formattedTime } = formatAppointmentDateTime(appointment.start_at, appointment)
 
       const components = [
         {
@@ -73,17 +84,7 @@ class WhatsAppService {
         throw new Error(`Appointment ${appointmentId} not found`)
       }
 
-      const startDate = new Date(appointment.start_at)
-      const formattedDate = startDate.toLocaleDateString('es-ES', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-      })
-      const formattedTime = startDate.toLocaleTimeString('es-ES', {
-        hour: '2-digit',
-        minute: '2-digit'
-      })
+      const { formattedDate, formattedTime } = formatAppointmentDateTime(appointment.start_at, appointment)
 
       const components = [
         {

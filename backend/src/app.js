@@ -1,0 +1,59 @@
+const express = require('express')
+const cors = require('cors')
+const helmet = require('helmet')
+const dotenv = require('dotenv')
+const logger = require('./utils/logger')
+const { errorHandler, notFoundHandler } = require('./middleware/errorHandler')
+const { apiLimiter } = require('./middleware/rateLimiter')
+
+dotenv.config()
+
+const app = express()
+
+// Security headers
+app.use(helmet())
+
+// Middleware
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  credentials: true
+}))
+
+// Baseline rate limit for the API
+app.use('/api', apiLimiter)
+app.use(express.urlencoded({ extended: true }))
+
+// Webhooks route MUST be before express.json() to get raw body for Stripe signature verification
+app.use('/api/webhooks', require('./routes/webhooks.routes'))
+
+// JSON parsing for all other routes
+app.use(express.json())
+
+// HTTP logging
+app.use(logger.http)
+
+// Routes
+app.use('/api/auth', require('./routes/auth.routes'))
+app.use('/api/business', require('./routes/business.routes'))
+app.use('/api/services', require('./routes/services.routes'))
+app.use('/api/schedules', require('./routes/schedules.routes'))
+app.use('/api/bookings', require('./routes/bookings.routes'))
+app.use('/api/payments', require('./routes/payments.routes'))
+app.use('/api/appointments', require('./routes/appointments.routes'))
+
+// Health check
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime()
+  })
+})
+
+// 404 handler
+app.use(notFoundHandler)
+
+// Error handler
+app.use(errorHandler)
+
+module.exports = app

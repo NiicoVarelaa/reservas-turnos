@@ -1,8 +1,9 @@
 const request = require('supertest')
+const app = require('../src/app')
 
 describe('Health Check', () => {
   it('should return 200 OK', async () => {
-    const response = await request('http://localhost:4000')
+    const response = await request(app)
       .get('/api/health')
 
     expect(response.status).toBe(200)
@@ -14,7 +15,7 @@ describe('Health Check', () => {
 
 describe('Services', () => {
   it('should return list of services', async () => {
-    const response = await request('http://localhost:4000')
+    const response = await request(app)
       .get('/api/services')
 
     expect(response.status).toBe(200)
@@ -25,7 +26,7 @@ describe('Services', () => {
 
 describe('Bookings', () => {
   it('should reject invalid booking data', async () => {
-    const response = await request('http://localhost:4000')
+    const response = await request(app)
       .post('/api/bookings')
       .send({ invalid: 'data' })
 
@@ -36,7 +37,7 @@ describe('Bookings', () => {
 
 describe('Webhooks', () => {
   it('should reject invalid stripe signature', async () => {
-    const response = await request('http://localhost:4000')
+    const response = await request(app)
       .post('/api/webhooks/stripe')
       .set('stripe-signature', 'invalid')
       .send('{}')

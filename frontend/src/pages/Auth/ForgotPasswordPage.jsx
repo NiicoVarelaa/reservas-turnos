@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { authService } from '@/services/authService'
-import { forgotPasswordSchema } from '@/validators'
+import { forgotPasswordSchema, formatZodErrors } from '@/validators'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -21,9 +21,7 @@ export default function ForgotPasswordPage() {
 
     const result = forgotPasswordSchema.safeParse({ email })
     if (!result.success) {
-      const formatted = {}
-      result.error.errors.forEach(err => { formatted[err.path[0]] = err.message })
-      setErrors(formatted)
+      setErrors(formatZodErrors(result.error))
       setLoading(false)
       return
     }

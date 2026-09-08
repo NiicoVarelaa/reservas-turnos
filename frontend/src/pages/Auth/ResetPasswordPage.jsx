@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { authService } from '@/services/authService'
-import { resetPasswordSchema } from '@/validators'
+import { resetPasswordSchema, formatZodErrors } from '@/validators'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -30,9 +30,7 @@ export default function ResetPasswordPage() {
 
     const result = resetPasswordSchema.safeParse({ password, confirmPassword })
     if (!result.success) {
-      const formatted = {}
-      result.error.errors.forEach(err => { formatted[err.path[0]] = err.message })
-      setErrors(formatted)
+      setErrors(formatZodErrors(result.error))
       return
     }
 

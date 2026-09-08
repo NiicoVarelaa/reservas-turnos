@@ -45,7 +45,7 @@ export default function AuthModal({ open, onOpenChange, onContinue, onLogin }) {
           phone: clientInfo.phone
         })
         if (!result.success) {
-          setError(result.error.errors[0]?.message || 'Datos inválidos')
+          setError(result.error.issues[0]?.message || 'Datos inválidos')
           setLoading(false)
           return
         }
@@ -57,7 +57,7 @@ export default function AuthModal({ open, onOpenChange, onContinue, onLogin }) {
       } else {
         const result = loginSchema.safeParse({ email, password })
         if (!result.success) {
-          setError(result.error.errors[0]?.message || 'Datos inválidos')
+          setError(result.error.issues[0]?.message || 'Datos inválidos')
           setLoading(false)
           return
         }

@@ -62,9 +62,10 @@ export const profileUpdateSchema = z.object({
 })
 
 export function formatZodErrors(error) {
-  if (!error || !error.errors) return {}
+  if (!error) return {}
+  const issues = error.issues || error.errors || []
   const formatted = {}
-  error.errors.forEach(e => {
+  issues.forEach(e => {
     const field = e.path.join('.')
     formatted[field] = e.message
   })

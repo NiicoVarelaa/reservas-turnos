@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@/store/authStore'
-import { loginSchema } from '@/validators'
+import { loginSchema, formatZodErrors } from '@/validators'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -27,9 +27,7 @@ export default function LoginPage() {
 
     const result = loginSchema.safeParse({ email: professionalEmail, password: professionalPassword })
     if (!result.success) {
-      const formatted = {}
-      result.error.errors.forEach(err => { formatted[err.path[0]] = err.message })
-      setErrors(formatted)
+      setErrors(formatZodErrors(result.error))
       setLoading(false)
       return
     }
@@ -53,9 +51,7 @@ export default function LoginPage() {
 
     const result = loginSchema.safeParse({ email: clientEmail, password: clientPassword })
     if (!result.success) {
-      const formatted = {}
-      result.error.errors.forEach(err => { formatted[err.path[0]] = err.message })
-      setErrors(formatted)
+      setErrors(formatZodErrors(result.error))
       setLoading(false)
       return
     }

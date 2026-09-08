@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useBookingStore } from '@/store/bookingStore'
-import { bookingSchema } from '@/validators'
+import { bookingSchema, formatZodErrors } from '@/validators'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -14,9 +14,7 @@ export default function BookingForm({ onSubmit, loading }) {
   const validate = () => {
     const result = bookingSchema.safeParse(clientInfo)
     if (!result.success) {
-      const formatted = {}
-      result.error.errors.forEach(err => { formatted[err.path[0]] = err.message })
-      setErrors(formatted)
+      setErrors(formatZodErrors(result.error))
       return false
     }
     setErrors({})

@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@/store/authStore'
-import { registerSchema } from '@/validators'
+import { registerSchema, formatZodErrors } from '@/validators'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -65,12 +65,7 @@ export default function RegisterPage() {
     })
 
     if (!result.success) {
-      const formatted = {}
-      result.error.errors.forEach(err => {
-        const field = err.path[0]
-        formatted[field] = err.message
-      })
-      setErrors(formatted)
+      setErrors(formatZodErrors(result.error))
       return
     }
 

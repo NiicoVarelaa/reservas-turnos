@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import { Switch } from '@/components/ui/switch'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import ResponsiveModal from '@/components/ui/responsive-modal'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { User, Lock, Mail, Phone, ArrowRight } from 'lucide-react'
 
@@ -73,16 +73,13 @@ export default function AuthModal({ open, onOpenChange, onContinue, onLogin }) {
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>¿Cómo querés continuar?</DialogTitle>
-          <DialogDescription>
-            Podés reservar como invitado o iniciar sesión para ver tus turnos
-          </DialogDescription>
-        </DialogHeader>
-
-        <Tabs value={mode} onValueChange={setMode} className="mt-4">
+    <ResponsiveModal
+      open={open}
+      onOpenChange={onOpenChange}
+      title="¿Cómo querés continuar?"
+      description="Podés reservar como invitado o iniciar sesión para ver tus turnos"
+    >
+      <Tabs value={mode} onValueChange={setMode} className="mt-4">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="guest">Invitado</TabsTrigger>
             <TabsTrigger value="login">Iniciar Sesión</TabsTrigger>
@@ -186,7 +183,6 @@ export default function AuthModal({ open, onOpenChange, onContinue, onLogin }) {
             </Card>
           </TabsContent>
         </Tabs>
-      </DialogContent>
-    </Dialog>
+    </ResponsiveModal>
   )
 }

@@ -7,7 +7,8 @@
     "dev": "nodemon src/index.js",
     "start": "node src/index.js",
     "test": "jest --forceExit --detectOpenHandles",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage --forceExit --detectOpenHandles"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",
@@ -30,6 +31,16 @@
   },
   "jest": {
     "testEnvironment": "node",
-    "testTimeout": 10000
+    "testTimeout": 10000,
+    "collectCoverageFrom": [
+      "src/**/*.js",
+      "!src/index.js"
+    ],
+    "coverageReporters": [
+      "text",
+      "lcov",
+      "html"
+    ],
+    "coverageDirectory": "coverage"
   }
 }

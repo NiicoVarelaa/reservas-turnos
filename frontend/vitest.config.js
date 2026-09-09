@@ -16,6 +16,18 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: ['./src/test/setup.js'],
-    css: false
+    css: false,
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'lcov', 'html'],
+      include: ['src/**/*.{js,jsx}'],
+      exclude: [
+        'src/main.jsx',
+        'src/test/**',
+        '**/*.test.{js,jsx}',
+        'src/lib/supabaseClient.js',
+        'src/services/api.js'
+      ]
+    }
   }
 })

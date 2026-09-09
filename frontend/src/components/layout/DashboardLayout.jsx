@@ -4,6 +4,7 @@ import { useAuthStore } from '@/store/authStore'
 import { Button } from '@/components/ui/button'
 import { ToastViewport } from '@/components/ui/toast'
 import InitialsAvatar from '@/components/ui/InitialsAvatar'
+import { Drawer, DrawerContent } from '@/components/ui/drawer'
 import {
   Calendar,
   Clock,
@@ -112,24 +113,13 @@ function MobileHeader({ onMenuToggle, isOpen }) {
 
 function MobileSidebar({ open, onClose }) {
   return (
-    <>
-      {open && (
-        <div
-          className="fixed inset-0 bg-black/20 z-40 lg:hidden animate-in fade-in duration-200"
-          onClick={onClose}
-        />
-      )}
-      <aside className={`fixed top-0 left-0 z-50 h-full w-72 bg-card border-r shadow-xl transition-transform duration-300 ease-in-out lg:hidden ${
-        open ? 'translate-x-0' : '-translate-x-full'
-      }`}>
+    <Drawer open={open} onOpenChange={(next) => { if (!next) onClose() }}>
+      <DrawerContent side="left" className="w-72 max-w-none p-0">
         <div className="flex items-center justify-between px-4 h-14 border-b">
           <Link to="/dashboard" className="flex items-center gap-2 font-semibold text-lg" onClick={onClose}>
             <img src="/logo.png" alt="Smile Book" className="w-8 h-8 object-contain" />
             <span>Smile Book</span>
           </Link>
-          <Button variant="ghost" size="icon" onClick={onClose} aria-label="Cerrar menú">
-            <X className="w-5 h-5" />
-          </Button>
         </div>
         <div className="flex flex-col h-[calc(100%-3.5rem)] p-4">
           <SidebarNav onNavClick={onClose} />
@@ -137,8 +127,8 @@ function MobileSidebar({ open, onClose }) {
             <UserSection />
           </div>
         </div>
-      </aside>
-    </>
+      </DrawerContent>
+    </Drawer>
   )
 }
 

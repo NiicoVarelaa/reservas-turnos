@@ -1,12 +1,14 @@
 import { useState, useCallback, useEffect } from 'react'
 import { useAuthStore } from '@/store/authStore'
 import { servicesApi } from '@/services/api'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
-import { RefreshCw, Plus, Pencil, Trash2, Clock, DollarSign, StickyNote, X } from 'lucide-react'
+import ResponsiveModal from '@/components/ui/responsive-modal'
+import ConfirmDialog from '@/components/ui/confirm-dialog'
+import { RefreshCw, Plus, Pencil, Trash2, Clock, DollarSign, StickyNote } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
 import { toast } from '@/hooks/use-toast'
 
@@ -18,6 +20,7 @@ export default function ServicesPage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(null)
+  const [deleteTarget, setDeleteTarget] = useState(null)
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState(emptyForm)
 
@@ -93,12 +96,14 @@ export default function ServicesPage() {
     }
   }
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('¿Seguro que querés eliminar este servicio? Esta acción no se puede deshacer.')) return
+  const handleDeleteConfirm = async () => {
+    const id = deleteTarget
+    if (!id) return
     setDeleting(id)
     try {
       await servicesApi.remove(id)
       toast({ title: 'Servicio eliminado', variant: 'success' })
+      setDeleteTarget(null)
       await fetchServices()
     } catch (err) {
       toast({ title: 'Error', description: err.response?.data?.error || 'No se pudo eliminar el servicio', variant: 'destructive' })
@@ -125,51 +130,45 @@ export default function ServicesPage() {
         </div>
       </div>
 
-      {showForm && (
-        <Card className="mb-6">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0">
-            <CardTitle className="text-lg">{form.id ? 'Editar servicio' : 'Nuevo servicio'}</CardTitle>
-            <Button variant="ghost" size="icon" onClick={() => setShowForm(false)} aria-label="Cerrar">
-              <X className="w-4 h-4" />
-            </Button>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Nombre del servicio *</Label>
-                <Input id="name" name="name" value={form.name} onChange={handleField} placeholder="Consulta General" required />
+      <ResponsiveModal
+        open={showForm}
+        onOpenChange={setShowForm}
+        title={form.id ? 'Editar servicio' : 'Nuevo servicio'}
+      >
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="name">Nombre del servicio *</Label>
+            <Input id="name" name="name" value={form.name} onChange={handleField} placeholder="Consulta General" required />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="description">Descripción</Label>
+            <Input id="description" name="description" value={form.description} onChange={handleField} placeholder="Descripción del servicio (opcional)" />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="duration_min">Duración (minutos) *</Label>
+              <div className="flex items-center gap-2">
+                <Clock className="w-4 h-4 text-muted-foreground" />
+                <Input id="duration_min" name="duration_min" type="number" value={form.duration_min} onChange={handleField} min="5" step="5" required />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="description">Descripción</Label>
-                <Input id="description" name="description" value={form.description} onChange={handleField} placeholder="Descripción del servicio (opcional)" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="price_cents">Precio *</Label>
+              <div className="flex items-center gap-2">
+                <DollarSign className="w-4 h-4 text-muted-foreground" />
+                <Input id="price_cents" name="price_cents" type="number" value={form.price_cents} onChange={handleField} min="0" step="100" required />
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="duration_min">Duración (minutos) *</Label>
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-muted-foreground" />
-                    <Input id="duration_min" name="duration_min" type="number" value={form.duration_min} onChange={handleField} min="5" step="5" required />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="price_cents">Precio *</Label>
-                  <div className="flex items-center gap-2">
-                    <DollarSign className="w-4 h-4 text-muted-foreground" />
-                    <Input id="price_cents" name="price_cents" type="number" value={form.price_cents} onChange={handleField} min="0" step="100" required />
-                  </div>
-                  {form.price_cents > 0 && (
-                    <p className="text-xs text-muted-foreground">{formatCurrency(form.price_cents, currency)}</p>
-                  )}
-                </div>
-              </div>
-              <div className="flex justify-end gap-2">
-                <Button type="button" variant="ghost" onClick={() => setShowForm(false)}>Cancelar</Button>
-                <Button type="submit" disabled={saving}>{saving ? 'Guardando...' : (form.id ? 'Guardar cambios' : 'Crear servicio')}</Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-      )}
+              {form.price_cents > 0 && (
+                <p className="text-xs text-muted-foreground">{formatCurrency(form.price_cents, currency)}</p>
+              )}
+            </div>
+          </div>
+          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
+            <Button type="button" variant="ghost" onClick={() => setShowForm(false)}>Cancelar</Button>
+            <Button type="submit" disabled={saving}>{saving ? 'Guardando...' : (form.id ? 'Guardar cambios' : 'Crear servicio')}</Button>
+          </div>
+        </form>
+      </ResponsiveModal>
 
       {loading ? (
         <div className="space-y-2">
@@ -202,7 +201,7 @@ export default function ServicesPage() {
                     <Button variant="ghost" size="icon" onClick={() => openEdit(svc)} aria-label={`Editar ${svc.name}`}>
                       <Pencil className="w-4 h-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => handleDelete(svc.id)} disabled={deleting === svc.id} aria-label={`Eliminar ${svc.name}`}>
+                    <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => setDeleteTarget(svc.id)} disabled={deleting === svc.id} aria-label={`Eliminar ${svc.name}`}>
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>
@@ -212,6 +211,18 @@ export default function ServicesPage() {
           ))}
         </div>
       )}
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => { if (!open) setDeleteTarget(null) }}
+        title="Eliminar servicio"
+        description="¿Seguro que querés eliminar este servicio? Esta acción no se puede deshacer."
+        confirmLabel="Eliminar"
+        cancelLabel="Cancelar"
+        confirmVariant="destructive"
+        loading={deleting !== null}
+        onConfirm={handleDeleteConfirm}
+      />
     </div>
   )
 }

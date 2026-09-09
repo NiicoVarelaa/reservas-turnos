@@ -9,6 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { appointmentsApi } from '@/services/api'
 import { Calendar, Clock, Mail, Phone, Search, RefreshCw, ChevronDown, ChevronUp, StickyNote, CheckCircle2, CreditCard, XCircle, DollarSign } from 'lucide-react'
 import { getStatusBadge, formatCurrency } from '@/lib/utils'
+import ConfirmDialog from '@/components/ui/confirm-dialog'
 import { toast } from '@/hooks/use-toast'
 
 export default function BookingsPage() {
@@ -17,6 +18,7 @@ export default function BookingsPage() {
   const [statusFilter, setStatusFilter] = useState('all')
   const [expandedId, setExpandedId] = useState(null)
   const [actionLoading, setActionLoading] = useState(null)
+  const [cancelTarget, setCancelTarget] = useState(null)
 
   const handleRefresh = useCallback(async () => {
     toast({ title: 'Actualizando...', description: 'Cargando reservas' })
@@ -41,12 +43,14 @@ export default function BookingsPage() {
   const handleConfirm = (id) => runAction(id, { status: 'confirmed' }, 'Reserva confirmada')
   const handleMarkPaid = (id) => runAction(id, { status: 'paid' }, 'Reserva marcada como pagada')
 
-  const handleCancel = async (id) => {
+  const getCancelMessage = (id) => {
     const isPaid = appointments.find(a => a.id === id)?.status === 'paid'
-    const msg = isPaid
+    return isPaid
       ? 'Esta reserva ya fue pagada. ¿Confirmás la cancelación? El reembolso debe gestionarse por separado.'
       : '¿Seguro que querés cancelar esta reserva?'
-    if (!window.confirm(msg)) return
+  }
+
+  const handleCancel = async (id) => {
     if (actionLoading) return
     setActionLoading(id)
     try {
@@ -57,6 +61,7 @@ export default function BookingsPage() {
       toast({ title: 'Error', description: err.response?.data?.error || 'No se pudo cancelar la reserva', variant: 'destructive' })
     } finally {
       setActionLoading(null)
+      setCancelTarget(null)
     }
   }
 
@@ -86,7 +91,7 @@ export default function BookingsPage() {
             Marcar pagado
           </Button>
         )}
-        <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => handleCancel(apt.id)} disabled={isLoading}>
+        <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => setCancelTarget(apt.id)} disabled={isLoading}>
           <XCircle className="w-4 h-4 mr-1.5" />
           Cancelar
         </Button>
@@ -95,7 +100,7 @@ export default function BookingsPage() {
   }
 
   return (
-    <div>
+    <>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold">Reservas</h1>
         <Button variant="outline" size="sm" onClick={handleRefresh}>
@@ -203,6 +208,18 @@ export default function BookingsPage() {
           })}
         </div>
       )}
-    </div>
+
+      <ConfirmDialog
+        open={!!cancelTarget}
+        onOpenChange={(open) => { if (!open) setCancelTarget(null) }}
+        title="Cancelar reserva"
+        description={cancelTarget ? getCancelMessage(cancelTarget) : ''}
+        confirmLabel="Confirmar cancelación"
+        cancelLabel="Volver"
+        confirmVariant="destructive"
+        loading={actionLoading !== null}
+        onConfirm={() => cancelTarget && handleCancel(cancelTarget)}
+      />
+    </>
   )
 }

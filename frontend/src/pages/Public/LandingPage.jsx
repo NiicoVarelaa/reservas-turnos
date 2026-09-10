@@ -15,7 +15,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
-  Calendar, Clock, MapPin, Phone, Mail, Star, ChevronRight, Shield, Heart,
+  Calendar, CalendarCheck, Clock, MapPin, Phone, Mail, Star, ChevronRight, Shield, ShieldCheck, Heart,
   Facebook, Instagram, CheckCircle2, MessageSquare, Stethoscope, Quote
 } from 'lucide-react'
 import WhatsAppIcon from '@/components/icons/WhatsAppIcon'
@@ -32,6 +32,15 @@ const STATS = [
   { value: '10+', label: 'años de experiencia' },
   { value: '+5000', label: 'pacientes atendidos' },
   { value: '4.9★', label: 'valoración en Google' },
+]
+
+const FEATURES = [
+  { icon: Shield, title: 'Profesionalismo', text: 'Equipos de última generación y técnicas actualizadas en cada tratamiento.' },
+  { icon: Clock, title: 'Puntualidad', text: 'Respetamos tu tiempo con turnos puntuales y sin esperas innecesarias.' },
+  { icon: Heart, title: 'Atención personalizada', text: 'Cada paciente recibe un plan de tratamiento único, a su medida.' },
+  { icon: CalendarCheck, title: 'Reserva online', text: 'Elegí tu turno en menos de 2 minutos, las 24 horas, todos los días.' },
+  { icon: WhatsAppIcon, title: 'Confirmación por WhatsApp', text: 'Te confirmamos tu turno al instante y coordinamos todo por mensaje.' },
+  { icon: ShieldCheck, title: 'Pagos seguros', text: 'Pagá de forma segura online al confirmar tu turno, con Stripe.' },
 ]
 
 export default function LandingPage() {
@@ -203,61 +212,36 @@ export default function LandingPage() {
       </section>
 
       {/* Features - Ventajas */}
-      <section className="py-16 bg-muted/50">
+      <section className="py-16 lg:py-24 bg-muted/50">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <Badge variant="secondary" className="mb-4">
-              <Star className="w-3 h-3 mr-1 fill-primary text-primary" />
-              4.9 en Google · +200 reseñas
-            </Badge>
-            <h2 className="text-2xl font-bold mb-4">Ventajas</h2>
-            <p className="text-sm text-muted-foreground">
-              Todo pensado para tu comodidad y salud bucal
-            </p>
+            <Reveal>
+              <Badge variant="secondary" className="mb-4">
+                <Star className="w-3 h-3 mr-1 fill-primary text-primary" />
+                Ventajas
+              </Badge>
+              <h2 className="text-3xl font-bold mb-4">Una mejor experiencia, de principio a fin</h2>
+              <p className="text-muted-foreground text-base max-w-2xl mx-auto">
+                Todo pensado para que cuidar tu sonrisa sea simple, seguro y cómodo
+              </p>
+            </Reveal>
           </div>
-          <div className="grid md:grid-cols-3 gap-8">
-            {/* Feature 1 */}
-            <Card
-              className="group h-full border-border/70 bg-background transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/5 hover:border-primary/30"
-            >
-              <CardContent className="pt-6 text-left">
-                <div className="w-10 h-10 rounded-xl bg-teal/10 text-teal flex items-center justify-center mb-4 mx-auto">
-                  <Shield className="w-5 h-5" />
-                </div>
-                <h3 className="font-semibold mb-2">Profesionalismo</h3>
-                <p className="text-sm text-muted-foreground">
-                  Equipos de última generación y técnicas actualizadas
-                </p>
-              </CardContent>
-            </Card>
-            {/* Feature 2 */}
-            <Card
-              className="group h-full border-border/70 bg-background transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/5 hover:border-primary/30"
-            >
-              <CardContent className="pt-6 text-left">
-                <div className="w-10 h-10 rounded-xl bg-teal/10 text-teal flex items-center justify-center mb-4 mx-auto">
-                  <Clock className="w-5 h-5" />
-                </div>
-                <h3 className="font-semibold mb-2">Puntualidad</h3>
-                <p className="text-sm text-muted-foreground">
-                  Respetamos tu tiempo con turnos puntuales
-                </p>
-              </CardContent>
-            </Card>
-            {/* Feature 3 */}
-            <Card
-              className="group h-full border-border/70 bg-background transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/5 hover:border-primary/30"
-            >
-              <CardContent className="pt-6 text-left">
-                <div className="w-10 h-10 rounded-xl bg-teal/10 text-teal flex items-center justify-center mb-4 mx-auto">
-                  <Heart className="w-5 h-5" />
-                </div>
-                <h3 className="font-semibold mb-2">Atención Personalizada</h3>
-                <p className="text-sm text-muted-foreground">
-                  Cada paciente recibe un plan de tratamiento único
-                </p>
-              </CardContent>
-            </Card>
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {FEATURES.map((feature, index) => (
+              <Reveal key={feature.title} delay={index * 75} className="h-full">
+                <Card className="group relative h-full border-border/70 bg-background transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/10 hover:border-primary/30">
+                  <CardContent className="pt-6">
+                    <div className="w-12 h-12 rounded-2xl bg-teal/10 text-teal flex items-center justify-center mb-4 transition-colors duration-300 group-hover:bg-teal group-hover:text-white">
+                      <feature.icon className="w-6 h-6" />
+                    </div>
+                    <h3 className="font-semibold mb-2">{feature.title}</h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      {feature.text}
+                    </p>
+                  </CardContent>
+                </Card>
+              </Reveal>
+            ))}
           </div>
         </div>
       </section>
@@ -266,14 +250,16 @@ export default function LandingPage() {
       <section className="py-16">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <Badge variant="secondary" className="mb-2">
-              <Star className="w-3 h-3 mr-1 fill-primary text-primary" />
-              Servicios
-            </Badge>
-            <h2 className="text-3xl font-bold mb-4">Nuestros Servicios</h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              Ofrecemos una amplia gama de tratamientos para cuidar tu salud bucal
-            </p>
+            <Reveal>
+              <Badge variant="secondary" className="mb-4">
+                <Star className="w-3 h-3 mr-1 fill-primary text-primary" />
+                Servicios
+              </Badge>
+              <h2 className="text-3xl font-bold mb-4">Nuestros Servicios</h2>
+              <p className="text-muted-foreground text-base max-w-2xl mx-auto">
+                Ofrecemos una amplia gama de tratamientos para cuidar tu salud bucal
+              </p>
+            </Reveal>
           </div>
 
           {servicesLoading ? (

@@ -1,5 +1,10 @@
+process.env.NODE_ENV = 'test'
+
+jest.mock('../src/services/database', () => require('./helpers/database'))
+
 const request = require('supertest')
 const app = require('../src/app')
+const db = require('./helpers/database')
 
 describe('Health Check', () => {
   it('should return 200 OK', async () => {
@@ -15,6 +20,8 @@ describe('Health Check', () => {
 
 describe('Services', () => {
   it('should return list of services', async () => {
+    db.getServices.mockResolvedValue([])
+
     const response = await request(app)
       .get('/api/services')
 

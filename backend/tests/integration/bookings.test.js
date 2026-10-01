@@ -4,7 +4,9 @@ process.env.JWT_REFRESH_SECRET = require('../helpers/constants').TEST_REFRESH_SE
 process.env.FRONTEND_URL = 'http://localhost:5173'
 
 jest.mock('../../src/services/database', () => require('../helpers/database'))
+jest.mock('../../src/config/supabase', () => require('../helpers/supabase'))
 jest.mock('../../src/services/whatsapp', () => require('../helpers/whatsapp'))
+jest.mock('../../src/config/stripe', () => require('../helpers/stripe'))
 
 const request = require('supertest')
 

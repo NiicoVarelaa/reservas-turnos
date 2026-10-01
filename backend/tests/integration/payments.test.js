@@ -1,8 +1,11 @@
 process.env.NODE_ENV = 'test'
+process.env.JWT_ACCESS_SECRET = require('../helpers/constants').TEST_ACCESS_SECRET
+process.env.JWT_REFRESH_SECRET = require('../helpers/constants').TEST_REFRESH_SECRET
 process.env.STRIPE_WEBHOOK_SECRET = 'whsec_test'
 process.env.FRONTEND_URL = 'http://localhost:5173'
 
 jest.mock('../../src/services/database', () => require('../helpers/database'))
+jest.mock('../../src/config/supabase', () => require('../helpers/supabase'))
 jest.mock('../../src/config/stripe', () => require('../helpers/stripe'))
 jest.mock('../../src/services/whatsapp', () => require('../helpers/whatsapp'))
 

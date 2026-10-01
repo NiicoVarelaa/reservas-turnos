@@ -5,6 +5,7 @@ jest.mock('../src/services/database', () => require('./helpers/database'))
 const request = require('supertest')
 const app = require('../src/app')
 const db = require('./helpers/database')
+const { stripe } = require('./helpers/stripe')
 
 describe('Health Check', () => {
   it('should return 200 OK', async () => {
@@ -44,6 +45,12 @@ describe('Bookings', () => {
 
 describe('Webhooks', () => {
   it('should reject invalid stripe signature', async () => {
+    // stripe is mocked globally in tests/setup.js, so constructEvent has to be
+    // told to reject the way the real SDK does on a bad signature.
+    stripe.webhooks.constructEvent.mockImplementation(() => {
+      throw new Error('No signatures found matching the expected signature for payload')
+    })
+
     const response = await request(app)
       .post('/api/webhooks/stripe')
       .set('stripe-signature', 'invalid')

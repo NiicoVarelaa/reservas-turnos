@@ -1,6 +1,7 @@
-import { useState, useCallback, useEffect } from 'react'
-import { useAuthStore } from '@/store/authStore'
-import { servicesApi } from '@/services/api'
+import { useMemo, useState } from 'react'
+import { useAuthUser } from '@/hooks/useAuth'
+import { useServices } from '@/hooks/useServices'
+import { useCreateService, useUpdateService, useDeleteService } from '@/hooks/useServiceMutations'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -15,33 +16,23 @@ import { toast } from '@/hooks/use-toast'
 const emptyForm = { id: null, name: '', description: '', duration_min: 30, price_cents: 5000 }
 
 export default function ServicesPage() {
-  const user = useAuthStore((s) => s.user)
-  const [services, setServices] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
-  const [deleting, setDeleting] = useState(null)
+  const user = useAuthUser()
+  const filters = useMemo(() => ({ professionalId: user?.id }), [user?.id])
+  const { services, loading, refetch } = useServices(filters)
   const [deleteTarget, setDeleteTarget] = useState(null)
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState(emptyForm)
 
-  const fetchServices = useCallback(async () => {
-    setLoading(true)
-    try {
-      const { data } = await servicesApi.getAll({ professionalId: user.id })
-      setServices((data.services || []).filter(s => s?.id))
-    } catch (err) {
-      toast({ title: 'Error', description: 'No se pudieron cargar los servicios', variant: 'destructive' })
-      setServices([])
-    } finally {
-      setLoading(false)
-    }
-  }, [user.id])
+  const createService = useCreateService()
+  const updateService = useUpdateService()
+  const deleteService = useDeleteService()
 
-  useEffect(() => { fetchServices() }, [fetchServices])
+  const saving = createService.isPending || updateService.isPending
+  const deleting = deleteService.isPending ? deleteService.variables : null
 
   const handleRefresh = async () => {
     toast({ title: 'Actualizando...' })
-    await fetchServices()
+    await refetch()
     toast({ title: 'Servicios actualizados', variant: 'success' })
   }
 
@@ -76,39 +67,32 @@ export default function ServicesPage() {
       toast({ title: 'La duración mínima es 5 minutos', variant: 'destructive' })
       return
     }
-    setSaving(true)
+    const payload = { name: form.name, description: form.description, duration_min: form.duration_min, price_cents: form.price_cents }
+
     try {
-      const payload = { name: form.name, description: form.description, duration_min: form.duration_min, price_cents: form.price_cents }
       if (form.id) {
-        await servicesApi.update(form.id, payload)
+        await updateService.mutateAsync({ id: form.id, updates: payload })
         toast({ title: 'Servicio actualizado', variant: 'success' })
       } else {
-        await servicesApi.create(payload)
+        await createService.mutateAsync(payload)
         toast({ title: 'Servicio creado', variant: 'success' })
       }
       setShowForm(false)
       setForm(emptyForm)
-      await fetchServices()
     } catch (err) {
       toast({ title: 'Error', description: err.response?.data?.error || 'No se pudo guardar el servicio', variant: 'destructive' })
-    } finally {
-      setSaving(false)
     }
   }
 
   const handleDeleteConfirm = async () => {
     const id = deleteTarget
     if (!id) return
-    setDeleting(id)
     try {
-      await servicesApi.remove(id)
+      await deleteService.mutateAsync(id)
       toast({ title: 'Servicio eliminado', variant: 'success' })
       setDeleteTarget(null)
-      await fetchServices()
     } catch (err) {
       toast({ title: 'Error', description: err.response?.data?.error || 'No se pudo eliminar el servicio', variant: 'destructive' })
-    } finally {
-      setDeleting(null)
     }
   }
 

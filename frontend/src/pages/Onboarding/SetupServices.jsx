@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { servicesApi } from '@/services/api'
+import { useCreateServices } from '@/hooks/useServiceMutations'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -31,8 +31,8 @@ export default function SetupServices() {
   const suggestedServices = DEFAULT_SERVICES[category] || DEFAULT_SERVICES.default
 
   const [services, setServices] = useState(suggestedServices)
-  const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const createServices = useCreateServices()
 
   const addService = () => setServices([...services, { name: '', duration_min: 30, price_cents: 5000, description: '' }])
   const removeService = (index) => setServices(services.filter((_, i) => i !== index))
@@ -48,14 +48,11 @@ export default function SetupServices() {
       return
     }
 
-    setLoading(true)
     try {
-      await Promise.all(validServices.map(service => servicesApi.create(service)))
+      await createServices.mutateAsync(validServices)
       navigate('/onboarding/schedule')
     } catch (err) {
       setError(err.response?.data?.error || err.message)
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -115,9 +112,9 @@ export default function SetupServices() {
               Agregar otro servicio
             </Button>
 
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button type="submit" className="w-full" disabled={createServices.isPending}>
               <Save className="w-4 h-4 mr-2" />
-              {loading ? 'Guardando...' : 'Guardar y Continuar'}
+              {createServices.isPending ? 'Guardando...' : 'Guardar y Continuar'}
             </Button>
           </form>
         </CardContent>

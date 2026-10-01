@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Outlet, useNavigate, Link, Navigate, useLocation } from 'react-router-dom'
-import { useAuthStore } from '@/store/authStore'
+import { useIsAuthenticated, useAuthUser, useLogout } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/button'
 import { ToastViewport } from '@/components/ui/toast'
 import InitialsAvatar from '@/components/ui/InitialsAvatar'
@@ -61,11 +61,12 @@ function SidebarNav({ onNavClick }) {
 }
 
 function UserSection() {
-  const { user, logout } = useAuthStore()
+  const user = useAuthUser()
+  const logout = useLogout()
   const navigate = useNavigate()
 
   const handleLogout = async () => {
-    await logout()
+    await logout.mutateAsync()
     navigate('/login')
   }
 
@@ -155,16 +156,8 @@ function DesktopSidebar() {
 }
 
 export default function DashboardLayout() {
-  const { isAuthenticated, loading } = useAuthStore()
+  const isAuthenticated = useIsAuthenticated()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-pulse text-muted-foreground">Cargando...</div>
-      </div>
-    )
-  }
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />

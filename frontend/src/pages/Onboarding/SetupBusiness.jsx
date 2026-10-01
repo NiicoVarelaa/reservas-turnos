@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useAuthStore } from '@/store/authStore'
-import { businessApi } from '@/services/api'
+import { useCreateBusiness } from '@/hooks/useBusiness'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -35,9 +34,8 @@ export default function SetupBusiness() {
     secondary_color: '#3b82f6',
   })
   const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
-  const { user } = useAuthStore()
+  const createBusiness = useCreateBusiness()
 
   const handleChange = (e) => {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }))
@@ -46,17 +44,14 @@ export default function SetupBusiness() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
-    setLoading(true)
 
     try {
-      const { data } = await businessApi.create(formData)
+      const { data } = await createBusiness.mutateAsync(formData)
       navigate('/onboarding/services', {
         state: { businessId: data.business.id, category: formData.category }
       })
     } catch (err) {
       setError(err.response?.data?.error || err.message)
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -129,8 +124,8 @@ export default function SetupBusiness() {
               </div>
             </div>
 
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Guardando...' : 'Continuar'}
+            <Button type="submit" className="w-full" disabled={createBusiness.isPending}>
+              {createBusiness.isPending ? 'Guardando...' : 'Continuar'}
             </Button>
           </form>
         </CardContent>

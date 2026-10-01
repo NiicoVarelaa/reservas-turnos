@@ -1,29 +1,44 @@
-import { useState, useEffect, useCallback } from 'react'
-import { appointmentsApi } from '../services/api'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { appointmentsApi } from '@/services/api'
+import { queryKeys } from '@/lib/queryKeys'
 
 export function useAppointments(filters = {}) {
-  const [appointments, setAppointments] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-
-  const fetchAppointments = useCallback(async () => {
-    setLoading(true)
-    setError(null)
-
-    try {
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: queryKeys.appointments.list(filters),
+    queryFn: async () => {
       const { data } = await appointmentsApi.getAll(filters)
-      setAppointments(data.appointments || [])
-    } catch (err) {
-      setError(err.response?.data?.error || 'Failed to fetch appointments')
-      setAppointments([])
-    } finally {
-      setLoading(false)
-    }
-  }, [JSON.stringify(filters)])
+      return data.appointments || []
+    },
+  })
 
-  useEffect(() => {
-    fetchAppointments()
-  }, [fetchAppointments])
-
-  return { appointments, loading, error, refetch: fetchAppointments }
+  return {
+    appointments: data || [],
+    loading: isLoading,
+    error: error?.response?.data?.error || null,
+    refetch,
+  }
 }
+
+export function useUpdateAppointment() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ id, updates }) => appointmentsApi.update(id, updates),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.appointments.all })
+    },
+  })
+}
+
+export function useCancelAppointment() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (id) => appointmentsApi.cancel(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.appointments.all })
+    },
+  })
+}
+
+export default useAppointments

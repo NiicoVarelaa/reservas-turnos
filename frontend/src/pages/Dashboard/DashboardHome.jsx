@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 import { useAppointments } from '@/hooks/useAppointments'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -18,24 +18,27 @@ export default function DashboardHome() {
     toast({ title: 'Datos actualizados', variant: 'success' })
   }, [refetch])
 
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  const tomorrow = new Date(today)
-  tomorrow.setDate(tomorrow.getDate() + 1)
+  const { stats, revenue } = useMemo(() => {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const tomorrow = new Date(today)
+    tomorrow.setDate(tomorrow.getDate() + 1)
 
-  const stats = {
-    total: appointments.length,
-    today: appointments.filter(a => {
-      const start = new Date(a.start_at)
-      return start >= today && start < tomorrow
-    }).length,
-    pending: appointments.filter(a => a.status === 'pending').length,
-    paid: appointments.filter(a => a.status === 'paid').length,
-  }
-
-  const revenue = appointments
-    .filter(a => a.status === 'paid')
-    .reduce((sum, a) => sum + (a.services?.price_cents || 0), 0)
+    return {
+      stats: {
+        total: appointments.length,
+        today: appointments.filter(a => {
+          const start = new Date(a.start_at)
+          return start >= today && start < tomorrow
+        }).length,
+        pending: appointments.filter(a => a.status === 'pending').length,
+        paid: appointments.filter(a => a.status === 'paid').length,
+      },
+      revenue: appointments
+        .filter(a => a.status === 'paid')
+        .reduce((sum, a) => sum + (a.services?.price_cents || 0), 0),
+    }
+  }, [appointments])
 
   return (
     <div>

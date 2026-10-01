@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { useAuthStore } from '@/store/authStore'
+import { useRegister } from '@/hooks/useAuth'
 import { registerSchema, formatZodErrors } from '@/validators'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -36,7 +36,7 @@ export default function RegisterPage() {
   const [errors, setErrors] = useState({})
   const [loading, setLoading] = useState(false)
   const [role, setRole] = useState('client')
-  const register = useAuthStore((state) => state.register)
+  const register = useRegister()
   const navigate = useNavigate()
 
   const passwordStrength = useMemo(() => getPasswordStrength(formData.password), [formData.password])
@@ -71,9 +71,13 @@ export default function RegisterPage() {
 
     setLoading(true)
     try {
-      await register(formData.email, formData.password, {
-        full_name: formData.fullName,
-        phone: formData.phone
+      await register.mutateAsync({
+        email: formData.email,
+        password: formData.password,
+        metadata: {
+          full_name: formData.fullName,
+          phone: formData.phone
+        }
       })
 
       if (role === 'professional') {

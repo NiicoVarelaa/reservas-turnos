@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useAuthStore } from '@/store/authStore'
+import { useLogin, useRegister } from '@/hooks/useAuth'
 import { useBookingStore } from '@/store/bookingStore'
 import { loginSchema, registerSchema } from '@/validators'
 import { Button } from '@/components/ui/button'
@@ -12,8 +12,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { User, Lock, Mail, Phone, ArrowRight } from 'lucide-react'
 
 export default function AuthModal({ open, onOpenChange, onContinue, onLogin }) {
-  const { loginAsGuest, login, register } = useAuthStore()
-  const { clientInfo } = useBookingStore()
+  const { clientInfo, setGuest } = useBookingStore()
+  const loginMutation = useLogin()
+  const registerMutation = useRegister()
   const [mode, setMode] = useState('guest')
   const [email, setEmail] = useState(clientInfo.email || '')
   const [password, setPassword] = useState('')
@@ -23,7 +24,7 @@ export default function AuthModal({ open, onOpenChange, onContinue, onLogin }) {
   const [loading, setLoading] = useState(false)
 
   const handleContinueAsGuest = () => {
-    loginAsGuest({
+    setGuest({
       name: clientInfo.name,
       email: clientInfo.email,
       phone: clientInfo.phone
@@ -50,9 +51,13 @@ export default function AuthModal({ open, onOpenChange, onContinue, onLogin }) {
           return
         }
 
-        await register(clientInfo.email, accountPassword, {
-          full_name: clientInfo.name,
-          phone: clientInfo.phone
+        await registerMutation.mutateAsync({
+          email: clientInfo.email,
+          password: accountPassword,
+          metadata: {
+            full_name: clientInfo.name,
+            phone: clientInfo.phone
+          }
         })
       } else {
         const result = loginSchema.safeParse({ email, password })
@@ -62,7 +67,7 @@ export default function AuthModal({ open, onOpenChange, onContinue, onLogin }) {
           return
         }
 
-        await login(email, password)
+        await loginMutation.mutateAsync({ email, password })
       }
       onLogin()
     } catch (err) {

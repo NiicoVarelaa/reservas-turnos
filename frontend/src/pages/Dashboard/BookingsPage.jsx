@@ -1,12 +1,11 @@
 import { useState, useCallback } from 'react'
-import { useAppointments } from '@/hooks/useAppointments'
+import { useAppointments, useUpdateAppointment, useCancelAppointment } from '@/hooks/useAppointments'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
-import { appointmentsApi } from '@/services/api'
 import { Calendar, Clock, Mail, Phone, Search, RefreshCw, ChevronDown, ChevronUp, StickyNote, CheckCircle2, CreditCard, XCircle, DollarSign } from 'lucide-react'
 import { getStatusBadge, formatCurrency } from '@/lib/utils'
 import ConfirmDialog from '@/components/ui/confirm-dialog'
@@ -17,8 +16,14 @@ export default function BookingsPage() {
   const [filter, setFilter] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [expandedId, setExpandedId] = useState(null)
-  const [actionLoading, setActionLoading] = useState(null)
   const [cancelTarget, setCancelTarget] = useState(null)
+
+  const updateAppointment = useUpdateAppointment()
+  const cancelAppointment = useCancelAppointment()
+
+  const actionLoading = updateAppointment.isPending || cancelAppointment.isPending
+    ? (updateAppointment.variables?.id || cancelAppointment.variables)
+    : null
 
   const handleRefresh = useCallback(async () => {
     toast({ title: 'Actualizando...', description: 'Cargando reservas' })
@@ -26,22 +31,18 @@ export default function BookingsPage() {
     toast({ title: 'Reservas actualizadas', variant: 'success' })
   }, [refetch])
 
-  const runAction = async (id, update, successMsg) => {
+  const runAction = async (id, updates, successMsg, errorMsg) => {
     if (actionLoading) return
-    setActionLoading(id)
     try {
-      await appointmentsApi.update(id, update)
+      await updateAppointment.mutateAsync({ id, updates })
       toast({ title: successMsg, variant: 'success' })
-      await refetch()
     } catch (err) {
-      toast({ title: 'Error', description: err.response?.data?.error || 'No se pudo actualizar la reserva', variant: 'destructive' })
-    } finally {
-      setActionLoading(null)
+      toast({ title: 'Error', description: err.response?.data?.error || errorMsg, variant: 'destructive' })
     }
   }
 
-  const handleConfirm = (id) => runAction(id, { status: 'confirmed' }, 'Reserva confirmada')
-  const handleMarkPaid = (id) => runAction(id, { status: 'paid' }, 'Reserva marcada como pagada')
+  const handleConfirm = (id) => runAction(id, { status: 'confirmed' }, 'Reserva confirmada', 'No se pudo actualizar la reserva')
+  const handleMarkPaid = (id) => runAction(id, { status: 'paid' }, 'Reserva marcada como pagada', 'No se pudo actualizar la reserva')
 
   const getCancelMessage = (id) => {
     const isPaid = appointments.find(a => a.id === id)?.status === 'paid'
@@ -52,15 +53,12 @@ export default function BookingsPage() {
 
   const handleCancel = async (id) => {
     if (actionLoading) return
-    setActionLoading(id)
     try {
-      await appointmentsApi.cancel(id)
+      await cancelAppointment.mutateAsync(id)
       toast({ title: 'Reserva cancelada', variant: 'success' })
-      await refetch()
     } catch (err) {
       toast({ title: 'Error', description: err.response?.data?.error || 'No se pudo cancelar la reserva', variant: 'destructive' })
     } finally {
-      setActionLoading(null)
       setCancelTarget(null)
     }
   }
@@ -217,7 +215,7 @@ export default function BookingsPage() {
         confirmLabel="Confirmar cancelación"
         cancelLabel="Volver"
         confirmVariant="destructive"
-        loading={actionLoading !== null}
+        loading={actionLoading}
         onConfirm={() => cancelTarget && handleCancel(cancelTarget)}
       />
     </>

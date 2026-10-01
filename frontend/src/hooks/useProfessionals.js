@@ -1,31 +1,25 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { servicesApi } from '../services/api'
+import { queryKeys } from '../lib/queryKeys'
 
 export function useProfessionals(serviceId) {
-  const [professionals, setProfessionals] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
+  const enabled = Boolean(serviceId) && serviceId !== 'undefined'
 
-  const fetchProfessionals = useCallback(async () => {
-    if (!serviceId || serviceId === 'undefined') return
-
-    setLoading(true)
-    setError(null)
-
-    try {
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: queryKeys.services.professionals(serviceId),
+    queryFn: async () => {
       const { data } = await servicesApi.getProfessionals(serviceId)
-      setProfessionals(data.professionals || [])
-    } catch (err) {
-      setError(err.response?.data?.error || 'No se pudieron cargar los profesionales')
-      setProfessionals([])
-    } finally {
-      setLoading(false)
-    }
-  }, [serviceId])
+      return data.professionals || []
+    },
+    enabled,
+  })
 
-  useEffect(() => {
-    fetchProfessionals()
-  }, [fetchProfessionals])
-
-  return { professionals, loading, error, refetch: fetchProfessionals }
+  return {
+    professionals: data || [],
+    loading: isLoading,
+    error: error?.response?.data?.error || null,
+    refetch,
+  }
 }
+
+export default useProfessionals

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useServices } from '@/hooks/useServices'
-import { businessApi } from '@/services/api'
+import { useBusinessBySlug } from '@/hooks/useBusiness'
 import Header from '@/components/layout/Header'
 import SecurePaymentBadge from '@/components/booking/SecurePaymentBadge'
 import NextAvailableSlot from '@/components/booking/NextAvailableSlot'
@@ -45,22 +45,10 @@ const FEATURES = [
 
 export default function LandingPage() {
   const { services, loading: servicesLoading } = useServices()
-  const [business, setBusiness] = useState(null)
+  const { data: business } = useBusinessBySlug('clinica-dental-sonrisa')
   const [imgsReady, setImgsReady] = useState({ hero: false })
   const [contactForm, setContactForm] = useState({ name: '', contact: '', message: '' })
   const [contactError, setContactError] = useState('')
-
-  useEffect(() => {
-    const fetchBusiness = async () => {
-      try {
-        const { data } = await businessApi.getBySlug('clnica-dental-sonrisa')
-        setBusiness(data.business)
-      } catch {
-        setBusiness(null)
-      }
-    }
-    fetchBusiness()
-  }, [])
 
   useEffect(() => {
     const probe = (src, key) => {

@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react'
 import { Clock } from 'lucide-react'
-import { businessApi } from '@/services/api'
+import { useNextAvailableSlot } from '@/hooks/useBusiness'
 
 function formatRelative(dateStr) {
   const date = new Date(dateStr)
@@ -19,24 +18,9 @@ function formatRelative(dateStr) {
 }
 
 export default function NextAvailableSlot({ businessId }) {
-  const [slot, setSlot] = useState(null)
-  const [loading, setLoading] = useState(true)
+  const { slot } = useNextAvailableSlot(businessId)
 
-  useEffect(() => {
-    if (!businessId) { setLoading(false); return }
-
-    let cancelled = false
-    businessApi.getNextAvailableSlot(businessId)
-      .then(({ data }) => {
-        if (!cancelled && data.slot) setSlot(data.slot)
-      })
-      .catch(() => {})
-      .finally(() => { if (!cancelled) setLoading(false) })
-
-    return () => { cancelled = true }
-  }, [businessId])
-
-  if (loading || !slot) return null
+  if (!slot) return null
 
   return (
     <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-teal/10 px-3.5 py-1.5 text-sm">

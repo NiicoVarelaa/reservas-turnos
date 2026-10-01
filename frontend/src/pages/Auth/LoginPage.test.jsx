@@ -3,15 +3,17 @@ import { render, screen, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Routes, Route } from 'react-router-dom'
 
-vi.mock('@/store/authStore', () => ({
-  useAuthStore: (selector) =>
-    selector({
-      login: vi.fn().mockRejectedValue(new Error('Credenciales inválidas')),
-      loginWithGoogle: vi.fn(),
-      isAuthenticated: false,
-      isGuest: false,
-      loading: false
-    })
+const rejectLogin = vi.fn().mockRejectedValue(new Error('Credenciales inválidas'))
+
+vi.mock('@/hooks/useAuth', () => ({
+  useLogin: () => ({ mutateAsync: rejectLogin, isPending: false }),
+  useRegister: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useGoogleLogin: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useLogout: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useProfile: () => ({ data: null, isLoading: false, isError: false, refetch: vi.fn() }),
+  useUpdateProfile: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useAuthUser: () => null,
+  useIsAuthenticated: () => false,
 }))
 
 vi.mock('@/components/auth/GoogleButton', () => ({

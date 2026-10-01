@@ -4,7 +4,36 @@ const ACCESS_TOKEN_KEY = 'jwt-access-token'
 const REFRESH_TOKEN_KEY = 'jwt-refresh-token'
 const USER_KEY = 'jwt-user'
 
+const readStoredUser = () => {
+  const stored = localStorage.getItem(USER_KEY)
+  return stored ? JSON.parse(stored) : null
+}
+
+const sessionListeners = new Set()
+
+let sessionSnapshot = {
+  isAuthenticated: !!localStorage.getItem(ACCESS_TOKEN_KEY),
+  user: readStoredUser(),
+}
+
+const notifySessionChange = () => {
+  sessionSnapshot = {
+    isAuthenticated: !!localStorage.getItem(ACCESS_TOKEN_KEY),
+    user: readStoredUser(),
+  }
+  sessionListeners.forEach((listener) => listener())
+}
+
 export const authService = {
+  subscribe(listener) {
+    sessionListeners.add(listener)
+    return () => sessionListeners.delete(listener)
+  },
+
+  getSnapshot() {
+    return sessionSnapshot
+  },
+
   getAccessToken() {
     return localStorage.getItem(ACCESS_TOKEN_KEY)
   },
@@ -14,8 +43,7 @@ export const authService = {
   },
 
   getUser() {
-    const stored = localStorage.getItem(USER_KEY)
-    return stored ? JSON.parse(stored) : null
+    return readStoredUser()
   },
 
   setTokens(accessToken, refreshToken, user) {
@@ -24,12 +52,14 @@ export const authService = {
     if (user) {
       localStorage.setItem(USER_KEY, JSON.stringify(user))
     }
+    notifySessionChange()
   },
 
   clearTokens() {
     localStorage.removeItem(ACCESS_TOKEN_KEY)
     localStorage.removeItem(REFRESH_TOKEN_KEY)
     localStorage.removeItem(USER_KEY)
+    notifySessionChange()
   },
 
   async login(email, password) {

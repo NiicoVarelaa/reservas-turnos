@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import { useSchedules, useReplaceSchedules } from '@/hooks/useSchedules'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
@@ -6,7 +7,6 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Clock, Trash2, Save } from 'lucide-react'
-import { schedulesApi } from '@/services/api'
 import { toast } from '@/hooks/use-toast'
 
 const DAYS = [
@@ -30,65 +30,41 @@ const defaultSchedules = [
 ]
 
 export default function SchedulePage() {
-  const [schedules, setSchedules] = useState(defaultSchedules)
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
+  const { schedules: savedSchedules, loading } = useSchedules()
+  const replaceSchedules = useReplaceSchedules()
+  const [draft, setDraft] = useState(defaultSchedules)
 
   useEffect(() => {
-    loadSchedules()
-  }, [])
-
-  const loadSchedules = async () => {
-    try {
-      const { data } = await schedulesApi.getAll()
-      if (data?.schedules?.length) {
-        const merged = defaultSchedules.map(def => {
-          const existing = data.schedules.find(s => s.day_of_week === def.day_of_week)
-          return existing || def
-        })
-        setSchedules(merged)
-      }
-    } catch {
-      setSchedules(defaultSchedules)
-    } finally {
-      setLoading(false)
-    }
-  }
+    if (!savedSchedules.length) return
+    setDraft(defaultSchedules.map(def => (
+      savedSchedules.find(s => s.day_of_week === def.day_of_week) || def
+    )))
+  }, [savedSchedules])
 
   const toggleDay = (day) => {
-    setSchedules(prev => prev.map(s =>
+    setDraft(prev => prev.map(s =>
       s.day_of_week === day ? { ...s, is_active: !s.is_active } : s
     ))
   }
 
   const updateTime = (day, field, value) => {
-    setSchedules(prev => prev.map(s =>
+    setDraft(prev => prev.map(s =>
       s.day_of_week === day ? { ...s, [field]: value } : s
     ))
   }
 
   const removeDay = (day) => {
-    setSchedules(prev => prev.map(s =>
+    setDraft(prev => prev.map(s =>
       s.day_of_week === day ? { ...s, is_active: false } : s
     ))
   }
 
   const saveSchedules = async () => {
-    setSaving(true)
     try {
-      for (const schedule of schedules) {
-        await schedulesApi.create({
-          day_of_week: schedule.day_of_week,
-          start_time: schedule.start_time,
-          end_time: schedule.end_time,
-          is_active: schedule.is_active,
-        })
-      }
+      await replaceSchedules.mutateAsync(draft)
       toast({ title: 'Horarios guardados', description: 'Tu disponibilidad fue actualizada.', variant: 'success' })
     } catch (err) {
       toast({ title: 'Error', description: err.response?.data?.error || 'No se pudieron guardar los horarios', variant: 'destructive' })
-    } finally {
-      setSaving(false)
     }
   }
 
@@ -116,7 +92,7 @@ export default function SchedulePage() {
         </CardHeader>
         <CardContent className="space-y-4">
           {DAYS.map((day) => {
-            const schedule = schedules.find(s => s.day_of_week === day.value)
+            const schedule = draft.find(s => s.day_of_week === day.value)
             const isActive = schedule?.is_active || false
 
             return (
@@ -164,9 +140,9 @@ export default function SchedulePage() {
       </Card>
 
       <div className="mt-8 flex justify-end">
-        <Button onClick={saveSchedules} disabled={saving}>
+        <Button onClick={saveSchedules} disabled={replaceSchedules.isPending}>
           <Save className="w-4 h-4 mr-2" />
-          {saving ? 'Guardando...' : 'Guardar Cambios'}
+          {replaceSchedules.isPending ? 'Guardando...' : 'Guardar Cambios'}
         </Button>
       </div>
     </div>

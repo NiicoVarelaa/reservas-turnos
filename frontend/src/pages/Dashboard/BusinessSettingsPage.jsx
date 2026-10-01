@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react'
-import { businessApi } from '@/services/api'
+import { useEffect, useState } from 'react'
+import { useMyBusiness, useUpdateBusiness } from '@/hooks/useBusiness'
 import { Card, CardContent, CardHeader, CardDescription, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -36,36 +36,30 @@ const emptyForm = {
 }
 
 export default function BusinessSettingsPage() {
+  const { data: business, loading, isError, refetch } = useMyBusiness()
+  const updateBusiness = useUpdateBusiness()
   const [form, setForm] = useState(emptyForm)
-  const [businessId, setBusinessId] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
 
-  const fetchBusiness = useCallback(async () => {
-    setLoading(true)
-    try {
-      const { data } = await businessApi.getMyBusiness()
-      const b = data.business
-      setBusinessId(b.id)
-      setForm({
-        name: b.name || '',
-        tagline: b.tagline || '',
-        category: b.category || 'general',
-        whatsapp_number: b.whatsapp_number || '',
-        address: b.address || '',
-        city: b.city || '',
-        primary_color: b.primary_color || '#0f172a',
-        secondary_color: b.secondary_color || '#3b82f6',
-        slug: b.slug || '',
-      })
-    } catch (err) {
+  useEffect(() => {
+    if (isError) {
       toast({ title: 'Error', description: 'No se pudo cargar tu negocio. Completá el onboarding primero.', variant: 'destructive' })
-    } finally {
-      setLoading(false)
     }
-  }, [])
+  }, [isError])
 
-  useEffect(() => { fetchBusiness() }, [fetchBusiness])
+  useEffect(() => {
+    if (!business) return
+    setForm({
+      name: business.name || '',
+      tagline: business.tagline || '',
+      category: business.category || 'general',
+      whatsapp_number: business.whatsapp_number || '',
+      address: business.address || '',
+      city: business.city || '',
+      primary_color: business.primary_color || '#0f172a',
+      secondary_color: business.secondary_color || '#3b82f6',
+      slug: business.slug || '',
+    })
+  }, [business])
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -78,16 +72,13 @@ export default function BusinessSettingsPage() {
       toast({ title: 'El nombre del negocio es requerido', variant: 'destructive' })
       return
     }
-    setSaving(true)
+    const { slug, ...updates } = form
+
     try {
-      const { category, slug, ...updates } = form
-      updates.category = category
-      await businessApi.update(businessId, updates)
+      await updateBusiness.mutateAsync({ id: business.id, updates })
       toast({ title: 'Negocio actualizado', variant: 'success' })
     } catch (err) {
       toast({ title: 'Error', description: err.response?.data?.error || 'No se pudo actualizar el negocio', variant: 'destructive' })
-    } finally {
-      setSaving(false)
     }
   }
 
@@ -97,7 +88,7 @@ export default function BusinessSettingsPage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold">Mi Negocio</h1>
-        <Button variant="outline" size="sm" onClick={fetchBusiness}>
+        <Button variant="outline" size="sm" onClick={() => refetch()}>
           <RefreshCw className="w-4 h-4 mr-2" />
           Actualizar
         </Button>
@@ -182,9 +173,9 @@ export default function BusinessSettingsPage() {
                 </div>
               </div>
               <div className="flex justify-end">
-                <Button type="submit" disabled={saving}>
+                <Button type="submit" disabled={updateBusiness.isPending}>
                   <Save className="w-4 h-4 mr-2" />
-                  {saving ? 'Guardando...' : 'Guardar cambios'}
+                  {updateBusiness.isPending ? 'Guardando...' : 'Guardar cambios'}
                 </Button>
               </div>
             </form>

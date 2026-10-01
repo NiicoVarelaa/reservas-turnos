@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { useAuthStore } from '@/store/authStore'
+import { useLogin } from '@/hooks/useAuth'
 import { loginSchema, formatZodErrors } from '@/validators'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -17,7 +17,7 @@ export default function LoginPage() {
   const [clientPassword, setClientPassword] = useState('')
   const [errors, setErrors] = useState({})
   const [loading, setLoading] = useState(false)
-  const login = useAuthStore((state) => state.login)
+  const login = useLogin()
   const navigate = useNavigate()
 
   const handleProfessionalLogin = async (e) => {
@@ -33,7 +33,7 @@ export default function LoginPage() {
     }
 
     try {
-      await login(professionalEmail, professionalPassword)
+      await login.mutateAsync({ email: professionalEmail, password: professionalPassword })
       toast({ title: 'Inicio de sesión exitoso', description: 'Bienvenido de vuelta', variant: 'success' })
       navigate('/dashboard')
     } catch (err) {
@@ -57,7 +57,7 @@ export default function LoginPage() {
     }
 
     try {
-      await login(clientEmail, clientPassword)
+      await login.mutateAsync({ email: clientEmail, password: clientPassword })
       toast({ title: 'Inicio de sesión exitoso', description: 'Bienvenido de vuelta', variant: 'success' })
       navigate('/dashboard')
     } catch (err) {

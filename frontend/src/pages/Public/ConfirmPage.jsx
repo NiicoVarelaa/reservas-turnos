@@ -1,32 +1,15 @@
-import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
+import { useBooking } from '@/hooks/useBookingMutations'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { CheckCircle, Calendar, Clock, Mail, Phone, ArrowLeft } from 'lucide-react'
-import { bookingsApi } from '@/services/api'
 
 export default function ConfirmPage() {
   const { sessionId } = useParams()
-  const [appointment, setAppointment] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
+  const { data: appointment, isLoading, isError } = useBooking(sessionId)
 
-  useEffect(() => {
-    const fetchAppointment = async () => {
-      try {
-        const { data } = await bookingsApi.getById(sessionId)
-        setAppointment(data.appointment || null)
-      } catch (err) {
-        setError('No se pudo verificar la reserva')
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetchAppointment()
-  }, [sessionId])
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <div className="w-full max-w-md space-y-4">
@@ -37,12 +20,12 @@ export default function ConfirmPage() {
     )
   }
 
-  if (error) {
+  if (isError) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4">Error</h1>
-          <p className="text-muted-foreground mb-4">{error}</p>
+          <p className="text-muted-foreground mb-4">No se pudo verificar la reserva</p>
           <Link to="/"><Button>Volver al inicio</Button></Link>
         </div>
       </div>

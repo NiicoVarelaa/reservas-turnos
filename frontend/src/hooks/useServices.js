@@ -1,30 +1,22 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { servicesApi } from '../services/api'
+import { queryKeys } from '../lib/queryKeys'
 
 export function useServices(filters = {}) {
-  const [services, setServices] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-
-  const fetchServices = useCallback(async () => {
-    setLoading(true)
-    setError(null)
-
-    try {
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: queryKeys.services.list(filters),
+    queryFn: async () => {
       const { data } = await servicesApi.getAll(filters)
-      const validServices = (data.services || []).filter(s => s?.id)
-      setServices(validServices)
-    } catch (err) {
-      setError(err.response?.data?.error || 'Failed to fetch services')
-      setServices([])
-    } finally {
-      setLoading(false)
-    }
-  }, [JSON.stringify(filters)])
+      return (data.services || []).filter((s) => s?.id)
+    },
+  })
 
-  useEffect(() => {
-    fetchServices()
-  }, [fetchServices])
-
-  return { services, loading, error, refetch: fetchServices }
+  return {
+    services: data || [],
+    loading: isLoading,
+    error: error?.response?.data?.error || null,
+    refetch,
+  }
 }
+
+export default useServices

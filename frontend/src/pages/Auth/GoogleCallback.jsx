@@ -1,11 +1,11 @@
 import { useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabaseClient, isGoogleEnabled } from '@/lib/supabaseClient'
-import { useAuthStore } from '@/store/authStore'
+import { useGoogleLogin } from '@/hooks/useAuth'
 
 export default function GoogleCallback() {
   const navigate = useNavigate()
-  const loginWithGoogle = useAuthStore((state) => state.loginWithGoogle)
+  const loginWithGoogle = useGoogleLogin()
   const processed = useRef(false)
 
   useEffect(() => {
@@ -29,7 +29,7 @@ export default function GoogleCallback() {
         const providerToken = sessionData.session.access_token
 
         // Exchange the Supabase session for our own JWT via the backend
-        await loginWithGoogle(providerToken)
+        await loginWithGoogle.mutateAsync(providerToken)
 
         const role = sessionStorage.getItem('sb-google-role') || 'client'
         sessionStorage.removeItem('sb-google-role')

@@ -1,6 +1,4 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import { useEffect } from 'react'
-import { useAuthStore } from '@/store/authStore'
 
 // Public Pages
 import LandingPage from '@/pages/Public/LandingPage'
@@ -32,12 +30,6 @@ import BusinessSettingsPage from '@/pages/Dashboard/BusinessSettingsPage'
 import ProfilePage from '@/pages/Dashboard/ProfilePage'
 
 function App() {
-  const initAuth = useAuthStore((state) => state.init)
-
-  useEffect(() => {
-    initAuth()
-  }, [initAuth])
-
   return (
     <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <Routes>

@@ -1,24 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { screen } from '@testing-library/react'
 import { MemoryRouter, Routes, Route } from 'react-router-dom'
 
 vi.mock('@/services/api', () => ({
   servicesApi: {
     getById: vi.fn(),
     getProfessionals: vi.fn(),
-    getAvailableSlots: vi.fn()
+    getSlots: vi.fn()
   },
   bookingsApi: { create: vi.fn() },
   paymentsApi: { createSession: vi.fn() },
   default: {}
-}))
-
-vi.mock('@/hooks/useProfessionals', () => ({
-  useProfessionals: () => ({ professionals: [], loading: false })
-}))
-
-vi.mock('@/hooks/useAvailableSlots', () => ({
-  useAvailableSlots: () => ({ slots: [], loading: false, refetch: vi.fn() })
 }))
 
 vi.mock('@/components/auth/AuthModal', () => ({
@@ -27,9 +19,10 @@ vi.mock('@/components/auth/AuthModal', () => ({
 
 import { servicesApi } from '@/services/api'
 import BookingPage from './BookingPage'
+import { renderWithProviders } from '@/test/utils'
 
 const renderBooking = (serviceId) =>
-  render(
+  renderWithProviders(
     <MemoryRouter initialEntries={[`/book/${serviceId}`]}>
       <Routes>
         <Route path="/book/:serviceId" element={<BookingPage />} />
@@ -40,6 +33,7 @@ const renderBooking = (serviceId) =>
 describe('BookingPage', () => {
   beforeEach(() => {
     sessionStorage.clear()
+    localStorage.clear()
     vi.clearAllMocks()
   })
 
@@ -64,7 +58,7 @@ describe('BookingPage', () => {
   })
 
   it('shows the select-service guard when there is no service id', async () => {
-    render(
+    renderWithProviders(
       <MemoryRouter initialEntries={['/book']}>
         <Routes>
           <Route path="/book" element={<BookingPage />} />

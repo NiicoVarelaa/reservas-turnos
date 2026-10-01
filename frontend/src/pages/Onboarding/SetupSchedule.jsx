@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { schedulesApi } from '@/services/api'
+import { useCreateSchedule } from '@/hooks/useSchedules'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -29,8 +29,8 @@ const DEFAULT_SCHEDULE = [
 export default function SetupSchedule() {
   const navigate = useNavigate()
   const [schedules, setSchedules] = useState(DEFAULT_SCHEDULE)
-  const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const createSchedule = useCreateSchedule()
 
   const toggleDay = (day) => setSchedules(prev => prev.map(s => s.day_of_week === day ? { ...s, is_active: !s.is_active } : s))
   const updateTime = (day, field, value) => setSchedules(prev => prev.map(s => s.day_of_week === day ? { ...s, [field]: value } : s))
@@ -38,16 +38,14 @@ export default function SetupSchedule() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
-    setLoading(true)
 
     try {
-      const activeSchedules = schedules.filter(s => s.is_active)
-      await Promise.all(activeSchedules.map(schedule => schedulesApi.create(schedule)))
+      for (const schedule of schedules.filter(s => s.is_active)) {
+        await createSchedule.mutateAsync(schedule)
+      }
       navigate('/dashboard')
     } catch (err) {
       setError(err.response?.data?.error || err.message)
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -94,8 +92,8 @@ export default function SetupSchedule() {
               )
             })}
 
-            <Button type="submit" className="w-full mt-6" disabled={loading}>
-              {loading ? 'Guardando...' : '¡Listo! Empezar a Usar'}
+            <Button type="submit" className="w-full mt-6" disabled={createSchedule.isPending}>
+              {createSchedule.isPending ? 'Guardando...' : '¡Listo! Empezar a Usar'}
             </Button>
           </form>
         </CardContent>

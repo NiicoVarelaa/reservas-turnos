@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useParams, useSearchParams, Link } from 'react-router-dom'
 import Calendar from '@/components/booking/Calendar'
 import TimeSlots from '@/components/booking/TimeSlots'
@@ -6,85 +6,64 @@ import BookingForm from '@/components/booking/BookingForm'
 import ProfessionalSelect from '@/components/booking/ProfessionalSelect'
 import AuthModal from '@/components/auth/AuthModal'
 import { useBookingStore } from '@/store/bookingStore'
-import { useAuthStore } from '@/store/authStore'
 import { useAvailableSlots } from '@/hooks/useAvailableSlots'
 import { useProfessionals } from '@/hooks/useProfessionals'
-import { servicesApi, bookingsApi, paymentsApi } from '@/services/api'
+import { useService } from '@/hooks/useServiceMutations'
+import { useCreateBooking, useCreatePaymentSession, getBookingErrorMessage } from '@/hooks/useBookingMutations'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ArrowLeft, Calendar as CalendarIcon, Clock, CheckCircle, User, Stethoscope } from 'lucide-react'
 
+const toDateKey = (date) => (date ? date.toISOString().split('T')[0] : null)
+
 export default function BookingPage() {
-  const { serviceId: paramServiceId } = useParams()
+  const { serviceId } = useParams()
   const [searchParams] = useSearchParams()
-
-  // Persistir serviceId en ref para que no se pierda durante re-renders
-  const serviceIdRef = useRef(paramServiceId)
-  if (paramServiceId) {
-    serviceIdRef.current = paramServiceId
-  }
-  const serviceId = serviceIdRef.current
-
-  // Cleanup al montar
-  useEffect(() => {
-    sessionStorage.removeItem('booking-response')
-    sessionStorage.removeItem('booking-appointment')
-    sessionStorage.removeItem('booking-service')
-    sessionStorage.removeItem('booking-logs')
-  }, [])
-
-  // Persistent debug log
-  useEffect(() => {
-    const logs = JSON.parse(sessionStorage.getItem('booking-logs') || '[]')
-    logs.push({ time: new Date().toISOString(), event: 'render', serviceId })
-    sessionStorage.setItem('booking-logs', JSON.stringify(logs.slice(-20)))
-  }, [serviceId])
-
-  const [service, setService] = useState(null)
   const [step, setStep] = useState(1)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
   const [showAuthModal, setShowAuthModal] = useState(false)
-  const currentAppointmentRef = useRef(null)
 
-  const { selectedDate, selectedSlot, selectedProfessional, setSelectedDate, setSelectedSlot, setSelectedService, setSelectedProfessional, reset } = useBookingStore()
-  const { isAuthenticated, isGuest } = useAuthStore()
+  const {
+    selectedDate,
+    selectedSlot,
+    selectedProfessional,
+    setSelectedDate,
+    setSelectedSlot,
+    setSelectedService,
+    setSelectedProfessional,
+  } = useBookingStore()
+
+  const hasValidServiceId = Boolean(serviceId) && serviceId !== 'undefined'
+
+  const {
+    data: service,
+    isLoading: serviceLoading,
+    isError: serviceFailed,
+  } = useService(hasValidServiceId ? serviceId : null)
+
+  useEffect(() => {
+    if (service) setSelectedService(service)
+  }, [service, setSelectedService])
+
   const { professionals, loading: professionalsLoading } = useProfessionals(serviceId)
+
   const { slots, loading: slotsLoading, refetch: refetchSlots } = useAvailableSlots(
     serviceId,
-    selectedDate ? selectedDate.toISOString().split('T')[0] : null,
+    toDateKey(selectedDate),
     selectedProfessional?.professional_id
   )
 
   useEffect(() => {
-    if (!serviceId || serviceId === 'undefined') {
-      setError('ID de servicio no válido')
-      return
-    }
+    if (selectedDate) setSelectedSlot(null)
+  }, [selectedDate, setSelectedSlot])
 
-    const fetchService = async () => {
-      try {
-        const { data } = await servicesApi.getById(serviceId)
-        if (!data?.service) {
-          setError('Servicio no encontrado')
-          return
-        }
-        setService(data.service)
-        setSelectedService(data.service)
-      } catch (err) {
-        console.error('Error fetching service:', err)
-        setError('Error al cargar el servicio. Verificá que existan servicios en la base de datos.')
-      }
-    }
-    fetchService()
-  }, [serviceId, setSelectedService])
+  const createBooking = useCreateBooking()
+  const createPaymentSession = useCreatePaymentSession()
 
-  useEffect(() => {
-    if (selectedDate) {
-      refetchSlots()
-      setSelectedSlot(null)
-    }
-  }, [selectedDate, refetchSlots, setSelectedSlot])
+  const error = createBooking.error
+    ? getBookingErrorMessage(createBooking.error)
+    : createPaymentSession.error
+      ? getBookingErrorMessage(createPaymentSession.error)
+      : null
 
   const handleSelectProfessional = useCallback((professionalId) => {
     setSelectedProfessional({ professional_id: professionalId })
@@ -94,98 +73,49 @@ export default function BookingPage() {
   }, [setSelectedProfessional, setSelectedDate, setSelectedSlot])
 
   const handleBookingSubmit = useCallback(async (clientInfo) => {
-    setLoading(true)
-    setError(null)
-
     const startDate = new Date(selectedSlot.start)
     const endDate = new Date(selectedSlot.end)
 
     try {
-      const { data } = await bookingsApi.create({
+      await createBooking.mutateAsync({
         serviceId,
         professionalId: selectedProfessional.professional_id,
-        date: startDate.toISOString().split('T')[0],
+        date: toDateKey(startDate),
         startTime: startDate.toISOString().split('T')[1].slice(0, 5),
         endTime: endDate.toISOString().split('T')[1].slice(0, 5),
         clientName: clientInfo.name,
         clientEmail: clientInfo.email,
-        clientPhone: clientInfo.phone
+        clientPhone: clientInfo.phone,
       })
-
-      if (!data?.appointment) {
-        setError('Error: la reserva no se creó correctamente.')
-        setLoading(false)
-        return
-      }
-
-      // Guardar en ref y sessionStorage inmediatamente (síncrono)
-      currentAppointmentRef.current = data.appointment
-      sessionStorage.setItem('booking-appointment', JSON.stringify(data.appointment))
-      sessionStorage.setItem('booking-service', JSON.stringify(service))
-
-      // Abrir modal en el siguiente tick para asegurar que el estado se actualizó
-      requestAnimationFrame(() => {
-        setShowAuthModal(true)
-      })
-    } catch (err) {
-      const errorMsg = err.response?.data?.error || err.response?.data?.error?.message || err.message || 'Error al crear la reserva'
-      let translatedMsg = typeof errorMsg === 'string' ? errorMsg : 'Error al crear la reserva'
-      if (translatedMsg === 'This time slot is already booked') {
-        translatedMsg = 'Este horario ya fue reservado. Por favor, elegí otro horario.'
-      }
-      setError(translatedMsg)
+      setShowAuthModal(true)
+    } catch {
       refetchSlots()
-    } finally {
-      setLoading(false)
     }
-  }, [serviceId, service, selectedSlot, selectedProfessional, refetchSlots])
+  }, [serviceId, selectedSlot, selectedProfessional, createBooking, refetchSlots])
 
-  const handlePayment = useCallback(async (appointmentId) => {
-    // Usar ref y sessionStorage como fuente principal
-    const appt = currentAppointmentRef.current || JSON.parse(sessionStorage.getItem('booking-appointment') || 'null')
-    const svc = service || JSON.parse(sessionStorage.getItem('booking-service') || 'null')
-
-    if (!svc) {
-      setError('Error: servicio no disponible. Volvé a intentar.')
-      return
-    }
+  const handlePayment = useCallback(async () => {
+    const appointment = createBooking.data?.appointment
+    if (!appointment) return
 
     try {
-      const paymentResponse = await paymentsApi.createSession({
-        appointmentId: appt?.id || appointmentId
-      })
-      window.location.href = paymentResponse.checkoutUrl
-    } catch (err) {
-      const errorMsg = err.response?.data?.error?.message || err.response?.data?.error || err.message || 'Error al procesar el pago'
-      setError(typeof errorMsg === 'string' ? errorMsg : 'Error al procesar el pago')
+      const { data } = await createPaymentSession.mutateAsync({ appointmentId: appointment.id })
+      window.location.href = data.checkoutUrl
+    } catch {
+      // El error ya queda expuesto en createPaymentSession.error
     }
-  }, [service])
+  }, [createBooking.data, createPaymentSession])
 
   const handleAuthContinue = useCallback(() => {
     setShowAuthModal(false)
-    const appt = currentAppointmentRef.current
-    if (appt?.id) {
-      handlePayment(appt.id)
-    } else {
-      setError('Error: no se encontró la reserva. Volvé a intentar.')
-    }
+    handlePayment()
   }, [handlePayment])
 
   const handleAuthLogin = useCallback(() => {
     setShowAuthModal(false)
-    const appt = currentAppointmentRef.current
-    if (appt?.id) {
-      handlePayment(appt.id)
-    } else {
-      setError('Error: no se encontró la reserva. Volvé a intentar.')
-    }
+    handlePayment()
   }, [handlePayment])
 
-  // Guard: solo mostrar error si no hay serviceId válido Y no hay datos en sessionStorage
-  const hasValidServiceId = serviceId && serviceId !== 'undefined'
-  const hasSavedData = sessionStorage.getItem('booking-appointment')
-
-  if (!hasValidServiceId && !hasSavedData) {
+  if (!hasValidServiceId) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
@@ -196,7 +126,7 @@ export default function BookingPage() {
     )
   }
 
-  if (error && !service && !hasSavedData) {
+  if (serviceFailed || (service === null && !serviceLoading)) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
@@ -207,7 +137,7 @@ export default function BookingPage() {
     )
   }
 
-  if (!service && !hasSavedData) {
+  if (!service) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="animate-pulse text-muted-foreground">Cargando...</div>
@@ -223,8 +153,8 @@ export default function BookingPage() {
             <ArrowLeft className="w-5 h-5" />
           </Link>
           <div>
-            <h1 className="text-xl font-bold">{service?.name || 'Reserva'}</h1>
-            {service && <p className="text-sm text-muted-foreground">{service.duration_min} min</p>}
+            <h1 className="text-xl font-bold">{service.name}</h1>
+            <p className="text-sm text-muted-foreground">{service.duration_min} min</p>
           </div>
         </div>
       </header>
@@ -317,7 +247,10 @@ export default function BookingPage() {
         {/* Step 4: Client Info */}
         {step === 4 && (
           <div className="space-y-4">
-            <BookingForm onSubmit={handleBookingSubmit} loading={loading} />
+            <BookingForm
+              onSubmit={handleBookingSubmit}
+              loading={createBooking.isPending}
+            />
             <Button variant="outline" className="w-full" onClick={() => setStep(3)}>Atrás</Button>
           </div>
         )}

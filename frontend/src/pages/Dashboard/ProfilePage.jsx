@@ -1,6 +1,5 @@
-import { useState, useEffect, useCallback } from 'react'
-import { useAuthStore } from '@/store/authStore'
-import { authService } from '@/services/authService'
+import { useState, useEffect } from 'react'
+import { useProfile, useUpdateProfile, useAuthUser } from '@/hooks/useAuth'
 import { Card, CardContent, CardHeader, CardDescription, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -11,30 +10,27 @@ import { Save, RefreshCw, User } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
 
 export default function ProfilePage() {
-  const user = useAuthStore((s) => s.user)
-  const refreshProfile = useAuthStore((s) => s.refreshProfile)
+  const sessionUser = useAuthUser()
+  const { data: profileUser, isLoading: loading, refetch, isError } = useProfile()
+  const updateProfile = useUpdateProfile()
   const [form, setForm] = useState({ full_name: '', phone: '', bio: '' })
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
 
-  const fetchProfile = useCallback(async () => {
-    setLoading(true)
-    try {
-      const data = await authService.getProfile()
-      const profile = data.user?.profile || {}
-      setForm({
-        full_name: profile.full_name || user?.full_name || '',
-        phone: profile.phone || '',
-        bio: profile.bio || '',
-      })
-    } catch (err) {
+  const user = profileUser || sessionUser
+
+  useEffect(() => {
+    if (isError) {
       toast({ title: 'Error', description: 'No se pudo cargar tu perfil', variant: 'destructive' })
-    } finally {
-      setLoading(false)
     }
-  }, [user?.full_name])
+  }, [isError])
 
-  useEffect(() => { fetchProfile() }, [fetchProfile])
+  useEffect(() => {
+    const profile = user?.profile || {}
+    setForm({
+      full_name: profile.full_name || user?.full_name || '',
+      phone: profile.phone || '',
+      bio: profile.bio || '',
+    })
+  }, [user])
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -43,19 +39,15 @@ export default function ProfilePage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    setSaving(true)
     try {
       const updates = {}
       if (form.full_name !== (user?.full_name || '')) updates.full_name = form.full_name
       if (form.phone) updates.phone = form.phone
       if (form.bio) updates.bio = form.bio
-      await authService.updateProfile(updates)
-      await refreshProfile()
+      await updateProfile.mutateAsync(updates)
       toast({ title: 'Perfil actualizado', variant: 'success' })
     } catch (err) {
       toast({ title: 'Error', description: err.response?.data?.error || 'No se pudo actualizar el perfil', variant: 'destructive' })
-    } finally {
-      setSaving(false)
     }
   }
 
@@ -63,7 +55,7 @@ export default function ProfilePage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold">Mi Perfil</h1>
-        <Button variant="outline" size="sm" onClick={fetchProfile}>
+        <Button variant="outline" size="sm" onClick={() => refetch()}>
           <RefreshCw className="w-4 h-4 mr-2" />
           Actualizar
         </Button>
@@ -105,9 +97,9 @@ export default function ProfilePage() {
                 <Input id="bio" name="bio" value={form.bio} onChange={handleChange} placeholder="Tu especialidad o descripción profesional" />
               </div>
               <div className="flex justify-end">
-                <Button type="submit" disabled={saving}>
+                <Button type="submit" disabled={updateProfile.isPending}>
                   <Save className="w-4 h-4 mr-2" />
-                  {saving ? 'Guardando...' : 'Guardar cambios'}
+                  {updateProfile.isPending ? 'Guardando...' : 'Guardar cambios'}
                 </Button>
               </div>
             </form>

@@ -6,6 +6,8 @@ process.env.FRONTEND_URL = 'http://localhost:5173'
 jest.mock('../../src/services/database', () => require('../helpers/database'))
 jest.mock('../../src/config/supabase', () => require('../helpers/supabase'))
 jest.mock('../../src/services/email', () => require('../helpers/email'))
+jest.mock('../../src/config/stripe', () => require('../helpers/stripe'))
+jest.mock('../../src/services/whatsapp', () => require('../helpers/whatsapp'))
 
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')

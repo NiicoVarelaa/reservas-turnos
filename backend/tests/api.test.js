@@ -1,5 +1,20 @@
+process.env.NODE_ENV = 'test'
+process.env.JWT_ACCESS_SECRET = require('./helpers/constants').TEST_ACCESS_SECRET
+process.env.JWT_REFRESH_SECRET = require('./helpers/constants').TEST_REFRESH_SECRET
+process.env.STRIPE_SECRET_KEY = 'sk_test_dummy'
+
+jest.mock('../src/services/database', () => require('./helpers/database'))
+jest.mock('../src/config/supabase', () => require('./helpers/supabase'))
+jest.mock('../src/services/whatsapp', () => require('./helpers/whatsapp'))
+
 const request = require('supertest')
+const db = require('./helpers/database')
 const app = require('../src/app')
+
+beforeEach(() => {
+  jest.clearAllMocks()
+  db.getServices.mockResolvedValue([])
+})
 
 describe('Health Check', () => {
   it('should return 200 OK', async () => {

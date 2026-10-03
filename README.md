@@ -6,7 +6,7 @@ Sistema de reservas y agendamiento online con landing pública, flujo de reserva
 
 | Capa | Tecnologías |
 |------|------------|
-| Frontend | React 18, JavaScript, Tailwind CSS, Shadcn UI, Zustand, React Router, Zod, Axios |
+| Frontend | React 18, JavaScript, Tailwind CSS, Shadcn UI, TanStack Query, Zustand, React Router, Zod, Axios |
 | Backend | Node.js, Express, Supabase (PostgreSQL), Stripe, Meta WhatsApp Cloud API |
 | Auth | JWT custom (access + refresh tokens) |
 
@@ -76,6 +76,8 @@ Sistema de reservas y agendamiento online con landing pública, flujo de reserva
 - Gestión de servicios
 
 ### Técnicas
+- Estado de servidor con TanStack Query (queries y mutations por dominio)
+- Zustand limitado a estado de UI (flujo de reserva)
 - Validación con Zod (esquemas compartidos frontend/backend)
 - JWT con refresh tokens automáticos
 - Stripe Checkout para pagos
@@ -99,12 +101,13 @@ reservas-turnos/
 │   └── .env.example
 ├── frontend/
 │   ├── src/
-│   │   ├── components/   # UI (Shadcn), booking, auth, layout
-│   │   ├── hooks/        # useAppointments, useServices
-│   │   ├── lib/          # utils, validators
+│   │   ├── components/   # UI (Shadcn), booking, auth, layout, icons
+│   │   ├── hooks/        # Queries y mutations por dominio (useAppointments,
+│   │   │                 # useServices, useSchedules, useBusiness, useAuth, ...)
+│   │   ├── lib/          # queryClient, queryKeys, supabaseClient, utils
 │   │   ├── pages/        # Public, Auth, Dashboard, Onboarding
-│   │   ├── services/     # API client, auth service
-│   │   ├── store/        # Zustand stores
+│   │   ├── services/     # API client (axios), authService
+│   │   ├── store/        # Zustand (solo estado UI: bookingStore)
 │   │   └── styles/       # Tailwind globals
 │   └── .env.example
 └── README.md
@@ -133,7 +136,7 @@ npm run dev            # http://localhost:5173
 ### 3. Stripe webhooks (local)
 
 ```bash
-stripe listen --forward-to localhost:4000/api/payments/webhook
+stripe listen --forward-to localhost:4000/api/webhooks/stripe
 ```
 
 ### Credenciales de prueba
@@ -164,6 +167,18 @@ Password: Test1234!
 | Variable | Descripción |
 |----------|------------|
 | `VITE_API_URL` | URL del backend API |
+
+## Tests
+
+```bash
+cd backend  && npm test              # Jest
+cd frontend && npm test              # Vitest
+```
+
+Ambos `npm test` corren sin `.env` ni servicios externos: los configs de Stripe,
+Supabase y WhatsApp están mockeados en `backend/tests/setup.js`. Verificá siempre
+con Node 20 en CI; el cliente real de Supabase requiere WebSocket nativo, que no
+existe ahí.
 
 ## Licencia
 

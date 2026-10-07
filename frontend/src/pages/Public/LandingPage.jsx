@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useServices } from '@/hooks/useServices'
 import { useBusinessBySlug } from '@/hooks/useBusiness'
 import Header from '@/components/layout/Header'
+import Footer from '@/components/layout/Footer'
 import SecurePaymentBadge from '@/components/booking/SecurePaymentBadge'
 import NextAvailableSlot from '@/components/booking/NextAvailableSlot'
 import MobileStickyBookingBar from '@/components/booking/MobileStickyBookingBar'
@@ -16,7 +17,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
   Calendar, CalendarCheck, Clock, MapPin, Phone, Mail, Star, ChevronRight, Shield, ShieldCheck, Heart,
-  Facebook, Instagram, CheckCircle2, MessageSquare, Stethoscope, Quote
+  CheckCircle2, MessageSquare, Stethoscope, Quote
 } from 'lucide-react'
 import WhatsAppIcon from '@/components/icons/WhatsAppIcon'
 import { CTA } from '@/constants/copy'
@@ -526,120 +527,14 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-navy text-slate-300">
-        <div className="container mx-auto px-4 pt-16 pb-8">
-          <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-12">
-
-            {/* Brand + CTA */}
-            <div className="lg:col-span-5">
-              <div className="flex items-center gap-2.5 mb-5">
-                <div className="w-11 h-11 rounded-full bg-white/20 flex items-center justify-center shrink-0">
-                  <img src="/logo.png" alt="Smile Book" className="w-8 h-8 object-contain" />
-                </div>
-                <span className="font-bold text-lg text-white">Smile Book</span>
-              </div>
-              <p className="text-sm leading-relaxed text-slate-400 max-w-sm mb-6">
-                {description}
-              </p>
-              <Link to="/book">
-                <Button size="sm" className="bg-white text-navy hover:bg-slate-100 font-medium px-5">
-                  <Calendar className="w-4 h-4 mr-2" />
-                  {CTA.primary}
-                </Button>
-              </Link>
-              <div className="flex items-center gap-3 mt-6">
-                <a
-                  href="https://facebook.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="Facebook"
-                  className="w-10 h-10 rounded-full bg-white/10 hover:bg-teal flex items-center justify-center text-slate-300 hover:text-white transition-all"
-                >
-                  <Facebook className="w-[18px] h-[18px]" />
-                </a>
-                <a
-                  href="https://instagram.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="Instagram"
-                  className="w-10 h-10 rounded-full bg-white/10 hover:bg-teal flex items-center justify-center text-slate-300 hover:text-white transition-all"
-                >
-                  <Instagram className="w-[18px] h-[18px]" />
-                </a>
-                <a
-                  href={`https://wa.me/${waNumber}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="WhatsApp"
-                  className="w-10 h-10 rounded-full bg-white/10 hover:bg-teal flex items-center justify-center text-slate-300 hover:text-white transition-all"
-                >
-                  <WhatsAppIcon className="w-[18px] h-[18px] text-[#25D366]" />
-                </a>
-              </div>
-            </div>
-
-            {/* Navegación */}
-            <div className="lg:col-span-3">
-              <h4 className="font-semibold text-white text-sm uppercase tracking-wider mb-4">Navegación</h4>
-              <ul className="space-y-3 text-sm">
-                <li>
-                  <Link to="/" className="hover:text-white transition-colors">Inicio</Link>
-                </li>
-                <li>
-                  <Link to="/book" className="hover:text-white transition-colors">
-                    {CTA.primary}
-                  </Link>
-                </li>
-                <li>
-                  <a href="#contacto" className="hover:text-white transition-colors">Contacto</a>
-                </li>
-                <li>
-                  <Link to="/login" className="hover:text-white transition-colors">Acceso Profesional</Link>
-                </li>
-              </ul>
-            </div>
-
-            {/* Contacto */}
-            <div className="lg:col-span-4">
-              <h4 className="font-semibold text-white text-sm uppercase tracking-wider mb-4">Contacto</h4>
-              <ul className="space-y-3 text-sm">
-                <li className="flex items-start gap-2.5">
-                  <Phone className="w-4 h-4 mt-0.5 shrink-0 text-teal" />
-                  <span>{contactPhone}</span>
-                </li>
-                <li className="flex items-start gap-2.5">
-                  <Mail className="w-4 h-4 mt-0.5 shrink-0 text-teal" />
-                  <span>{contactEmail}</span>
-                </li>
-                <li className="flex items-start gap-2.5">
-                  <MapPin className="w-4 h-4 mt-0.5 shrink-0 text-teal" />
-                  <span>{contactAddress}</span>
-                </li>
-                <li className="flex items-start gap-2.5">
-                  <Clock className="w-4 h-4 mt-0.5 shrink-0 text-teal" />
-                  <span>
-                    Lun a Vie: 9:00 - 18:00<br />
-                    Sábados: 9:00 - 14:00
-                  </span>
-                </li>
-              </ul>
-            </div>
-
-          </div>
-        </div>
-
-        {/* Bottom bar */}
-        <div className="border-t border-white/10">
-          <div className="container mx-auto px-4 py-5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-400">
-            <p>&copy; {new Date().getFullYear()} Smile Book. Todos los derechos reservados.</p>
-            <div className="flex items-center gap-5">
-              <Link to="/terms" className="hover:text-white transition-colors">Términos y Condiciones</Link>
-              <Link to="/legal" className="hover:text-white transition-colors">Política de Privacidad</Link>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <Footer
+        variant="full"
+        description={description}
+        waNumber={waNumber}
+        contactPhone={contactPhone}
+        contactEmail={contactEmail}
+        contactAddress={contactAddress}
+      />
 
       <MobileStickyBookingBar />
     </div>

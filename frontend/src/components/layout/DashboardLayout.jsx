@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { ToastViewport } from '@/components/ui/toast'
 import InitialsAvatar from '@/components/ui/InitialsAvatar'
 import { Drawer, DrawerContent } from '@/components/ui/drawer'
+import { cn } from '@/lib/utils'
 import {
   Calendar,
   Clock,
@@ -12,50 +13,84 @@ import {
   LogOut,
   Menu,
   X,
-  ChevronRight,
   Scissors,
   Settings,
   UserCircle,
 } from 'lucide-react'
 
-const navItems = [
-  { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { path: '/dashboard/bookings', icon: Calendar, label: 'Reservas' },
-  { path: '/dashboard/services', icon: Scissors, label: 'Servicios' },
-  { path: '/dashboard/schedule', icon: Clock, label: 'Horarios' },
-  { path: '/dashboard/settings/business', icon: Settings, label: 'Mi Negocio' },
-  { path: '/dashboard/profile', icon: UserCircle, label: 'Mi Perfil' },
+const NAV_SECTIONS = [
+  {
+    label: 'Principal',
+    items: [
+      { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+      { path: '/dashboard/bookings', icon: Calendar, label: 'Reservas' },
+      { path: '/dashboard/services', icon: Scissors, label: 'Servicios' },
+      { path: '/dashboard/schedule', icon: Clock, label: 'Horarios' },
+    ],
+  },
+  {
+    label: 'Configuración',
+    items: [
+      { path: '/dashboard/settings/business', icon: Settings, label: 'Mi Negocio' },
+      { path: '/dashboard/profile', icon: UserCircle, label: 'Mi Perfil' },
+    ],
+  },
 ]
+
+function isActiveItem(path, locationPathname) {
+  return (
+    locationPathname === path ||
+    (path !== '/dashboard' && locationPathname.startsWith(path))
+  )
+}
 
 function SidebarNav({ onNavClick }) {
   const location = useLocation()
 
   return (
-    <nav className="space-y-1 px-3">
-      {navItems.map((item) => {
-        const isActive = location.pathname === item.path ||
-          (item.path !== '/dashboard' && location.pathname.startsWith(item.path))
-        return (
-          <Link
-            key={item.path}
-            to={item.path}
-            onClick={onNavClick}
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 group ${
-              isActive
-                ? 'bg-primary/10 text-primary shadow-sm'
-                : 'text-muted-foreground hover:bg-accent hover:text-foreground'
-            }`}
-          >
-            <item.icon className={`w-5 h-5 shrink-0 transition-colors ${
-              isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'
-            }`} />
-            <span>{item.label}</span>
-            {isActive && (
-              <ChevronRight className="w-4 h-4 ml-auto opacity-50" />
-            )}
-          </Link>
-        )
-      })}
+    <nav aria-label="Menú del panel" className="space-y-6">
+      {NAV_SECTIONS.map((section) => (
+        <div key={section.label}>
+          <p className="px-3 mb-2 text-[11px] font-semibold uppercase tracking-[0.15em] text-muted-foreground/70">
+            {section.label}
+          </p>
+          <div className="space-y-1">
+            {section.items.map((item) => {
+              const active = isActiveItem(item.path, location.pathname)
+              return (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  onClick={onNavClick}
+                  aria-current={active ? 'page' : undefined}
+                  className={cn(
+                    'relative flex items-center gap-3 px-3 min-h-11 rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 group',
+                    active
+                      ? 'bg-primary/10 text-primary'
+                      : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+                  )}
+                >
+                  {active && (
+                    <span
+                      aria-hidden="true"
+                      className="absolute inset-y-2 left-0 w-1 rounded-r-full bg-teal"
+                    />
+                  )}
+                  <item.icon
+                    className={cn(
+                      'w-5 h-5 shrink-0 transition-colors',
+                      active
+                        ? 'text-teal'
+                        : 'text-muted-foreground group-hover:text-foreground'
+                    )}
+                  />
+                  <span className={cn(active && 'font-semibold')}>{item.label}</span>
+                </Link>
+              )
+            })}
+          </div>
+        </div>
+      ))}
     </nav>
   )
 }
@@ -75,8 +110,8 @@ function UserSection() {
     : user?.email?.slice(0, 2).toUpperCase() || '?'
 
   return (
-    <div className="border-t pt-4 px-3 space-y-3">
-      <div className="flex items-center gap-3 px-3">
+    <div className="rounded-xl border bg-background p-3 space-y-3">
+      <div className="flex items-center gap-3">
         <InitialsAvatar name={user?.full_name || user?.email} className="w-9 h-9 text-sm" />
         <div className="min-w-0 flex-1">
           <p className="text-sm font-medium truncate">{user?.full_name || 'Usuario'}</p>
@@ -96,15 +131,32 @@ function UserSection() {
   )
 }
 
+function BrandBlock() {
+  return (
+    <Link to="/dashboard" className="flex items-center gap-2.5 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1" aria-label="Smile Book — Dashboard">
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary">
+        <img src="/logo.png" alt="" className="h-6 w-6 object-contain" />
+      </span>
+      <span className="text-base font-bold tracking-tight">
+        Smile <span className="text-teal">Book</span>
+      </span>
+    </Link>
+  )
+}
+
 function MobileHeader({ onMenuToggle, isOpen }) {
   return (
     <header className="lg:hidden border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60 sticky top-0 z-40">
       <div className="flex items-center justify-between px-4 py-3">
-        <Link to="/dashboard" className="flex items-center gap-2 font-semibold text-lg">
-          <img src="/logo.png" alt="Smile Book" className="w-8 h-8 object-contain" />
-          <span>Smile Book</span>
-        </Link>
-        <Button variant="ghost" size="icon" onClick={onMenuToggle} aria-label="Abrir menú">
+        <BrandBlock />
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onMenuToggle}
+          aria-label={isOpen ? 'Cerrar menú' : 'Abrir menú'}
+          aria-expanded={isOpen}
+          className="w-11 h-11"
+        >
           {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
         </Button>
       </div>
@@ -116,15 +168,14 @@ function MobileSidebar({ open, onClose }) {
   return (
     <Drawer open={open} onOpenChange={(next) => { if (!next) onClose() }}>
       <DrawerContent side="left" className="w-72 max-w-none p-0">
-        <div className="flex items-center justify-between px-4 h-14 border-b">
-          <Link to="/dashboard" className="flex items-center gap-2 font-semibold text-lg" onClick={onClose}>
-            <img src="/logo.png" alt="Smile Book" className="w-8 h-8 object-contain" />
-            <span>Smile Book</span>
-          </Link>
+        <div className="flex items-center justify-between px-4 h-14 border-b shrink-0">
+          <BrandBlock />
         </div>
         <div className="flex flex-col h-[calc(100%-3.5rem)] p-4">
-          <SidebarNav onNavClick={onClose} />
-          <div className="mt-auto">
+          <div className="flex-1 overflow-y-auto">
+            <SidebarNav onNavClick={onClose} />
+          </div>
+          <div className="mt-4">
             <UserSection />
           </div>
         </div>
@@ -135,19 +186,15 @@ function MobileSidebar({ open, onClose }) {
 
 function DesktopSidebar() {
   return (
-    <aside className="hidden lg:flex lg:flex-col w-64 border-r bg-card min-h-screen">
-      <div className="flex items-center gap-2.5 px-6 h-16 border-b shrink-0">
-        <img src="/logo.png" alt="Smile Book" className="w-9 h-9 object-contain" />
-        <div>
-          <p className="font-semibold text-sm leading-tight">Smile Book</p>
-          <p className="text-xs text-muted-foreground leading-tight">Panel de control</p>
-        </div>
+    <aside className="hidden lg:flex lg:flex-col w-72 border-r bg-card min-h-screen sticky top-0 h-screen">
+      <div className="flex items-center px-6 h-16 border-b shrink-0">
+        <BrandBlock />
       </div>
 
-      <div className="flex-1 flex flex-col py-4">
+      <div className="flex-1 flex flex-col overflow-y-auto py-5 px-3">
         <SidebarNav />
 
-        <div className="mt-auto">
+        <div className="mt-auto pt-5">
           <UserSection />
         </div>
       </div>

@@ -78,11 +78,13 @@ Sistema de reservas y agendamiento online con landing pública, flujo de reserva
 ### Técnicas
 - Estado de servidor con TanStack Query (queries y mutations por dominio)
 - Zustand limitado a estado de UI (flujo de reserva)
+- Code splitting por ruta y vendor (React.lazy + manualChunks en Vite)
 - Validación con Zod (esquemas compartidos frontend/backend)
 - JWT con refresh tokens automáticos
 - Stripe Checkout para pagos
 - Recordatorios automáticos por WhatsApp
-- Diseño mobile-first y responsive
+- Accesibilidad: focus-visible, aria-current, targets táctiles de 44px y `prefers-reduced-motion` en animaciones
+- Diseño mobile-first y responsive (header, footer y sidebar compartidos)
 - SaaS multi-tenant (soporte para múltiples negocios)
 
 ## Estructura del proyecto
@@ -91,6 +93,7 @@ Sistema de reservas y agendamiento online con landing pública, flujo de reserva
 reservas-turnos/
 ├── backend/
 │   ├── database/         # Migraciones SQL y seeds
+│   ├── scripts/          # Utilidades de CLI
 │   ├── src/
 │   │   ├── config/       # Stripe, Supabase, WhatsApp
 │   │   ├── controllers/  # Auth, bookings, payments, etc.
@@ -98,17 +101,21 @@ reservas-turnos/
 │   │   ├── routes/       # Express routers
 │   │   ├── services/     # DB, reminders, WhatsApp
 │   │   └── utils/        # JWT, validators, logger
+│   ├── tests/            # Jest (unit, integration, helpers)
 │   └── .env.example
 ├── frontend/
 │   ├── src/
 │   │   ├── components/   # UI (Shadcn), booking, auth, layout, icons
+│   │   ├── constants/    # Textos y copy reutilizable
 │   │   ├── hooks/        # Queries y mutations por dominio (useAppointments,
 │   │   │                 # useServices, useSchedules, useBusiness, useAuth, ...)
 │   │   ├── lib/          # queryClient, queryKeys, supabaseClient, utils
 │   │   ├── pages/        # Public, Auth, Dashboard, Onboarding
 │   │   ├── services/     # API client (axios), authService
 │   │   ├── store/        # Zustand (solo estado UI: bookingStore)
-│   │   └── styles/       # Tailwind globals
+│   │   ├── styles/       # Tailwind globals
+│   │   ├── test/         # Setup y matchers de Vitest
+│   │   └── validators/   # Esquemas compartidos (Zod)
 │   └── .env.example
 └── README.md
 ```
@@ -133,11 +140,15 @@ npm install
 npm run dev            # http://localhost:5173
 ```
 
-### 3. Stripe webhooks (local)
+### 3. Stripe y WhatsApp (local)
 
 ```bash
 stripe listen --forward-to localhost:4000/api/webhooks/stripe
 ```
+
+Para que el backend envíe confirmaciones reales por WhatsApp, completá
+`WHATSAPP_PHONE_ID` y `WHATSAPP_ACCESS_TOKEN` en `backend/.env`. Con SMTP vacío,
+el link de reset de contraseña se loguea en desarrollo.
 
 ### Credenciales de prueba
 
@@ -167,6 +178,8 @@ Password: Test1234!
 | Variable | Descripción |
 |----------|------------|
 | `VITE_API_URL` | URL del backend API |
+| `VITE_SUPABASE_URL` | URL del proyecto Supabase (para el cliente de Google OAuth) |
+| `VITE_SUPABASE_ANON_KEY` | Anon public key de Supabase (para el cliente de Google OAuth) |
 
 ## Tests
 
@@ -175,10 +188,17 @@ cd backend  && npm test              # Jest
 cd frontend && npm test              # Vitest
 ```
 
-Ambos `npm test` corren sin `.env` ni servicios externos: los configs de Stripe,
-Supabase y WhatsApp están mockeados en `backend/tests/setup.js`. Verificá siempre
-con Node 20 en CI; el cliente real de Supabase requiere WebSocket nativo, que no
-existe ahí.
+Ambos conjuntos corren sin `.env` ni servicios externos:
+
+- Los configs de Stripe, Supabase y WhatsApp están mockeados en
+  `backend/tests/setup.js`; ningún test construye clientes reales, así que la
+  suite no depende de WebSocket nativo.
+- En CI (`.github/workflows/ci.yml`) se corre con Node 20, que no trae
+  `WebSocket` global: si se vuelven a inicializar clientes reales de Supabase,
+  los tests lo van a romper ahí.
+
+CI también ejecuta el build de Vite en cada push, por lo que el warning de
+chunks o un error de compilación frena el merge.
 
 ## Licencia
 

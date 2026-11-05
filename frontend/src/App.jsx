@@ -9,6 +9,7 @@ const BookingPage = lazy(() => import('@/pages/Public/BookingPage'))
 const ConfirmPage = lazy(() => import('@/pages/Public/ConfirmPage'))
 const TermsPage = lazy(() => import('@/pages/Public/TermsPage'))
 const LegalPage = lazy(() => import('@/pages/Public/LegalPage'))
+const FaqPage = lazy(() => import('@/pages/Public/FaqPage'))
 
 // Auth Pages
 import LoginPage from '@/pages/Auth/LoginPage'
@@ -52,6 +53,7 @@ function App() {
           <Route path="/confirm/:sessionId" element={<ConfirmPage />} />
           <Route path="/terms" element={<TermsPage />} />
           <Route path="/legal" element={<LegalPage />} />
+          <Route path="/faq" element={<FaqPage />} />
 
           {/* Auth Routes */}
           <Route path="/login" element={<LoginPage />} />

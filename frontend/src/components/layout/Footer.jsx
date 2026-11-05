@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils'
 const NAV_LINKS = [
   { label: 'Inicio', to: '/' },
   { label: CTA.primary, to: '/book' },
+  { label: 'Preguntas Frecuentes', to: '/faq' },
   { label: 'Contacto', to: '#contacto' },
   { label: 'Acceso Profesional', to: '/login' },
 ]
@@ -15,6 +16,7 @@ const NAV_LINKS = [
 const LEGAL_LINKS = [
   { label: 'Términos y Condiciones', to: '/terms' },
   { label: 'Política de Privacidad', to: '/legal' },
+  { label: 'Preguntas Frecuentes', to: '/faq' },
 ]
 
 const SOCIAL_LINKS = [
@@ -109,7 +111,7 @@ function BottomBar() {
       <div className="container mx-auto flex flex-col items-center justify-between gap-4 px-4 py-5 text-xs text-slate-400 sm:flex-row sm:gap-6">
         <p>&copy; {new Date().getFullYear()} Smile Book. Todos los derechos reservados.</p>
 
-        <nav aria-label="Enlaces legales" className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
+        <nav aria-label="Enlaces de interés" className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
           {LEGAL_LINKS.map((link) => (
             <Link key={link.to} to={link.to} className="transition-colors hover:text-white">
               {link.label}

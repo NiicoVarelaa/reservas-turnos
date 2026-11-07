@@ -289,7 +289,7 @@ export default function TermsPage() {
                     <ArrowRight className="h-4 w-4" aria-hidden="true" />
                   </Button>
                 </Link>
-                <a href="#contacto">
+                <Link to="/contacto">
                   <Button
                     variant="outline"
                     size="lg"
@@ -298,7 +298,7 @@ export default function TermsPage() {
                     <Mail className="h-4 w-4" aria-hidden="true" />
                     Hacer una consulta
                   </Button>
-                </a>
+                </Link>
               </div>
             </Reveal>
 

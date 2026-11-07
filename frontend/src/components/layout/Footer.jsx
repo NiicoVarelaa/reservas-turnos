@@ -9,7 +9,7 @@ const NAV_LINKS = [
   { label: 'Inicio', to: '/' },
   { label: CTA.primary, to: '/book' },
   { label: 'Preguntas Frecuentes', to: '/faq' },
-  { label: 'Contacto', to: '#contacto' },
+  { label: 'Contacto', to: '/contacto' },
   { label: 'Acceso Profesional', to: '/login' },
 ]
 

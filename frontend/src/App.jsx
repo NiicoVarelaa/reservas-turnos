@@ -10,6 +10,7 @@ const ConfirmPage = lazy(() => import('@/pages/Public/ConfirmPage'))
 const TermsPage = lazy(() => import('@/pages/Public/TermsPage'))
 const LegalPage = lazy(() => import('@/pages/Public/LegalPage'))
 const FaqPage = lazy(() => import('@/pages/Public/FaqPage'))
+const ContactPage = lazy(() => import('@/pages/Public/ContactPage'))
 
 // Auth Pages
 import LoginPage from '@/pages/Auth/LoginPage'
@@ -54,6 +55,7 @@ function App() {
           <Route path="/terms" element={<TermsPage />} />
           <Route path="/legal" element={<LegalPage />} />
           <Route path="/faq" element={<FaqPage />} />
+          <Route path="/contacto" element={<ContactPage />} />
 
           {/* Auth Routes */}
           <Route path="/login" element={<LoginPage />} />

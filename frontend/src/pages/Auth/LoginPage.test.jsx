@@ -36,19 +36,43 @@ const renderLogin = () =>
   )
 
 describe('LoginPage', () => {
-  it('renders the login form with both role tabs and Google button', () => {
+  it('renders the login form with both role options and Google button', () => {
     renderLogin()
 
-    expect(screen.getByRole('heading', { name: 'Iniciar Sesión' })).toBeInTheDocument()
-    expect(screen.getByRole('tab', { name: /Profesional/i })).toBeInTheDocument()
-    expect(screen.getByRole('tab', { name: /Cliente/i })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Iniciá sesión' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Profesional/i })).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByRole('button', { name: /Cliente/i })).toHaveAttribute('aria-pressed', 'false')
     expect(screen.getByRole('button', { name: /Continuar con Google/i })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /Registrate/i })).toBeInTheDocument()
+    expect(screen.getAllByRole('link', { name: 'Creá una' }).length).toBeGreaterThan(0)
   })
 
   it('shows a link to recover the password', () => {
     renderLogin()
     expect(screen.getByRole('link', { name: '¿Olvidaste tu contraseña?' })).toBeInTheDocument()
+  })
+
+  it('updates the context when switching role', async () => {
+    const user = userEvent.setup()
+    renderLogin()
+
+    await user.click(screen.getByRole('button', { name: /Cliente/i }))
+
+    expect(screen.getByRole('button', { name: /Cliente/i })).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByRole('button', { name: /Profesional/i })).toHaveAttribute('aria-pressed', 'false')
+    expect(screen.getByRole('heading', { name: 'Tu sonrisa, a un clic' })).toBeInTheDocument()
+  })
+
+  it('toggles password visibility', async () => {
+    const user = userEvent.setup()
+    renderLogin()
+
+    const passwordInput = screen.getByLabelText('Contraseña')
+    expect(passwordInput).toHaveAttribute('type', 'password')
+
+    await user.click(screen.getByRole('button', { name: 'Mostrar contraseña' }))
+
+    expect(passwordInput).toHaveAttribute('type', 'text')
+    expect(screen.getByRole('button', { name: 'Ocultar contraseña' })).toBeInTheDocument()
   })
 
   it('validates the email before submitting', async () => {
@@ -68,7 +92,7 @@ describe('LoginPage', () => {
 
     await user.type(screen.getByLabelText('Email'), 'user@example.com')
     await user.type(screen.getByLabelText('Contraseña'), 'secret')
-    await user.click(screen.getByRole('button', { name: 'Iniciar Sesión' }))
+    await user.click(screen.getByRole('button', { name: 'Iniciar sesión' }))
 
     expect(await screen.findByText('Credenciales inválidas')).toBeInTheDocument()
   })

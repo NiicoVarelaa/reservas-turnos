@@ -32,6 +32,8 @@ export function useBooking(sessionId) {
     },
     enabled: Boolean(sessionId),
     retry: false,
+    refetchInterval: (query) =>
+      query.state.data?.status === 'pending' ? 5000 : false,
   })
 }
 

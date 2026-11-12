@@ -44,9 +44,9 @@ describe('BookingPage', () => {
 
     renderBooking('svc-1')
 
-    expect(await screen.findByText('Limpieza Dental')).toBeInTheDocument()
-    expect(screen.getByText('30 min')).toBeInTheDocument()
-    expect(screen.getByText('¿Con qué profesional querés tu turno?')).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Limpieza Dental' })).toBeInTheDocument()
+    expect(screen.getAllByText('30 min').length).toBeGreaterThan(0)
+    expect(screen.getByText('¿Con qué profesional querés atenderte?')).toBeInTheDocument()
   })
 
   it('shows a not found screen when the service does not exist', async () => {
@@ -54,7 +54,7 @@ describe('BookingPage', () => {
 
     renderBooking('missing-service')
 
-    expect(await screen.findByText('Servicio no encontrado')).toBeInTheDocument()
+    expect(await screen.findByText('No encontramos este servicio')).toBeInTheDocument()
   })
 
   it('shows the select-service guard when there is no service id', async () => {
@@ -66,6 +66,6 @@ describe('BookingPage', () => {
       </MemoryRouter>
     )
 
-    expect(screen.getByText('Seleccioná un servicio primero')).toBeInTheDocument()
+    expect(screen.getByText('Elegí un servicio primero')).toBeInTheDocument()
   })
 })

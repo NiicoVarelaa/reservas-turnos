@@ -1,5 +1,5 @@
-import { UserRound } from 'lucide-react'
-import { Card, CardContent } from '@/components/ui/card'
+import { CheckCircle2, UserRound } from 'lucide-react'
+import { Skeleton } from '@/components/ui/skeleton'
 import { cn, getInitials, getAvatarColor } from '@/lib/utils'
 
 function Avatar({ professional, className }) {
@@ -13,54 +13,79 @@ function Avatar({ professional, className }) {
   }
 
   return (
-    <div className={cn('rounded-full flex items-center justify-center font-semibold', bg, text, className)}>
+    <div className={cn('flex items-center justify-center rounded-full font-semibold', bg, text, className)}>
       {initials ? (
-        <span className="text-lg">{initials}</span>
+        <span className="text-base">{initials}</span>
       ) : (
-        <UserRound className="w-6 h-6" />
+        <UserRound className="h-5 w-5" aria-hidden="true" />
       )}
     </div>
   )
 }
 
-export default function ProfessionalSelect({ professionals, selected, onSelect, loading }) {
+export default function ProfessionalSelect({ professionals = [], selected, onSelect, loading }) {
   if (loading) {
-    return <div className="animate-pulse text-muted-foreground">Cargando especialistas...</div>
+    return (
+      <div className="grid gap-3 sm:grid-cols-2">
+        {Array.from({ length: 2 }).map((_, index) => (
+          <Skeleton key={index} className="h-32 rounded-2xl" />
+        ))}
+      </div>
+    )
   }
 
   if (!professionals.length) {
-    return <p className="text-muted-foreground">No hay especialistas disponibles para este servicio.</p>
+    return (
+      <div className="rounded-2xl border border-dashed border-border bg-muted/20 px-6 py-10 text-center">
+        <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-xl bg-background text-muted-foreground ring-1 ring-inset ring-border">
+          <UserRound className="h-5 w-5" aria-hidden="true" />
+        </div>
+        <p className="mt-3 text-sm font-medium">No hay profesionales disponibles para este servicio.</p>
+        <p className="mt-1 text-xs text-muted-foreground">Probá con otro servicio o volvé más tarde.</p>
+      </div>
+    )
   }
 
   return (
-    <div className="grid gap-3 sm:grid-cols-2">
-      {professionals.map(p => {
-        const profile = p.profiles || {}
-        const user = p.users || {}
-        const fullName = profile.full_name || user.full_name || 'Odontólogo/a'
-        const title = profile.title || 'Odontólogo/a'
+    <div className="grid gap-3 sm:grid-cols-2" role="group" aria-label="Seleccioná un profesional">
+      {professionals.map((professional) => {
+        const profile = professional.profiles || {}
+        const user = professional.users || {}
+        const fullName = profile.full_name || user.full_name || 'Profesional'
+        const title = profile.title || 'Profesional'
         const specialty = profile.specialty
         const bio = profile.bio
-        const isSelected = selected?.professional_id === p.professional_id
+        const isSelected = selected?.professional_id === professional.professional_id
 
         return (
-          <Card
-            key={p.professional_id}
-            onClick={() => onSelect(p.professional_id)}
+          <button
+            key={professional.professional_id}
+            type="button"
+            onClick={() => onSelect(professional.professional_id)}
+            aria-pressed={isSelected}
             className={cn(
-              'cursor-pointer transition-all hover:border-primary/50 hover:shadow-md',
-              isSelected && 'border-primary bg-primary/5 ring-1 ring-primary'
+              'relative flex flex-col items-start gap-3 rounded-2xl border p-4 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+              isSelected
+                ? 'border-primary/40 bg-primary/5 ring-1 ring-inset ring-primary/20'
+                : 'border-border bg-background hover:border-primary/25 hover:bg-muted/40'
             )}
           >
-            <CardContent className="p-4 flex items-start gap-3">
-              <Avatar professional={p} className="w-14 h-14 shrink-0" />
-              <div className="min-w-0">
-                <p className="font-medium leading-tight">{fullName}</p>
-                <p className="text-sm text-primary">{specialty ? `${title} · ${specialty}` : title}</p>
-                {bio && <p className="mt-1 text-sm text-muted-foreground line-clamp-2">{bio}</p>}
+            <div className="flex w-full items-start gap-3">
+              <Avatar professional={professional} className="h-12 w-12 shrink-0" />
+              <div className="min-w-0 flex-1">
+                <p className="truncate font-semibold leading-tight">{fullName}</p>
+                <p className="mt-0.5 text-xs text-primary">
+                  {specialty ? `${title} · ${specialty}` : title}
+                </p>
               </div>
-            </CardContent>
-          </Card>
+              {isSelected && (
+                <CheckCircle2 className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
+              )}
+            </div>
+            {bio && (
+              <p className="line-clamp-2 text-xs leading-relaxed text-muted-foreground">{bio}</p>
+            )}
+          </button>
         )
       })}
     </div>

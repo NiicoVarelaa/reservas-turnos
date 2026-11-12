@@ -1,28 +1,16 @@
-import { Clock, DollarSign, MapPin } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import { Clock, MapPin, Stethoscope, ArrowRight } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import { useBookingStore } from '@/store/bookingStore'
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
+import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import { cn, formatCurrency } from '@/lib/utils'
 import { CTA } from '@/constants/copy'
 
 export default function ServiceCard({ service, className }) {
-  const navigate = useNavigate()
   const setSelectedService = useBookingStore((s) => s.setSelectedService)
 
   if (!service?.id) {
     return null
-  }
-
-  const handleNavigate = () => {
-    setSelectedService(service)
-    navigate(`/book/${service.id}`)
-  }
-
-  const handleReservar = (e) => {
-    e.stopPropagation()
-    handleNavigate()
   }
 
   const businessName = service.businesses?.name
@@ -30,41 +18,53 @@ export default function ServiceCard({ service, className }) {
 
   return (
     <Card
-      onClick={handleNavigate}
       className={cn(
-        'h-full transition-all hover:shadow-md hover:border-primary/50 cursor-pointer',
+        'group relative flex h-full flex-col overflow-hidden border-border/70 transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5',
         className
       )}
     >
-      <CardHeader className="pb-3">
-        {businessName && (
-          <Badge variant="secondary" className="mb-2 w-fit">
-            <MapPin className="w-3 h-3 mr-1" />
-            {businessName}
-          </Badge>
-        )}
-        <h3 className="text-lg font-semibold">{service.name}</h3>
-      </CardHeader>
-      <CardContent className="pb-3">
+      <Link
+        to={`/book/${service.id}`}
+        onClick={() => setSelectedService(service)}
+        className="flex h-full flex-col rounded-xl p-5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:p-6"
+      >
+        <div className="flex items-start justify-between gap-3">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-secondary text-primary ring-1 ring-inset ring-primary/10">
+            <Stethoscope className="h-5 w-5" aria-hidden="true" />
+          </span>
+          {businessName && (
+            <Badge variant="secondary" className="max-w-[65%] gap-1 truncate">
+              <MapPin className="h-3 w-3 shrink-0" aria-hidden="true" />
+              <span className="truncate">{businessName}</span>
+            </Badge>
+          )}
+        </div>
+
+        <h3 className="mt-4 text-lg font-semibold tracking-tight transition-colors group-hover:text-primary">
+          {service.name}
+        </h3>
+
         {service.description && (
-          <p className="text-sm text-muted-foreground line-clamp-2">
+          <p className="mt-1.5 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
             {service.description}
           </p>
         )}
-      </CardContent>
-      <CardFooter className="flex flex-col items-stretch gap-3 pt-0">
-        <div className="flex items-center justify-between text-sm">
-          <span className="inline-flex items-center gap-1.5 text-muted-foreground">
-            <Clock className="w-3.5 h-3.5" /> {service.duration_min} min
+
+        <div className="mt-auto flex items-center justify-between gap-3 pt-5">
+          <span className="inline-flex items-center gap-1.5 text-sm text-muted-foreground">
+            <Clock className="h-4 w-4" aria-hidden="true" />
+            {service.duration_min} min
           </span>
-          <span className="font-semibold text-primary">
+          <span className="text-lg font-semibold text-primary">
             {formatCurrency(service.price_cents, currency)}
           </span>
         </div>
-        <Button size="sm" onClick={handleReservar}>
+
+        <span className="mt-4 inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-primary text-sm font-medium text-primary-foreground shadow-sm transition-colors group-hover:bg-primary/90">
           {CTA.primary}
-        </Button>
-      </CardFooter>
+          <ArrowRight className="h-4 w-4" aria-hidden="true" />
+        </span>
+      </Link>
     </Card>
   )
 }

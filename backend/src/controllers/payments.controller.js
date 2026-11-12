@@ -45,7 +45,7 @@ class PaymentsController {
           },
         ],
         mode: 'payment',
-        success_url: `${process.env.FRONTEND_URL}/confirm/{CHECKOUT_SESSION_ID}`,
+        success_url: `${process.env.FRONTEND_URL}/confirm/${appointment.id}`,
         cancel_url: `${process.env.FRONTEND_URL}/book/${appointment.service_id}?cancelled=true`,
         metadata: {
           appointmentId: appointment.id,

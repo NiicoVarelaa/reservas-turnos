@@ -3,6 +3,10 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
+const WEEKDAYS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
+
+const capitalize = (text) => (text ? text.charAt(0).toUpperCase() + text.slice(1) : text)
+
 export default function Calendar({ selectedDate, onSelect, minDate }) {
   const [currentMonth, setCurrentMonth] = useState(() => {
     return selectedDate ? new Date(selectedDate) : new Date()
@@ -41,52 +45,85 @@ export default function Calendar({ selectedDate, onSelect, minDate }) {
   const firstDay = getFirstDayOfMonth(currentMonth)
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1)
   const blanks = Array.from({ length: firstDay }, (_, i) => i)
-  const monthName = currentMonth.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })
+  const monthName = capitalize(currentMonth.toLocaleDateString('es-AR', { month: 'long', year: 'numeric' }))
+  const isCurrentMonth =
+    currentMonth.getFullYear() === today.getFullYear() && currentMonth.getMonth() === today.getMonth()
 
   return (
     <div className="w-full">
-      <div className="flex items-center justify-between mb-4">
-        <Button variant="outline" size="icon" onClick={prevMonth} aria-label="Mes anterior">
-          <ChevronLeft className="w-4 h-4" />
+      <div className="mb-4 flex items-center justify-between gap-2">
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          onClick={prevMonth}
+          aria-label="Mes anterior"
+          className="h-10 w-10 rounded-xl"
+        >
+          <ChevronLeft className="h-4 w-4" aria-hidden="true" />
         </Button>
-        <h3 className="text-lg font-semibold capitalize">{monthName}</h3>
-        <Button variant="outline" size="icon" onClick={nextMonth} aria-label="Mes siguiente">
-          <ChevronRight className="w-4 h-4" />
+
+        <div className="text-center">
+          <h3 className="text-base font-semibold" aria-live="polite">{monthName}</h3>
+          {!isCurrentMonth && (
+            <button
+              type="button"
+              onClick={() => {
+                setCurrentMonth(new Date(today.getFullYear(), today.getMonth(), 1))
+                if (!isDateDisabled(today)) onSelect(today)
+              }}
+              className="mt-0.5 text-xs font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            >
+              Volver a hoy
+            </button>
+          )}
+        </div>
+
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          onClick={nextMonth}
+          aria-label="Mes siguiente"
+          className="h-10 w-10 rounded-xl"
+        >
+          <ChevronRight className="h-4 w-4" aria-hidden="true" />
         </Button>
       </div>
 
-      <div className="grid grid-cols-7 gap-1 mb-2">
-        {['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'].map((day) => (
-          <div key={day} className="text-center text-sm font-medium text-muted-foreground py-2">
+      <div className="grid grid-cols-7 gap-1" aria-hidden="true">
+        {WEEKDAYS.map((day) => (
+          <div key={day} className="py-2 text-center text-xs font-medium text-muted-foreground">
             {day}
           </div>
         ))}
       </div>
 
       <div className="grid grid-cols-7 gap-1">
-        {blanks.map((i) => <div key={`blank-${i}`} className="aspect-square" />)}
+        {blanks.map((i) => <div key={`blank-${i}`} className="aspect-square" aria-hidden="true" />)}
 
         {days.map((day) => {
           const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day)
           const disabled = isDateDisabled(date)
           const selected = isSelected(date)
-          const today = isToday(date)
+          const isTodayDate = isToday(date)
 
           return (
             <button
               key={day}
+              type="button"
               onClick={() => !disabled && onSelect(date)}
               disabled={disabled}
+              aria-label={date.toLocaleDateString('es-AR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+              aria-pressed={selected}
+              aria-current={isTodayDate ? 'date' : undefined}
               className={cn(
-                'aspect-square rounded-md text-sm font-medium transition-colors',
-                'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
-                selected && 'bg-primary text-primary-foreground hover:bg-primary/90',
-                !selected && !disabled && 'hover:bg-accent',
-                today && !selected && 'border border-primary',
-                disabled && 'text-muted-foreground/50 cursor-not-allowed'
+                'aspect-square rounded-xl text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+                selected && 'bg-primary text-primary-foreground shadow-sm hover:bg-primary/90',
+                !selected && !disabled && 'text-foreground hover:bg-secondary',
+                isTodayDate && !selected && 'ring-1 ring-inset ring-teal/50 text-teal',
+                disabled && 'cursor-not-allowed text-muted-foreground/40'
               )}
-              aria-label={date.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-              aria-selected={selected}
             >
               {day}
             </button>

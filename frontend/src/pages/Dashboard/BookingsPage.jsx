@@ -1,54 +1,123 @@
-import { useState, useCallback } from 'react'
+import { useCallback, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
+import {
+  AlertCircle,
+  CalendarDays,
+  CalendarX2,
+  CheckCircle2,
+  ChevronDown,
+  Clock,
+  CreditCard,
+  Loader2,
+  Mail,
+  Phone,
+  RefreshCw,
+  Search,
+  StickyNote,
+  UserRound,
+  Wallet,
+  X,
+  XCircle,
+} from 'lucide-react'
 import { useAppointments, useUpdateAppointment, useCancelAppointment } from '@/hooks/useAppointments'
-import { Card, CardContent } from '@/components/ui/card'
+import PageHeader from '@/components/dashboard/PageHeader'
+import StatCard from '@/components/dashboard/StatCard'
+import EmptyState from '@/components/dashboard/EmptyState'
+import InitialsAvatar from '@/components/ui/InitialsAvatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Calendar, Clock, Mail, Phone, Search, RefreshCw, ChevronDown, ChevronUp, StickyNote, CheckCircle2, CreditCard, XCircle, DollarSign } from 'lucide-react'
-import { getStatusBadge, formatCurrency } from '@/lib/utils'
 import ConfirmDialog from '@/components/ui/confirm-dialog'
+import { cn, formatCurrency, getStatusBadge } from '@/lib/utils'
+import {
+  formatDate,
+  formatLongDate,
+  formatTimeWithSuffix,
+  resolveCurrency,
+} from '@/lib/format'
 import { toast } from '@/hooks/use-toast'
 
+const STATUS_FILTERS = [
+  { value: 'all', label: 'Todas' },
+  { value: 'pending', label: 'Pendientes' },
+  { value: 'confirmed', label: 'Confirmadas' },
+  { value: 'paid', label: 'Pagadas' },
+  { value: 'cancelled', label: 'Canceladas' },
+]
+
+function DetailItem({ icon: Icon, label, children, className }) {
+  return (
+    <div className={cn('flex items-start gap-2.5', className)}>
+      <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-background text-muted-foreground ring-1 ring-inset ring-border">
+        <Icon className="h-4 w-4" aria-hidden="true" />
+      </span>
+      <div className="min-w-0">
+        <dt className="text-[11px] text-muted-foreground">{label}</dt>
+        <dd className="break-words text-sm font-medium">{children || '—'}</dd>
+      </div>
+    </div>
+  )
+}
+
 export default function BookingsPage() {
-  const { appointments, loading, refetch } = useAppointments()
-  const [filter, setFilter] = useState('')
+  const { appointments, loading, error, refetch } = useAppointments()
+  const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [expandedId, setExpandedId] = useState(null)
   const [cancelTarget, setCancelTarget] = useState(null)
+  const [refreshing, setRefreshing] = useState(false)
 
   const updateAppointment = useUpdateAppointment()
   const cancelAppointment = useCancelAppointment()
 
-  const actionLoading = updateAppointment.isPending || cancelAppointment.isPending
-    ? (updateAppointment.variables?.id || cancelAppointment.variables)
-    : null
+  const actionLoading = updateAppointment.isPending
+    ? updateAppointment.variables?.id
+    : cancelAppointment.isPending
+      ? cancelAppointment.variables
+      : null
 
   const handleRefresh = useCallback(async () => {
-    toast({ title: 'Actualizando...', description: 'Cargando reservas' })
-    await refetch()
-    toast({ title: 'Reservas actualizadas', variant: 'success' })
+    setRefreshing(true)
+    try {
+      await refetch()
+      toast({ title: 'Reservas actualizadas', variant: 'success' })
+    } catch {
+      toast({
+        title: 'No pudimos actualizar las reservas',
+        description: 'Revisá tu conexión e intentá de nuevo.',
+        variant: 'destructive',
+      })
+    } finally {
+      setRefreshing(false)
+    }
   }, [refetch])
 
-  const runAction = async (id, updates, successMsg, errorMsg) => {
+  const runAction = async (id, updates, successMessage) => {
     if (actionLoading) return
     try {
       await updateAppointment.mutateAsync({ id, updates })
-      toast({ title: successMsg, variant: 'success' })
+      toast({ title: successMessage, variant: 'success' })
     } catch (err) {
-      toast({ title: 'Error', description: err.response?.data?.error || errorMsg, variant: 'destructive' })
+      toast({
+        title: 'No pudimos actualizar la reserva',
+        description: err.response?.data?.error || 'Probá de nuevo en unos segundos.',
+        variant: 'destructive',
+      })
     }
   }
 
-  const handleConfirm = (id) => runAction(id, { status: 'confirmed' }, 'Reserva confirmada', 'No se pudo actualizar la reserva')
-  const handleMarkPaid = (id) => runAction(id, { status: 'paid' }, 'Reserva marcada como pagada', 'No se pudo actualizar la reserva')
+  const handleConfirm = (id) =>
+    runAction(id, { status: 'confirmed' }, 'Reserva confirmada')
+
+  const handleMarkPaid = (id) =>
+    runAction(id, { status: 'paid' }, 'Reserva marcada como pagada')
 
   const getCancelMessage = (id) => {
-    const isPaid = appointments.find(a => a.id === id)?.status === 'paid'
+    const isPaid = appointments.find((appointment) => appointment.id === id)?.status === 'paid'
     return isPaid
       ? 'Esta reserva ya fue pagada. ¿Confirmás la cancelación? El reembolso debe gestionarse por separado.'
-      : '¿Seguro que querés cancelar esta reserva?'
+      : '¿Seguro que querés cancelar esta reserva? Esta acción no se puede deshacer.'
   }
 
   const handleCancel = async (id) => {
@@ -57,40 +126,129 @@ export default function BookingsPage() {
       await cancelAppointment.mutateAsync(id)
       toast({ title: 'Reserva cancelada', variant: 'success' })
     } catch (err) {
-      toast({ title: 'Error', description: err.response?.data?.error || 'No se pudo cancelar la reserva', variant: 'destructive' })
+      toast({
+        title: 'No pudimos cancelar la reserva',
+        description: err.response?.data?.error || 'Probá de nuevo en unos segundos.',
+        variant: 'destructive',
+      })
     } finally {
       setCancelTarget(null)
     }
   }
 
-  const currency = 'ARS'
+  const counts = useMemo(
+    () =>
+      appointments.reduce(
+        (accumulator, appointment) => {
+          accumulator[appointment.status] = (accumulator[appointment.status] || 0) + 1
+          return accumulator
+        },
+        { all: appointments.length }
+      ),
+    [appointments]
+  )
 
-  const filtered = appointments.filter(apt => {
-    const matchesSearch = apt.client_name?.toLowerCase().includes(filter.toLowerCase()) ||
-                         apt.client_email?.toLowerCase().includes(filter.toLowerCase())
-    const matchesStatus = statusFilter === 'all' || apt.status === statusFilter
-    return matchesSearch && matchesStatus
-  })
+  const filtered = useMemo(() => {
+    const term = search.trim().toLowerCase()
 
-  const renderActions = (apt) => {
-    const isLoading = actionLoading === apt.id
-    if (apt.status === 'cancelled') return null
+    return appointments.filter((appointment) => {
+      const haystack = [
+        appointment.client_name,
+        appointment.client_email,
+        appointment.client_phone,
+        appointment.services?.name,
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase()
+
+      const matchesSearch = !term || haystack.includes(term)
+      const matchesStatus = statusFilter === 'all' || appointment.status === statusFilter
+
+      return matchesSearch && matchesStatus
+    })
+  }, [appointments, search, statusFilter])
+
+  const revenue = useMemo(
+    () =>
+      appointments
+        .filter((appointment) => appointment.status === 'paid')
+        .reduce((sum, appointment) => sum + (appointment.services?.price_cents || 0), 0),
+    [appointments]
+  )
+
+  const fallbackCurrency = resolveCurrency(
+    appointments[0]?.services?.currency,
+    appointments[0]?.businesses?.currency
+  )
+  const currencyFor = (appointment) =>
+    resolveCurrency(
+      appointment.services?.currency,
+      appointment.businesses?.currency,
+      fallbackCurrency
+    )
+
+  const hasFilters = search.trim().length > 0 || statusFilter !== 'all'
+  const clearFilters = () => {
+    setSearch('')
+    setStatusFilter('all')
+  }
+
+  const renderActions = (appointment) => {
+    const busy = actionLoading === appointment.id
+
+    if (appointment.status === 'cancelled') {
+      return (
+        <p className="mt-4 border-t border-border/70 pt-4 text-xs text-muted-foreground">
+          Esta reserva fue cancelada y ya no está activa.
+        </p>
+      )
+    }
+
     return (
-      <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t">
-        {apt.status === 'pending' && (
-          <Button variant="outline" size="sm" onClick={() => handleConfirm(apt.id)} disabled={isLoading}>
-            <CheckCircle2 className="w-4 h-4 mr-1.5" />
+      <div className="mt-4 flex flex-wrap gap-2 border-t border-border/70 pt-4">
+        {appointment.status === 'pending' && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="rounded-lg"
+            onClick={() => handleConfirm(appointment.id)}
+            disabled={busy}
+          >
+            {busy ? (
+              <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+            ) : (
+              <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
+            )}
             Confirmar
           </Button>
         )}
-        {apt.status !== 'paid' && (
-          <Button variant="outline" size="sm" onClick={() => handleMarkPaid(apt.id)} disabled={isLoading}>
-            <CreditCard className="w-4 h-4 mr-1.5" />
+
+        {appointment.status !== 'paid' && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="rounded-lg"
+            onClick={() => handleMarkPaid(appointment.id)}
+            disabled={busy}
+          >
+            {busy ? (
+              <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+            ) : (
+              <CreditCard className="h-4 w-4" aria-hidden="true" />
+            )}
             Marcar pagado
           </Button>
         )}
-        <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => setCancelTarget(apt.id)} disabled={isLoading}>
-          <XCircle className="w-4 h-4 mr-1.5" />
+
+        <Button
+          variant="ghost"
+          size="sm"
+          className="rounded-lg text-destructive hover:bg-destructive/10 hover:text-destructive"
+          onClick={() => setCancelTarget(appointment.id)}
+          disabled={busy}
+        >
+          <XCircle className="h-4 w-4" aria-hidden="true" />
           Cancelar
         </Button>
       </div>
@@ -99,123 +257,305 @@ export default function BookingsPage() {
 
   return (
     <>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold">Reservas</h1>
-        <Button variant="outline" size="sm" onClick={handleRefresh}>
-          <RefreshCw className="w-4 h-4 mr-2" />
-          Actualizar
-        </Button>
+      <PageHeader
+        eyebrow="Agenda"
+        title="Reservas"
+        description="Revisá los turnos de tus clientes, confirmá asistencias y registrá pagos."
+        icon={CalendarDays}
+        actions={
+          <Button
+            variant="outline"
+            className="h-10 rounded-xl"
+            onClick={handleRefresh}
+            disabled={refreshing}
+          >
+            <RefreshCw
+              className={cn('h-4 w-4', refreshing && 'animate-spin')}
+              aria-hidden="true"
+            />
+            {refreshing ? 'Actualizando...' : 'Actualizar'}
+          </Button>
+        }
+      />
+
+      <div className="mt-6 grid gap-4 sm:grid-cols-3">
+        <StatCard
+          label="Total"
+          value={appointments.length}
+          hint="Reservas registradas"
+          icon={CalendarDays}
+          tone="primary"
+          loading={loading}
+        />
+        <StatCard
+          label="Pendientes"
+          value={counts.pending || 0}
+          hint={counts.pending ? 'Esperan confirmación' : 'Nada por confirmar'}
+          icon={Clock}
+          tone="amber"
+          loading={loading}
+        />
+        <StatCard
+          label="Cobrado"
+          value={formatCurrency(revenue, fallbackCurrency)}
+          hint={`${counts.paid || 0} ${counts.paid === 1 ? 'reserva pagada' : 'reservas pagadas'}`}
+          icon={Wallet}
+          tone="rose"
+          loading={loading}
+        />
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-4 mb-6">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            placeholder="Buscar por nombre o email..."
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-full sm:w-[180px]">
-            <SelectValue placeholder="Estado" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todos</SelectItem>
-            <SelectItem value="pending">Pendiente</SelectItem>
-            <SelectItem value="confirmed">Confirmado</SelectItem>
-            <SelectItem value="paid">Pagado</SelectItem>
-            <SelectItem value="cancelled">Cancelado</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+      <div className="mt-6 rounded-3xl border border-border/70 bg-card p-4 shadow-sm sm:p-5">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div className="relative w-full lg:max-w-md">
+            <Search
+              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+              aria-hidden="true"
+            />
+            <Input
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="Buscar por cliente, email, teléfono o servicio..."
+              aria-label="Buscar reservas"
+              className="h-11 rounded-xl pl-10 pr-10"
+            />
+            {search && (
+              <button
+                type="button"
+                onClick={() => setSearch('')}
+                aria-label="Limpiar búsqueda"
+                className="absolute right-1.5 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                <X className="h-4 w-4" aria-hidden="true" />
+              </button>
+            )}
+          </div>
 
-      {loading ? (
-        <div className="space-y-2">
-          {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-20" />)}
+          <p className="text-xs text-muted-foreground lg:text-right" aria-live="polite">
+            {loading
+              ? 'Cargando reservas...'
+              : `${filtered.length} de ${appointments.length} ${
+                  appointments.length === 1 ? 'reserva' : 'reservas'
+                }`}
+          </p>
         </div>
-      ) : filtered.length === 0 ? (
-        <div className="text-center py-12 text-muted-foreground">
-          <p>No se encontraron reservas.</p>
-        </div>
-      ) : (
-        <div className="space-y-2">
-          {filtered.map((apt) => {
-            const isExpanded = expandedId === apt.id
+
+        <div
+          className="mt-4 flex flex-wrap gap-1.5"
+          role="group"
+          aria-label="Filtrar reservas por estado"
+        >
+          {STATUS_FILTERS.map((filter) => {
+            const active = statusFilter === filter.value
+            const count = filter.value === 'all' ? counts.all || 0 : counts[filter.value] || 0
+
             return (
-              <Card key={apt.id}>
-                <CardContent className="p-4">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div>
-                      <p className="font-medium">{apt.client_name}</p>
-                      <p className="text-sm text-muted-foreground">{apt.services?.name}</p>
-                    </div>
-                    <div className="flex flex-wrap gap-4 text-sm">
-                      <div className="flex items-center gap-1 text-muted-foreground">
-                        <Calendar className="w-4 h-4" />
-                        <span>{new Date(apt.start_at).toLocaleDateString('es-ES')}</span>
+              <button
+                key={filter.value}
+                type="button"
+                onClick={() => setStatusFilter(filter.value)}
+                aria-pressed={active}
+                className={cn(
+                  'inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+                  active
+                    ? 'border-primary bg-primary text-primary-foreground'
+                    : 'border-border/70 bg-background text-muted-foreground hover:bg-muted hover:text-foreground'
+                )}
+              >
+                {filter.label}
+                <span
+                  className={cn(
+                    'rounded-full px-1.5 text-[10px] font-semibold',
+                    active ? 'bg-primary-foreground/20' : 'bg-muted'
+                  )}
+                >
+                  {count}
+                </span>
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      <div className="mt-5">
+        {error ? (
+          <EmptyState
+            tone="destructive"
+            icon={AlertCircle}
+            title="No pudimos cargar las reservas"
+            description={error}
+            action={<Button onClick={() => refetch()}>Reintentar</Button>}
+          />
+        ) : loading ? (
+          <div className="space-y-3">
+            {Array.from({ length: 5 }).map((_, index) => (
+              <Skeleton key={index} className="h-[92px] rounded-2xl" />
+            ))}
+          </div>
+        ) : filtered.length === 0 ? (
+          <EmptyState
+            icon={hasFilters ? Search : CalendarX2}
+            title={hasFilters ? 'No encontramos reservas' : 'Todavía no tenés reservas'}
+            description={
+              hasFilters
+                ? 'Probá con otro nombre, servicio o cambiá el filtro de estado.'
+                : 'Cuando un cliente reserve un turno, va a aparecer acá para que puedas gestionarlo.'
+            }
+            action={
+              hasFilters ? (
+                <Button variant="outline" onClick={clearFilters}>
+                  Limpiar filtros
+                </Button>
+              ) : (
+                <Button asChild>
+                  <Link to="/book" target="_blank" rel="noreferrer">
+                    Ver página de reservas
+                  </Link>
+                </Button>
+              )
+            }
+          />
+        ) : (
+          <ul className="space-y-3">
+            {filtered.map((appointment) => {
+              const isExpanded = expandedId === appointment.id
+              const status = getStatusBadge(appointment.status)
+              const priceCents = appointment.services?.price_cents
+              const priceLabel =
+                priceCents != null ? formatCurrency(priceCents, currencyFor(appointment)) : null
+              const detailId = `booking-detail-${appointment.id}`
+
+              return (
+                <li
+                  key={appointment.id}
+                  className="overflow-hidden rounded-2xl border border-border/70 bg-card shadow-sm transition-shadow hover:shadow-md"
+                >
+                  <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
+                    <div className="flex min-w-0 items-start gap-3">
+                      <InitialsAvatar
+                        name={appointment.client_name}
+                        className="h-11 w-11 text-sm"
+                      />
+
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="truncate text-sm font-semibold sm:text-base">
+                            {appointment.client_name || 'Cliente'}
+                          </p>
+                          <Badge variant={status.variant}>{status.label}</Badge>
+                        </div>
+
+                        <p className="mt-0.5 truncate text-sm text-muted-foreground">
+                          {appointment.services?.name || 'Servicio sin especificar'}
+                        </p>
+
+                        <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                          <span className="inline-flex items-center gap-1">
+                            <CalendarDays className="h-3.5 w-3.5 text-teal" aria-hidden="true" />
+                            {formatDate(appointment.start_at)}
+                          </span>
+                          <span className="inline-flex items-center gap-1">
+                            <Clock className="h-3.5 w-3.5 text-teal" aria-hidden="true" />
+                            {formatTimeWithSuffix(appointment.start_at)}
+                          </span>
+                          {priceLabel && (
+                            <span className="inline-flex items-center gap-1">
+                              <Wallet className="h-3.5 w-3.5 text-teal" aria-hidden="true" />
+                              {priceLabel}
+                            </span>
+                          )}
+                        </div>
                       </div>
-                      <div className="flex items-center gap-1 text-muted-foreground">
-                        <Clock className="w-4 h-4" />
-                        <span>{new Date(apt.start_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</span>
-                      </div>
-                      <Badge variant={getStatusBadge(apt.status).variant}>{getStatusBadge(apt.status).label}</Badge>
                     </div>
+
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => setExpandedId(isExpanded ? null : apt.id)}
-                      aria-label="Ver detalle"
+                      className="self-end rounded-lg sm:self-center"
+                      onClick={() => setExpandedId(isExpanded ? null : appointment.id)}
+                      aria-expanded={isExpanded}
+                      aria-controls={detailId}
                     >
-                      {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                      <span className="ml-1 hidden sm:inline">Detalle</span>
+                      {isExpanded ? 'Ocultar' : 'Detalle'}
+                      <ChevronDown
+                        className={cn(
+                          'h-4 w-4 transition-transform duration-200',
+                          isExpanded && 'rotate-180'
+                        )}
+                        aria-hidden="true"
+                      />
                     </Button>
                   </div>
 
                   {isExpanded && (
-                    <div className="mt-4 pt-4 border-t space-y-3">
-                      <div className="grid gap-3 sm:grid-cols-2">
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <Mail className="w-4 h-4 shrink-0" />
-                          <span className="truncate">{apt.client_email}</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <Phone className="w-4 h-4 shrink-0" />
-                          <span>{apt.client_phone}</span>
-                        </div>
-                        {apt.services?.price_cents ? (
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <DollarSign className="w-4 h-4 shrink-0" />
-                            <span>{formatCurrency(apt.services.price_cents, currency)}</span>
-                          </div>
-                        ) : null}
-                        {apt.notes && (
-                          <div className="flex items-start gap-2 text-sm text-muted-foreground sm:col-span-2">
-                            <StickyNote className="w-4 h-4 shrink-0 mt-0.5" />
-                            <span>{apt.notes}</span>
-                          </div>
+                    <div
+                      id={detailId}
+                      className="border-t border-border/70 bg-muted/20 px-4 py-4 sm:px-5"
+                    >
+                      <dl className="grid gap-4 sm:grid-cols-2">
+                        <DetailItem icon={CalendarDays} label="Fecha">
+                          {formatLongDate(appointment.start_at)}
+                        </DetailItem>
+                        <DetailItem icon={Clock} label="Horario">
+                          {formatTimeWithSuffix(appointment.start_at)}
+                          {appointment.services?.duration_min
+                            ? ` · ${appointment.services.duration_min} min`
+                            : ''}
+                        </DetailItem>
+                        <DetailItem icon={Mail} label="Email">
+                          {appointment.client_email ? (
+                            <a
+                              href={`mailto:${appointment.client_email}`}
+                              className="text-primary underline-offset-4 hover:underline"
+                            >
+                              {appointment.client_email}
+                            </a>
+                          ) : null}
+                        </DetailItem>
+                        <DetailItem icon={Phone} label="Teléfono">
+                          {appointment.client_phone ? (
+                            <a
+                              href={`tel:${appointment.client_phone}`}
+                              className="text-primary underline-offset-4 hover:underline"
+                            >
+                              {appointment.client_phone}
+                            </a>
+                          ) : null}
+                        </DetailItem>
+                        <DetailItem icon={Wallet} label="Precio del servicio">
+                          {priceLabel}
+                        </DetailItem>
+                        <DetailItem icon={UserRound} label="Cliente">
+                          {appointment.client_name}
+                        </DetailItem>
+                        {appointment.notes && (
+                          <DetailItem icon={StickyNote} label="Notas" className="sm:col-span-2">
+                            {appointment.notes}
+                          </DetailItem>
                         )}
-                      </div>
-                      {renderActions(apt)}
+                      </dl>
+
+                      {renderActions(appointment)}
                     </div>
                   )}
-                </CardContent>
-              </Card>
-            )
-          })}
-        </div>
-      )}
+                </li>
+              )
+            })}
+          </ul>
+        )}
+      </div>
 
       <ConfirmDialog
-        open={!!cancelTarget}
-        onOpenChange={(open) => { if (!open) setCancelTarget(null) }}
+        open={Boolean(cancelTarget)}
+        onOpenChange={(open) => {
+          if (!open) setCancelTarget(null)
+        }}
         title="Cancelar reserva"
         description={cancelTarget ? getCancelMessage(cancelTarget) : ''}
         confirmLabel="Confirmar cancelación"
         cancelLabel="Volver"
         confirmVariant="destructive"
-        loading={actionLoading}
+        loading={Boolean(actionLoading)}
         onConfirm={() => cancelTarget && handleCancel(cancelTarget)}
       />
     </>

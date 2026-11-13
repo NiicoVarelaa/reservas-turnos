@@ -3,15 +3,20 @@ import { schedulesApi } from '@/services/api'
 import { queryKeys } from '@/lib/queryKeys'
 
 export function useSchedules() {
-  const { data, isLoading } = useQuery({
-    queryKey: queryKeys.schedules.all(),
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: queryKeys.schedules.all,
     queryFn: async () => {
       const { data } = await schedulesApi.getAll()
       return data.schedules || []
     },
   })
 
-  return { schedules: data || [], loading: isLoading }
+  return {
+    schedules: data || [],
+    loading: isLoading,
+    error: error?.response?.data?.error || null,
+    refetch,
+  }
 }
 
 export function useCreateSchedule() {

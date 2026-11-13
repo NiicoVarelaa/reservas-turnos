@@ -9,6 +9,7 @@ export function useMyBusiness() {
       const { data } = await businessApi.getMyBusiness()
       return data.business
     },
+    retry: false,
   })
 }
 

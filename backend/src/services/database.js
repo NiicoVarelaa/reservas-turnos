@@ -577,8 +577,8 @@ class DatabaseService {
       .from('appointments')
       .select(`
         *,
-        services(name, duration_min, price_cents),
-        businesses(name, slug, logo_url, timezone)
+        services(name, duration_min, price_cents, currency),
+        businesses(name, slug, logo_url, timezone, currency)
       `)
       .order('start_at', { ascending: true })
 

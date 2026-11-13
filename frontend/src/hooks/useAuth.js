@@ -24,7 +24,25 @@ export function useUpdateProfile() {
 
   return useMutation({
     mutationFn: (updates) => authApi.updateProfile(updates),
-    onSuccess: () => {
+    onSuccess: (response) => {
+      const profile = response?.data?.profile
+      const cachedUser = authService.getUser()
+
+      if (cachedUser && profile) {
+        authService.setTokens(
+          authService.getAccessToken(),
+          authService.getRefreshToken(),
+          {
+            ...cachedUser,
+            full_name: profile.full_name || cachedUser.full_name,
+            profile,
+          }
+        )
+      }
+
+      queryClient.setQueryData(queryKeys.auth.profile(), (previous) =>
+        previous ? { ...previous, profile: profile || previous.profile } : previous
+      )
       queryClient.invalidateQueries({ queryKey: queryKeys.auth.profile() })
     },
   })

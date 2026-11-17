@@ -13,6 +13,9 @@ const FaqPage = lazy(() => import('@/pages/Public/FaqPage'))
 const ContactPage = lazy(() => import('@/pages/Public/ContactPage'))
 const NotFoundPage = lazy(() => import('@/pages/Public/NotFoundPage'))
 
+// Client Pages
+const MyAppointmentsPage = lazy(() => import('@/pages/Client/MyAppointmentsPage'))
+
 // Auth Pages
 import LoginPage from '@/pages/Auth/LoginPage'
 
@@ -64,6 +67,9 @@ function App() {
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/auth/callback" element={<GoogleCallback />} />
+
+          {/* Client Routes */}
+          <Route path="/mis-turnos" element={<MyAppointmentsPage />} />
 
           {/* Onboarding Routes */}
           <Route path="/onboarding/business" element={<SetupBusiness />} />

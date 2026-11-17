@@ -2,6 +2,18 @@ const db = require('../services/database')
 const whatsappService = require('../services/whatsapp')
 
 class AppointmentsController {
+  async getMyAppointments(req, res, next) {
+    try {
+      const appointments = await db.getAppointments({
+        clientEmail: req.user.email
+      })
+
+      res.json({ appointments })
+    } catch (error) {
+      next(error)
+    }
+  }
+
   async getAppointments(req, res, next) {
     try {
       const filters = {

@@ -43,6 +43,39 @@ describe('Appointments integration', () => {
     })
   })
 
+  describe('GET /api/appointments/mine', () => {
+    const client = { id: USER_ID, email: 'client@test.com', role: 'client', is_active: true }
+    const clientToken = accessTokenFor(client)
+
+    it('lists appointments matching the authenticated client email', async () => {
+      db.getUserById.mockResolvedValue(client)
+      db.getAppointments.mockResolvedValue([])
+
+      const res = await request(app)
+        .get('/api/appointments/mine')
+        .set('Authorization', `Bearer ${clientToken}`)
+
+      expect(res.status).toBe(200)
+      expect(db.getAppointments).toHaveBeenCalledWith({ clientEmail: 'client@test.com' })
+    })
+
+    it('ignores a clientEmail supplied by the caller', async () => {
+      db.getUserById.mockResolvedValue(client)
+      db.getAppointments.mockResolvedValue([])
+
+      await request(app)
+        .get('/api/appointments/mine?clientEmail=other@test.com')
+        .set('Authorization', `Bearer ${clientToken}`)
+
+      expect(db.getAppointments).toHaveBeenCalledWith({ clientEmail: 'client@test.com' })
+    })
+
+    it('rejects requests without a token', async () => {
+      const res = await request(app).get('/api/appointments/mine')
+      expect(res.status).toBe(401)
+    })
+  })
+
   describe('GET /api/appointments/:id', () => {
     it('returns an own appointment', async () => {
       db.getUserById.mockResolvedValue(pro)

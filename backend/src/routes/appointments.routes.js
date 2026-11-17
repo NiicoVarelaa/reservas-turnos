@@ -6,6 +6,7 @@ const { validate } = require('../middleware/zodValidator')
 const { uuidParamSchema } = require('../utils/validators')
 
 router.get('/', jwtAuth, appointmentsController.getAppointments)
+router.get('/mine', jwtAuth, appointmentsController.getMyAppointments)
 router.get('/stats', jwtAuth, appointmentsController.getStats)
 router.get('/:id', jwtAuth, validate(uuidParamSchema, 'params'), appointmentsController.getAppointment)
 router.patch('/:id', jwtAuth, validate(uuidParamSchema, 'params'), appointmentsController.updateAppointment)

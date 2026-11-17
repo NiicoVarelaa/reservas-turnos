@@ -154,9 +154,9 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
-      await login.mutateAsync({ email: email.trim(), password })
+      const data = await login.mutateAsync({ email: email.trim(), password })
       toast({ title: 'Inicio de sesión exitoso', description: 'Bienvenido de vuelta', variant: 'success' })
-      navigate('/dashboard')
+      navigate(data?.user?.role === 'professional' ? '/dashboard' : '/mis-turnos')
     } catch (err) {
       setErrors({ form: err.message || 'Error al iniciar sesión' })
       toast({ title: 'Error al iniciar sesión', description: err.message || 'Credenciales inválidas', variant: 'destructive' })

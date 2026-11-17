@@ -113,6 +113,9 @@ export const appointmentsApi = {
   getAll: (params) =>
     api.get('/api/appointments', { params }),
 
+  getMine: () =>
+    api.get('/api/appointments/mine'),
+
   getById: (id) =>
     api.get(`/api/appointments/${id}`),
 

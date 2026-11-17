@@ -13,6 +13,7 @@ export const queryKeys = {
   appointments: {
     all: ['appointments'],
     list: (params) => ['appointments', 'list', params],
+    mine: () => ['appointments', 'mine'],
     detail: (id) => ['appointments', 'detail', id],
   },
   bookings: {

@@ -19,6 +19,25 @@ export function useAppointments(filters = {}) {
   }
 }
 
+export function useMyAppointments({ enabled = true } = {}) {
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: queryKeys.appointments.mine(),
+    queryFn: async () => {
+      const { data } = await appointmentsApi.getMine()
+      return data.appointments || []
+    },
+    enabled,
+    staleTime: 60 * 1000,
+  })
+
+  return {
+    appointments: data || [],
+    loading: isLoading,
+    error: error?.response?.data?.error || error?.message || null,
+    refetch,
+  }
+}
+
 export function useUpdateAppointment() {
   const queryClient = useQueryClient()
 

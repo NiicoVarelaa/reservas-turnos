@@ -1,7 +1,15 @@
 import { useState, useEffect, useRef } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
-import { Menu, X, Calendar } from 'lucide-react'
+import { useAuthUser, useIsAuthenticated, useLogout } from '@/hooks/useAuth'
+import {
+  Calendar,
+  CalendarCheck2,
+  LayoutDashboard,
+  LogOut,
+  Menu,
+  X,
+} from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { CTA } from '@/constants/copy'
 
@@ -34,10 +42,13 @@ function ActiveIndicator() {
 
 function NavLink({ link, active, onClick, mobile }) {
   const isExternal = link.to?.startsWith('http')
-  const className = cn(
-    mobile ? 'w-full justify-start' : linkStyles(active),
-    !mobile && active && 'font-semibold'
-  )
+  const className = mobile
+    ? cn(
+        LINK_BASE,
+        'w-full justify-start',
+        active && 'bg-muted/60 font-semibold text-primary'
+      )
+    : cn(linkStyles(active), active && 'font-semibold')
 
   if (isExternal) {
     return (
@@ -74,7 +85,21 @@ export default function Header({ navLinks, showLogin = true }) {
   const [scrolled, setScrolled] = useState(false)
   const menuButtonRef = useRef(null)
   const location = useLocation()
+  const navigate = useNavigate()
+  const isAuthenticated = useIsAuthenticated()
+  const user = useAuthUser()
+  const logout = useLogout()
   const links = navLinks || DEFAULT_LINKS
+  const accountLink =
+    user?.role === 'professional'
+      ? { to: '/dashboard', label: 'Mi panel', icon: LayoutDashboard }
+      : { to: '/mis-turnos', label: 'Mis turnos', icon: CalendarCheck2 }
+
+  const handleLogout = async () => {
+    setOpen(false)
+    await logout.mutateAsync()
+    navigate('/')
+  }
 
   useEffect(() => {
     setOpen(false)
@@ -134,13 +159,34 @@ export default function Header({ navLinks, showLogin = true }) {
 
         {/* Desktop actions */}
         <div className="hidden md:flex items-center gap-2">
-          {showLogin && (
-            <Link
-              to="/login"
-              className="inline-flex items-center justify-center min-h-[44px] px-3 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-            >
-              Iniciar Sesión
-            </Link>
+          {isAuthenticated ? (
+            <>
+              <Link
+                to={accountLink.to}
+                className="inline-flex items-center gap-2 min-h-[44px] px-3 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                <accountLink.icon className="h-4 w-4" aria-hidden="true" />
+                {accountLink.label}
+              </Link>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleLogout}
+                className="h-10 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+              >
+                <LogOut className="h-4 w-4" aria-hidden="true" />
+                <span className="hidden lg:inline">Cerrar sesión</span>
+              </Button>
+            </>
+          ) : (
+            showLogin && (
+              <Link
+                to="/login"
+                className="inline-flex items-center justify-center min-h-[44px] px-3 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                Iniciar Sesión
+              </Link>
+            )
           )}
           <Link to="/book">
             <Button size="sm" className="h-10 bg-primary text-primary-foreground hover:bg-primary/90">
@@ -178,14 +224,35 @@ export default function Header({ navLinks, showLogin = true }) {
               />
             ))}
             <div className="border-t pt-4 mt-4 space-y-2">
-              {showLogin && (
-                <Link
-                  to="/login"
-                  onClick={() => setOpen(false)}
-                  className="inline-flex items-center justify-center w-full min-h-[44px] text-sm font-medium text-foreground hover:text-primary rounded-lg transition-colors"
-                >
-                  Iniciar Sesión
-                </Link>
+              {isAuthenticated ? (
+                <>
+                  <Link
+                    to={accountLink.to}
+                    onClick={() => setOpen(false)}
+                    className="inline-flex items-center gap-2 w-full min-h-[44px] px-4 text-sm font-medium text-foreground hover:text-primary rounded-lg transition-colors"
+                  >
+                    <accountLink.icon className="h-4 w-4" aria-hidden="true" />
+                    {accountLink.label}
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="inline-flex items-center gap-2 w-full min-h-[44px] px-4 text-sm font-medium text-muted-foreground hover:text-destructive rounded-lg transition-colors"
+                  >
+                    <LogOut className="h-4 w-4" aria-hidden="true" />
+                    Cerrar sesión
+                  </button>
+                </>
+              ) : (
+                showLogin && (
+                  <Link
+                    to="/login"
+                    onClick={() => setOpen(false)}
+                    className="inline-flex items-center justify-center w-full min-h-[44px] text-sm font-medium text-foreground hover:text-primary rounded-lg transition-colors"
+                  >
+                    Iniciar Sesión
+                  </Link>
+                )
               )}
               <Link to="/book" onClick={() => setOpen(false)} className="block">
                 <Button size="sm" className="w-full h-11 bg-primary text-primary-foreground hover:bg-primary/90">

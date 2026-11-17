@@ -49,15 +49,12 @@ export default function GoogleCallback() {
         const providerToken = sessionData.session.access_token
 
         // Exchange the Supabase session for our own JWT via the backend
-        await loginWithGoogle.mutateAsync(providerToken)
+        const data = await loginWithGoogle.mutateAsync(providerToken)
 
-        const role = sessionStorage.getItem('sb-google-role') || 'client'
-        sessionStorage.removeItem('sb-google-role')
-
-        if (role === 'professional') {
-          navigate('/onboarding/business', { replace: true })
-        } else {
+        if (data?.user?.role === 'professional') {
           navigate('/dashboard', { replace: true })
+        } else {
+          navigate('/mis-turnos', { replace: true })
         }
       } catch (err) {
         console.error('Google callback error:', err)

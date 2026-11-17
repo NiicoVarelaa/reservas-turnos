@@ -11,6 +11,7 @@ const TermsPage = lazy(() => import('@/pages/Public/TermsPage'))
 const LegalPage = lazy(() => import('@/pages/Public/LegalPage'))
 const FaqPage = lazy(() => import('@/pages/Public/FaqPage'))
 const ContactPage = lazy(() => import('@/pages/Public/ContactPage'))
+const NotFoundPage = lazy(() => import('@/pages/Public/NotFoundPage'))
 
 // Auth Pages
 import LoginPage from '@/pages/Auth/LoginPage'
@@ -78,6 +79,9 @@ function App() {
             <Route path="settings/business" element={<BusinessSettingsPage />} />
             <Route path="profile" element={<ProfilePage />} />
           </Route>
+
+          {/* Fallback */}
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Suspense>
     </BrowserRouter>

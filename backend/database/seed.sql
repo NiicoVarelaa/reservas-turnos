@@ -86,7 +86,7 @@ DELETE FROM businesses      WHERE owner_id          IN (SELECT id FROM users WHE
 -- BUSINESS
 --------------------------------------------------------------------------------
 INSERT INTO businesses (owner_id, name, slug, category, tagline, description, primary_color, secondary_color, currency, timezone, whatsapp_number, is_active)
-SELECT id, 'Clínica Dental Sonrisa', 'sonrisa', 'odontologia', 'Tu sonrisa, nuestra prioridad', 'Centro odontológico con un equipo de especialistas en estética, implantes, ortodoncia y más.', '#0f172a', '#3b82f6', 'ARS', 'America/Argentina/Buenos_Aires', '+5491112345678', true
+SELECT id, 'Clínica Dental Sonrisa', 'clinica-dental-sonrisa', 'odontologia', 'Tu sonrisa, nuestra prioridad', 'Centro odontológico con un equipo de especialistas en estética, implantes, ortodoncia y más.', '#0f172a', '#3b82f6', 'ARS', 'America/Argentina/Buenos_Aires', '+5491112345678', true
 FROM users WHERE email = 'profesional@test.com';
 
 -- Buscar id del business y del owner (María)

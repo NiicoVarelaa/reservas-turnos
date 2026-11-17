@@ -59,7 +59,7 @@ BEGIN
 
   -- 3. Create business
   INSERT INTO businesses (owner_id, name, slug, category, tagline, description, primary_color, secondary_color, currency, timezone, whatsapp_number, is_active) VALUES
-    (v_user_id, 'Clínica Dental Sonrisa', 'sonrisa', 'odontologia', 'Tu sonrisa, nuestra prioridad', 'Centro odontológico especializado en tratamientos de estética, implantes y ortodoncia.', '#0f172a', '#3b82f6', 'ARS', 'America/Argentina/Buenos_Aires', '+5491112345678', true);
+    (v_user_id, 'Clínica Dental Sonrisa', 'clinica-dental-sonrisa', 'odontologia', 'Tu sonrisa, nuestra prioridad', 'Centro odontológico especializado en tratamientos de estética, implantes y ortodoncia.', '#0f172a', '#3b82f6', 'ARS', 'America/Argentina/Buenos_Aires', '+5491112345678', true);
 
   SELECT id INTO v_business_id FROM businesses WHERE owner_id = v_user_id LIMIT 1;
 
